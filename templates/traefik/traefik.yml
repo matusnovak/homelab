@@ -1,0 +1,28 @@
+entryPoints:
+  web:
+    address: ":${HTTP_PORT}"
+  web-secure:
+    address: ":${HTTPS_PORT}"
+
+api:
+  dashboard: true
+  insecure: true
+
+providers:
+  file:
+    directory: "/config"
+    watch: true
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    network: "${COMPOSE_PROJECT_NAME}_network"
+    watch: true
+    exposedByDefault: false
+    constraints: Label(`com.docker.compose.project`,`${COMPOSE_PROJECT_NAME}`)
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: "${TLS_EMAIL}"
+      storage: "/acme.json"
+      httpChallenge:
+        entryPoint: "web"

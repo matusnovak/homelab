@@ -1,0 +1,40 @@
+version: "3.7"
+
+networks:
+  default:
+    attachable: true
+    ipam:
+     config:
+       - subnet: "${SUBNET_AND_MASK}"
+
+services:
+  traefik:
+    image: "traefik:${TRAEFIK_VERSION}"
+    ports:
+      - "8080:8080"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./data/traefik/traefik.yml:/etc/traefik/traefik.yml:ro"
+      - "./data/traefik/usersfile:/usersfile:ro"
+      - "./data/traefik/config:/config:ro"
+      - "./data/traefik/acme.json:/acme.json"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.traefik.entrypoints=web-secure"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik.middlewares=basicauth@file"
+
+  static:
+    image: "nginx:${NGINX_VERSION}"
+    #volumes:
+    #  - "./data/nginx/html:/usr/share/nginx/html:ro"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.static.loadbalancer.server.port=80"
+      - "traefik.http.routers.static.rule=Host(`static.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.static.entrypoints=web-secure"
+      - "traefik.http.routers.static.tls.certresolver=letsencrypt"
