@@ -1,0 +1,25 @@
+# groups, homelab.matusnovak.com
+dn: ou=groups,${DOMAIN_COMPONENT}
+ou: groups
+objectClass: organizationalUnit
+objectClass: top
+
+# users, homelab.matusnovak.com
+dn: ou=users,${DOMAIN_COMPONENT}
+ou: users
+objectClass: organizationalUnit
+objectClass: top
+
+# user, groups, homelab.matusnovak.com
+dn: cn=user,ou=groups,${DOMAIN_COMPONENT}
+cn: user
+gidNumber: 500
+objectClass: posixGroup
+objectClass: top
+
+# traefik, groups, homelab.matusnovak.com
+dn: cn=traefik,ou=groups,${DOMAIN_COMPONENT}
+cn: traefik
+objectClass: groupOfUniqueNames
+objectClass: top
+uniqueMember: cn=admin,${DOMAIN_COMPONENT}

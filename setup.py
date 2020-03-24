@@ -34,7 +34,7 @@ def do_templates(env: dict):
     files = get_files(templates, '**/**')
 
     for src in files:
-        if src == templates:
+        if src == templates or src.endswith('.gitkeep'):
             continue
 
         relative = src[len(templates) + 1:]
@@ -55,7 +55,7 @@ def do_init():
     files = get_files(init, '**/**')
 
     for src in files:
-        if src == init:
+        if src == init or src.endswith('.gitkeep'):
             continue
 
         relative = src[len(init) + 1:]

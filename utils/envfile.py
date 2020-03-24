@@ -9,7 +9,7 @@ def load_env(path: str) -> dict:
                 while line.endswith('\n'):
                     line = line[:-1]
                 if line:
-                    tokens = line.split('=', 2)
+                    tokens = line.split('=', 1)
                     if len(tokens) == 2:
                         env[tokens[0].strip()] = tokens[1].strip()
 

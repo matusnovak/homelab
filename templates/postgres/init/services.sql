@@ -1,0 +1,12 @@
+CREATE ROLE openproject;
+ALTER ROLE openproject WITH PASSWORD '${ADMIN_PASSWORD}';
+ALTER ROLE openproject WITH LOGIN;
+CREATE DATABASE openproject;
+GRANT ALL PRIVILEGES ON DATABASE openproject TO openproject;
+
+CREATE ROLE nextcloud;
+ALTER ROLE nextcloud WITH PASSWORD '${ADMIN_PASSWORD}';
+ALTER ROLE nextcloud WITH LOGIN;
+CREATE DATABASE nextcloud;
+GRANT ALL PRIVILEGES ON DATABASE nextcloud TO nextcloud;
+

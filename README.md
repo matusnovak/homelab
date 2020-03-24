@@ -33,3 +33,12 @@ python3 setup.py
 docker-compose up -d
 ```
 
+### 5. Run the finalize script
+
+This script will finalize some of the extra stuff, such as creating and configuring Portainer based on your `.env` file.
+
+```
+./finalize.py
+# or
+python3 finalize.py
+```

@@ -14,7 +14,7 @@ providers:
     watch: true
   docker:
     endpoint: "unix:///var/run/docker.sock"
-    network: "${COMPOSE_PROJECT_NAME}_network"
+    network: "${COMPOSE_PROJECT_NAME}_default"
     watch: true
     exposedByDefault: false
     constraints: Label(`com.docker.compose.project`,`${COMPOSE_PROJECT_NAME}`)
