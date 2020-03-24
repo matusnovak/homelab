@@ -42,7 +42,7 @@ def portainer(url: str, env: dict):
             "StartTLS": False,
             "SearchSettings": [{
                 "BaseDN": f"ou=users,{dc}",
-                "Filter": f"(memberOf=cn=traefik,ou=groups,{dc})",
+                "Filter": f"(memberOf=cn=portainer,ou=groups,{dc})",
                 "UserNameAttribute": "uid"
             }],
             "GroupSearchSettings": [{
