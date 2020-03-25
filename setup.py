@@ -12,72 +12,75 @@ import shutil
 
 ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
 SALT = bcrypt.gensalt()
+UID = os.getuid()
 
 
 def get_files(path: str, pattern: str) -> List[str]:
     return glob.iglob(path + pattern, recursive=True)
 
 
-def transform(src: str, env: dict) -> str:
-    s = Template(src)
-    return s.substitute(env)
+def copy(dst: str, env: dict, uid=UID, gid=UID, mode=0o644) -> str:
+    src = os.path.join(ROOT_DIR, 'templates', dst)
+    dst = os.path.join(ROOT_DIR, 'data', dst)
+    if not os.path.exists(dst):
+        with open(src, 'r') as s:
+            with open(dst, 'w') as d:
+                t = Template(s.read())
+                d.write(t.substitute(env))
+            os.chmod(dst, mode)
+            os.chown(dst, uid, gid)
+
+
+def touch(dst: str, uid=UID, gid=UID, mode=0o644):
+    dst = os.path.join(ROOT_DIR, 'data', dst)
+    if not os.path.exists(dst):
+        open(dst, 'w').close()
+        os.chmod(dst, mode)
+        os.chown(dst, uid, gid)
+
+
+def mkdir(dst: str, uid=UID, gid=UID, mode=0o755):
+    dst = os.path.join(ROOT_DIR, 'data', dst)
+    if not os.path.exists(dst):
+        os.makedirs(dst, mode)
+        os.chown(dst, uid, gid)
 
 
 def create_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), SALT).decode('utf-8')
 
 
-# Transform template files and put them to the data directory
-def do_templates(env: dict):
-    templates = os.path.join(ROOT_DIR, 'templates')
-    data = os.path.join(ROOT_DIR, 'data')
-    files = get_files(templates, '**/**')
-
-    for src in files:
-        if src == templates or src.endswith('.gitkeep'):
-            continue
-
-        relative = src[len(templates) + 1:]
-        dst = os.path.join(data, relative)
-
-        if os.path.isdir(src):
-            os.makedirs(dst, exist_ok=True)
-        elif os.path.isfile(src):
-            with open(src, 'r') as source:
-                with open(dst, 'w') as target:
-                    target.write(transform(source.read(), env))
-
-
-# Copy files with their UID GID but only if they do not exists
-def do_init():
-    init = os.path.join(ROOT_DIR, 'init')
-    data = os.path.join(ROOT_DIR, 'data')
-    files = get_files(init, '**/**')
-
-    for src in files:
-        if src == init or src.endswith('.gitkeep'):
-            continue
-
-        relative = src[len(init) + 1:]
-        dst = os.path.join(data, relative)
-
-        if os.path.isdir(src) and not os.path.exists(dst):
-            os.makedirs(dst, exist_ok=True)
-            st = os.stat(src)
-            os.chown(dst, st[os.stat.ST_UID], st[os.stat.ST_GID])
-
-        if os.path.isfile(src) and not os.path.exists(dst):
-            shutil.copy2(src, dst)
-            st = os.stat(src)
-            os.chown(dst, st[os.stat.ST_UID], st[os.stat.ST_GID])
-
-
 def main():
     env = load_env(os.path.join(ROOT_DIR, '.env'))
     env['ADMIN_PASSWORD_HASH'] = create_password(env['ADMIN_PASSWORD'])
 
-    do_templates(env)
-    do_init()
+    mkdir('ldap/config')
+    mkdir('ldap/data')
+    mkdir('ldap/ldif')
+    copy('ldap/ldif/all.ldif', env)
+
+    mkdir('nextcloud/apps')
+    mkdir('nextcloud/config')
+    mkdir('nextcloud/html')
+    mkdir('nextcloud/theme')
+
+    mkdir('portainer/data')
+
+    mkdir('postgres/data')
+    mkdir('postgres/init')
+    copy('postgres/init/services.sql', env)
+
+    mkdir('static')
+    copy('static/index.html', env)
+
+    mkdir('traefik')
+    mkdir('traefik/config')
+    touch('traefik/acme.json', mode=600)
+    copy('traefik/traefik.yml', env)
+    copy('traefik/usersfile', env)
+    copy('traefik/config/middlewares.yml', env)
+    copy('traefik/config/routers.yml', env)
+    copy('traefik/config/services.yml', env)
 
 
 if __name__ == '__main__':

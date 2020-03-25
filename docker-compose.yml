@@ -75,6 +75,24 @@ services:
     volumes:
       - "./data/postgres/data:/var/lib/postgresql/data"
       - "./data/postgres/init:/docker-entrypoint-initdb.d"
+
+  adminer:
+    image: "adminer:${ADMINER_VERSION}"
+    restart: "unless-stopped"
+    environment:
+      ADMINER_DESIGN: "nette"
+      ADMINER_DEFAULT_SERVER: "postgres"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.adminer.loadbalancer.server.port=8080"
+      - "traefik.http.routers.adminer.rule=Host(`adminer.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.adminer.entrypoints=web-secure"
+      - "traefik.http.routers.adminer.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.adminer.middlewares=basicauth@file"
+    
+  redis:
+    image: "redis:${REDIS_VERSION}"
+    restart: "unless-stopped"
   
   portainer:
     image: "portainer/portainer:${PORTAINER_VERSION}"
@@ -89,4 +107,32 @@ services:
       - "traefik.http.routers.portainer.rule=Host(`portainer.${DOMAIN_NAME}`)"
       - "traefik.http.routers.portainer.entrypoints=web-secure"
       - "traefik.http.routers.portainer.tls.certresolver=letsencrypt"
+
+  nextcloud:
+    image: "nextcloud:${NEXTCLOUD_VERSION}"
+    restart: "unless-stopped"
+    hostname: "${DOMAIN_NAME}"
+    volumes:
+      - "./data/nextcloud/html:/var/www/html"
+      - "./data/nextcloud/apps:/var/www/html/custom_apps"
+      - "./data/nextcloud/config:/var/www/html/config"
+      - "${NEXTCLOUD_DATA}:/var/www/html/data"
+      - "./data/nextcloud/theme:/var/www/html/themes/custom"
+    environment:
+      POSTGRES_DB: "nextcloud"
+      POSTGRES_USER: "nextcloud"
+      POSTGRES_PASSWORD: "${ADMIN_PASSWORD}"
+      POSTGRES_HOST: "postgres"
+      NEXTCLOUD_ADMIN_USER: "${ADMIN_USERNAME}"
+      NEXTCLOUD_ADMIN_PASSWORD: "${ADMIN_PASSWORD}"
+      REDIS_HOST: "redis"
+      REDIS_HOST_PORT: "6379"
+      NEXTCLOUD_HOSTNAME: "${DOMAIN_NAME}"
+      NEXTCLOUD_TRUSTED_DOMAINS: "${DOMAIN_NAME}"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
+      - "traefik.http.routers.nextcloud.rule=Host(`${DOMAIN_NAME}`)"
+      - "traefik.http.routers.nextcloud.entrypoints=web-secure"
+      - "traefik.http.routers.nextcloud.tls.certresolver=letsencrypt"
 

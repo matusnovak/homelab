@@ -23,3 +23,25 @@ cn: portainer
 objectClass: groupOfUniqueNames
 objectClass: top
 uniqueMember: cn=admin,${DOMAIN_COMPONENT}
+
+# nextcloud, groups, example.com
+dn: cn=nextcloud,ou=groups,${DOMAIN_COMPONENT}
+cn: nextcloud
+objectClass: groupOfUniqueNames
+objectClass: top
+uniqueMember: cn=admin,${DOMAIN_COMPONENT}
+
+# gitea, groups, example.com
+dn: cn=gitea,ou=groups,${DOMAIN_COMPONENT}
+cn: gitea
+objectClass: groupOfUniqueNames
+objectClass: top
+uniqueMember: cn=admin,${DOMAIN_COMPONENT}
+
+# jellyfin, groups, example.com
+dn: cn=jellyfin,ou=groups,${DOMAIN_COMPONENT}
+cn: jellyfin
+objectClass: groupOfUniqueNames
+objectClass: top
+uniqueMember: cn=admin,${DOMAIN_COMPONENT}
+
