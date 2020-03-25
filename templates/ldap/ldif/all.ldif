@@ -45,3 +45,16 @@ objectClass: groupOfUniqueNames
 objectClass: top
 uniqueMember: cn=admin,${DOMAIN_COMPONENT}
 
+# rocket, groups, example.com
+dn: cn=rocket,ou=groups,${DOMAIN_COMPONENT}
+cn: rocket
+objectClass: groupOfUniqueNames
+objectClass: top
+uniqueMember: cn=admin,${DOMAIN_COMPONENT}
+
+# grafana, groups, example.com
+dn: cn=grafana,ou=groups,${DOMAIN_COMPONENT}
+cn: grafana
+objectClass: groupOfUniqueNames
+objectClass: top
+uniqueMember: cn=admin,${DOMAIN_COMPONENT}
