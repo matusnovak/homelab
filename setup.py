@@ -2,7 +2,6 @@
 
 from string import Template
 from typing import List
-from utils.envfile import load_env
 import bcrypt
 import glob
 import os
@@ -13,6 +12,23 @@ import shutil
 ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
 SALT = bcrypt.gensalt()
 UID = os.getuid()
+
+
+def load_env(path: str) -> dict:
+    env = {}
+
+    with open(path, 'r') as f:
+        for line in f:
+            if line.startswith('#'):
+                continue
+            elif line:
+                while line.endswith('\n'):
+                    line = line[:-1]
+                if line:
+                    tokens = line.split('=', 1)
+                    if len(tokens) == 2:
+                        env[tokens[0].strip()] = tokens[1].strip()
+    return env
 
 
 def get_files(path: str, pattern: str) -> List[str]:
@@ -70,6 +86,8 @@ def main():
     mkdir('postgres/init')
     copy('postgres/init/services.sql', env)
 
+    mkdir('mongo/data')
+
     mkdir('static')
     copy('static/index.html', env)
 
@@ -81,6 +99,38 @@ def main():
     copy('traefik/config/middlewares.yml', env)
     copy('traefik/config/routers.yml', env)
     copy('traefik/config/services.yml', env)
+
+    mkdir('haste')
+
+    mkdir('prometheus/data')
+    mkdir('prometheus/config')
+    copy('prometheus/config/prometheus.yml', env)
+    copy('prometheus/config/alerts.yml', env)
+
+    mkdir('alertmanager/config')
+    copy('alertmanager/config/alertmanager.yml', env)
+
+    mkdir('grafana/data')
+    mkdir('grafana/provisioning/datasources')
+    mkdir('grafana/config')
+    copy('grafana/provisioning/datasources/prometheus.yml', env)
+    copy('grafana/config/grafana.ini', env)
+    copy('grafana/config/ldap.toml', env)
+
+    mkdir('jellyfin/config')
+    mkdir('jellyfin/cache')
+    mkdir('jellyfin/transcode')
+
+    mkdir('filebrowser/config')
+    mkdir('filebrowser/data')
+    copy('filebrowser/config/filebrowser.json', env)
+
+    mkdir('openproject/assets')
+
+    mkdir('rocket/uploads')
+
+    mkdir('onlyoffice/log')
+    mkdir('onlyoffice/data')
 
 
 if __name__ == '__main__':

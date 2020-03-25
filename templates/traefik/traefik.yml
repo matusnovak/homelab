@@ -17,7 +17,7 @@ providers:
     network: "${COMPOSE_PROJECT_NAME}_default"
     watch: true
     exposedByDefault: false
-    constraints: Label(`com.docker.compose.project`,`${COMPOSE_PROJECT_NAME}`)
+#    constraints: Label(`com.docker.compose.project`,`${COMPOSE_PROJECT_NAME}`)
 
 certificatesResolvers:
   letsencrypt:
@@ -26,3 +26,12 @@ certificatesResolvers:
       storage: "/acme.json"
       httpChallenge:
         entryPoint: "web"
+
+metrics:
+  prometheus:
+    entryPoint: "traefik"
+    buckets:
+      - 0.1
+      - 0.3
+      - 1.2
+      - 5.0
