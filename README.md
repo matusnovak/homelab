@@ -12,6 +12,7 @@ This is a partially pre-configured Homelab via Docker Compose. All you have to d
 * [OnlyOffice](https://nextcloud.com/onlyoffice/)
 * [Pi-Hole](https://pi-hole.net/) + [Cloudflared](https://hub.docker.com/r/visibilityspots/cloudflared/)
 * [cAdvisor](https://github.com/google/cadvisor)
+* [Portainer](https://www.portainer.io/)
 * [Grafana](https://grafana.com/)
 * [Prometheus](https://prometheus.io/) 
 * [Node Exporter](https://github.com/prometheus/node_exporter)
