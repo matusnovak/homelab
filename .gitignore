@@ -4,3 +4,4 @@ data/*
 .env
 **/__pycache__/*
 drone.env
+docs/resources/

@@ -8,7 +8,7 @@ services:
     image: "openproject/community:${OPENPROJECT_VERSION}"
     restart: "unless-stopped"
     environment:
-      SECRET_KEY_BASE: "${SECRET_KEY_BASE}"
+      SECRET_KEY_BASE: "${OPENPROJECT_SECRET_KEY}"
       DATABASE_URL: "postgresql://openproject:${ADMIN_PASSWORD}@postgres:5432/openproject"
     volumes:
       - "./data/openproject/assets:/var/openproject/assets"

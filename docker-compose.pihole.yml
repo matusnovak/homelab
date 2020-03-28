@@ -11,7 +11,7 @@ services:
       - 54:54/udp
     networks:
       default:
-        ipv4_address: "172.18.255.1"
+        ipv4_address: "${CLOUDFLARED_IP}"
 
   pihole:
     image: "pihole/pihole:${PIHOLE_VERSION}"

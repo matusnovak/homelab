@@ -1,0 +1,12 @@
+baseURL = "https://matusnovak.github.io/homelab"
+editURL = "https://github.com/matusnovak/homelab/tree/master/docs/content"
+languageCode = "en-us"
+title = "Homelab"
+theme = "hugo-theme-learn"
+pygmentscodefences = true
+
+[[Languages.en.menu.shortcuts]]
+    name = "<i class='fab fa-fw fa-github'></i> GitHub repo"
+    identifier = "ds"
+    url = "https://github.com/matusnovak/homelab/"
+    weight = 10
