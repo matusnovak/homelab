@@ -11,7 +11,8 @@ import shutil
 
 ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
 SALT = bcrypt.gensalt()
-UID = os.getuid()
+#UID = os.getuid()
+UID = 1000
 
 
 def load_env(path: str) -> dict:
@@ -93,7 +94,7 @@ def main():
 
     mkdir('traefik')
     mkdir('traefik/config')
-    touch('traefik/acme.json', mode=600)
+    touch('traefik/acme.json', mode=0o600)
     copy('traefik/traefik.yml', env)
     copy('traefik/usersfile', env)
     copy('traefik/config/middlewares.yml', env)

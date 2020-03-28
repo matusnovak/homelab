@@ -58,3 +58,10 @@ cn: grafana
 objectClass: groupOfUniqueNames
 objectClass: top
 uniqueMember: cn=admin,${DOMAIN_COMPONENT}
+
+# artifactory, groups, example.com
+dn: cn=artifactory,ou=groups,${DOMAIN_COMPONENT}
+cn: artifactory
+objectClass: groupOfUniqueNames
+objectClass: top
+uniqueMember: cn=admin,${DOMAIN_COMPONENT}

@@ -17,7 +17,12 @@ You will also need [**Docker**](https://docs.docker.com/install/) and [**Docker 
 
 ### Dependencies
 
-Additionally, you will need Python3 and git. If you are on an Ubuntu, you can install them via: `sudo apt-get install -y python3 git`.
+Additionally, you will need Python3 (with bcrypt) and git. If you are on an Ubuntu, you can install them via:
+
+```bash
+sudo apt-get install -y python3 python3-pip git
+python3 -m pip install bcrypt
+```
 
 ### Internet facing server and a domain
 
