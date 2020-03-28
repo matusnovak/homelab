@@ -5,3 +5,5 @@ data/*
 **/__pycache__/*
 drone.env
 docs/resources/
+docs/node_modules/
+docs/public/

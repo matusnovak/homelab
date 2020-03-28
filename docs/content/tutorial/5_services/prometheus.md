@@ -1,5 +1,5 @@
 ---
-title: Hastebin
+title: Prometheus
 ---
 
 TODO
