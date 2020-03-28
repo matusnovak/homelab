@@ -1,0 +1,134 @@
+version: "3.7"
+
+networks:
+  default:
+    attachable: true
+    ipam:
+     config:
+       - subnet: "${SUBNET_AND_MASK}"
+
+services:
+  dockerhost:
+    image: "qoomon/docker-host"
+    restart: "unless-stopped"
+    cap_add: [ "NET_ADMIN", "NET_RAW" ]
+
+  traefik:
+    image: "traefik:${TRAEFIK_VERSION}"
+    restart: "unless-stopped"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./data/traefik/traefik.yml:/etc/traefik/traefik.yml:ro"
+      - "./data/traefik/usersfile:/usersfile:ro"
+      - "./data/traefik/config:/config:ro"
+      - "./data/traefik/acme.json:/acme.json"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.traefik.entrypoints=web-secure"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik.middlewares=basicauth@file"
+
+  static:
+    image: "nginx:${NGINX_VERSION}"
+    restart: "unless-stopped"
+    volumes:
+      - "./data/static:/usr/share/nginx/html:ro"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.static.loadbalancer.server.port=80"
+      - "traefik.http.routers.static.rule=Host(`static.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.static.entrypoints=web-secure"
+      - "traefik.http.routers.static.tls.certresolver=letsencrypt"
+
+  openldap:
+    image: "osixia/openldap:${OPENLDAP_VERSION}"
+    restart: "unless-stopped"
+    environment:
+      LDAP_ORGANISATION: "Homelab"
+      LDAP_DOMAIN: "${DOMAIN_NAME}"
+      LDAP_ADMIN_PASSWORD: "${ADMIN_PASSWORD}"
+      LDAP_REMOVE_CONFIG_AFTER_SETUP: "false"
+    volumes:
+      - "./data/ldap/data:/var/lib/ldap"
+      - "./data/ldap/config:/etc/ldap/slapd.d"
+      - "./data/ldap/ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom"
+
+  phpldapadmin:
+    image: "osixia/phpldapadmin:${PHPLDAPADMIN_VERSION}"
+    restart: "unless-stopped"
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: "openldap"
+      PHPLDAPADMIN_HTTPS: "false"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.ldap.loadbalancer.server.port=80"
+      - "traefik.http.routers.ldap.rule=Host(`ldap.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.ldap.entrypoints=web-secure"
+      - "traefik.http.routers.ldap.tls.certresolver=letsencrypt"
+
+  postgres:
+    image: "postgres:${POSTGRES_VERSION}"
+    restart: "unless-stopped"
+    environment:
+      POSTGRES_PASSWORD: "${ADMIN_PASSWORD}"
+    volumes:
+      - "./data/postgres/data:/var/lib/postgresql/data"
+      - "./data/postgres/init:/docker-entrypoint-initdb.d"
+
+  mongo:
+    image: "mongo:${MONGO_VERSION}"
+    restart: "unless-stopped"
+    command: "mongod --oplogSize 128 --replSet rs0"
+    volumes:
+      - "./data/mongo/data:/data/db"
+
+  mongo-init-replica:
+    image: "mongo:${MONGO_VERSION}"
+    command: >
+      bash -c
+        "for i in `seq 1 30`; do
+          mongo mongo/rocketchat --eval \"
+            rs.initiate({
+              _id: 'rs0',
+              members: [ { _id: 0, host: 'localhost:27017' } ]})\" &&
+          s=$$? && break || s=$$?;
+          echo \"Tried $$i times. Waiting 5 secs...\";
+          sleep 5;
+        done; (exit $$s)"
+
+  adminer:
+    image: "adminer:${ADMINER_VERSION}"
+    restart: "unless-stopped"
+    environment:
+      ADMINER_DESIGN: "nette"
+      ADMINER_DEFAULT_SERVER: "postgres"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.adminer.loadbalancer.server.port=8080"
+      - "traefik.http.routers.adminer.rule=Host(`adminer.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.adminer.entrypoints=web-secure"
+      - "traefik.http.routers.adminer.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.adminer.middlewares=basicauth@file"
+
+  redis:
+    image: "redis:${REDIS_VERSION}"
+    restart: "unless-stopped"
+
+  portainer:
+    image: "portainer/portainer:${PORTAINER_VERSION}"
+    command: "-H unix:///var/run/docker.sock"
+    restart: "unless-stopped"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./data/portainer/data:/data"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+      - "traefik.http.routers.portainer.rule=Host(`portainer.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.portainer.entrypoints=web-secure"
+      - "traefik.http.routers.portainer.tls.certresolver=letsencrypt"

@@ -132,6 +132,10 @@ def main():
     mkdir('onlyoffice/log')
     mkdir('onlyoffice/data')
 
+    mkdir('drone')
+
+    mkdir('artifactory', uid=1030, gid=1030)
+
 
 if __name__ == '__main__':
     main()

@@ -1,0 +1,24 @@
+version: "3.7"
+networks:
+  default:
+    external:
+      name: "homelab_base_default"
+services:
+  jellyfin:
+    image: "linuxserver/jellyfin:${JELLYFIN_VERSION}"
+    restart: "unless-stopped"
+    environment:
+      PUID: "0"
+      PGID: "0"
+      UMASK_SET: "022"
+    volumes:
+      - "./data/jellyfin/config:/config"
+      - "./data/jellyfin/cache:/cache"
+      - "./data/jellyfin/transcode:/transcode"
+      - "${JELLYFIN_MEDIA}:/media"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.jellyfin.loadbalancer.server.port=8096"
+      - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.jellyfin.entrypoints=web-secure"
+      - "traefik.http.routers.jellyfin.tls.certresolver=letsencrypt"

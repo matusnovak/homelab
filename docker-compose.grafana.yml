@@ -1,0 +1,99 @@
+version: "3.7"
+networks:
+  default:
+    external:
+      name: "homelab_base_default"
+services:
+  nodeexporter:
+    image: "prom/node-exporter:${NODEEXPORTER_VERSION}"
+    restart: "unless-stopped"
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.rootfs=/rootfs"
+      - "--path.sysfs=/host/sys"
+      - "--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)"
+      - "--collector.cpu"
+      - "--collector.cpufreq"
+      - "--collector.diskstats"
+      - "--collector.filesystem"
+      - "--collector.netclass"
+      - "--collector.netdev"
+      - "--collector.netstat"
+      - "--collector.hwmon"
+      - "--collector.meminfo"
+      - "--collector.zfs"
+    volumes:
+      - "/proc:/host/proc:ro"
+      - "/sys:/host/sys:ro"
+      - "/:/rootfs:ro"
+
+  cadvisor:
+    image: "google/cadvisor:${CADVISOR_VERSION}"
+    volumes:
+      - "/:/rootfs:ro"
+      - "/var/run:/var/run:rw"
+      - "/sys:/sys:ro"
+      - "/var/lib/docker/:/var/lib/docker:ro"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.cadvisor.loadbalancer.server.port=8080"
+      - "traefik.http.routers.cadvisor.rule=Host(`cadvisor.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.cadvisor.entrypoints=web-secure"
+      - "traefik.http.routers.cadvisor.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.cadvisor.middlewares=basicauth@file"
+
+  alertmanager:
+    image: "prom/alertmanager:${ALERTMANAGER_VERSION}"
+    restart: "unless-stopped"
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--storage.path=/alertmanager"
+    volumes:
+      - "./data/alertmanager/data:/alertmanager/"
+      - "./data/alertmanager/config/alertmanager.yml:/etc/alertmanager/alertmanager.yml"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.alertmanager.loadbalancer.server.port=9093"
+      - "traefik.http.routers.alertmanager.rule=Host(`alertmanager.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.alertmanager.entrypoints=web-secure"
+      - "traefik.http.routers.alertmanager.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.alertmanager.middlewares=basicauth@file"
+
+  prometheus:
+    image: "prom/prometheus:${PROMETHEUS_VERSION}"
+    restart: "unless-stopped"
+    user: "1000"
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    volumes:
+      - "./data/prometheus/config/prometheus.yml:/etc/prometheus/prometheus.yml"
+      - "./data/prometheus/config/alerts.yml:/etc/prometheus/alerts.yml"
+      - "./data/prometheus/data:/prometheus"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.prometheus.entrypoints=web-secure"
+      - "traefik.http.routers.prometheus.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.prometheus.middlewares=basicauth@file"
+
+  grafana:
+    image: "grafana/grafana:${GRAFANA_VERSION}"
+    restart: "unless-stopped"
+    user: "1000"
+    environment:
+      GF_SECURITY_ADMIN_USER: "admin"
+      GF_SECURITY_ADMIN_PASSWORD: "${ADMIN_PASSWORD}"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - "./data/grafana/data:/var/lib/grafana"
+      - "./data/grafana/provisioning:/etc/grafana/provisioning"
+      - "./data/grafana/config/grafana.ini:/etc/grafana/grafana.ini"
+      - "./data/grafana/config/ldap.toml:/etc/grafana/ldap.toml"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.grafana.entrypoints=web-secure"
+      - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"

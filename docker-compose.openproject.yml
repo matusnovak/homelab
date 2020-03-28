@@ -1,0 +1,20 @@
+version: "3.7"
+networks:
+  default:
+    external:
+      name: "homelab_base_default"
+services:
+  openproject:
+    image: "openproject/community:${OPENPROJECT_VERSION}"
+    restart: "unless-stopped"
+    environment:
+      SECRET_KEY_BASE: "${SECRET_KEY_BASE}"
+      DATABASE_URL: "postgresql://openproject:${ADMIN_PASSWORD}@postgres:5432/openproject"
+    volumes:
+      - "./data/openproject/assets:/var/openproject/assets"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.openproject.loadbalancer.server.port=80"
+      - "traefik.http.routers.openproject.rule=Host(`openproject.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.openproject.entrypoints=web-secure"
+      - "traefik.http.routers.openproject.tls.certresolver=letsencrypt"

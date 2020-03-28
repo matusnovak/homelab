@@ -1,0 +1,54 @@
+version: "3.7"
+networks:
+  default:
+    external:
+      name: "homelab_base_default"
+services:
+  nextcloud:
+    image: "nextcloud:${NEXTCLOUD_VERSION}"
+    restart: "unless-stopped"
+    hostname: "nextcloud.${DOMAIN_NAME}"
+    volumes:
+      - "./data/nextcloud/html:/var/www/html"
+      - "./data/nextcloud/apps:/var/www/html/custom_apps"
+      - "./data/nextcloud/config:/var/www/html/config"
+      - "${NEXTCLOUD_DATA}:/var/www/html/data"
+      - "./data/nextcloud/theme:/var/www/html/themes/custom"
+    environment:
+      POSTGRES_DB: "nextcloud"
+      POSTGRES_USER: "nextcloud"
+      POSTGRES_PASSWORD: "${ADMIN_PASSWORD}"
+      POSTGRES_HOST: "postgres"
+      NEXTCLOUD_ADMIN_USER: "admin"
+      NEXTCLOUD_ADMIN_PASSWORD: "${ADMIN_PASSWORD}"
+      REDIS_HOST: "redis"
+      REDIS_HOST_PORT: "6379"
+      NEXTCLOUD_HOSTNAME: "nextcloud.${DOMAIN_NAME}"
+      NEXTCLOUD_TRUSTED_DOMAINS: "nextcloud.${DOMAIN_NAME}"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
+      - "traefik.http.routers.nextcloud.rule=Host(`nextcloud.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.nextcloud.entrypoints=web-secure"
+      - "traefik.http.routers.nextcloud.tls.certresolver=letsencrypt"
+
+  onlyoffice:
+    image: "onlyoffice/documentserver:${ONLYOFFICE_VERSION}"
+    restart: "unless-stopped"
+    stdin_open: true
+    tty: true
+    environment:
+      JWT_ENABLED: "true"
+      JWT_SECRET: "password"
+    volumes:
+      - "./data/onlyoffice/data:/var/www/onlyoffice/Data"
+      - "./data/onlyoffice/log:/var/log/onlyoffice"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.office.loadbalancer.server.port=80"
+      - "traefik.http.routers.office.rule=Host(`office.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.office.entrypoints=web-secure"
+      - "traefik.http.routers.office.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.office.middlewares=office-sslheaders"
+      - "traefik.http.middlewares.office-sslheaders.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.office-sslheaders.headers.accessControlAllowOrigin=*"

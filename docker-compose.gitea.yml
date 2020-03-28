@@ -1,0 +1,40 @@
+version: "3.7"
+networks:
+  default:
+    external:
+      name: "homelab_base_default"
+services:
+  gitea:
+    image: "gitea/gitea:${GITEA_VERSION}"
+    restart: "unless-stopped"
+    ports:
+      - "2222:22"
+    environment:
+      APP_NAME: "Gitea Homelab"
+      RUN_USER: "root"
+      DISABLE_SSH: "false"
+      START_SSH_SERVER: "true"
+      SSH_PORT: "2222"
+      SSH_LISTEN_PORT: "22"
+      SSH_DOMAIN: "gitea.${DOMAIN_NAME}"
+      USER_UID: "0"
+      USER_GID: "0"
+      DB_TYPE: postgres
+      DB_HOST: postgres:5432
+      DB_NAME: gitea
+      DB_USER: gitea
+      DB_PASSWD: "${ADMIN_PASSWORD}"
+      RUN_MODE: "prod"
+      REQUIRE_SIGNIN_VIEW: "true"
+      DISABLE_REGISTRATION: "false"
+      INSTALL_LOCK: "false"
+    volumes:
+      - "${GITEA_DATA}:/data"
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.gitea.loadbalancer.server.port=3000"
+      - "traefik.http.routers.gitea.rule=Host(`gitea.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.gitea.entrypoints=web-secure"
+      - "traefik.http.routers.gitea.tls.certresolver=letsencrypt"

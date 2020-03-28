@@ -3,3 +3,4 @@ data/*
 .vscode/
 .env
 **/__pycache__/*
+drone.env

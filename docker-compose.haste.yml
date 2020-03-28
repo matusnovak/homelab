@@ -1,0 +1,17 @@
+version: "3.7"
+networks:
+  default:
+    external:
+      name: "homelab_base_default"
+services:
+  haste:
+    image: "ogarcia/haste-server:${HASTE_VERSION}"
+    restart: "unless-stopped"
+    volumes:
+      - "./data/haste:/srv/haste/data"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.haste.loadbalancer.server.port=7777"
+      - "traefik.http.routers.haste.rule=Host(`haste.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.haste.entrypoints=web-secure"
+      - "traefik.http.routers.haste.tls.certresolver=letsencrypt"

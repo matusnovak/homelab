@@ -1,0 +1,30 @@
+version: "3.7"
+networks:
+  default:
+    external:
+      name: "homelab_base_default"
+services:
+  rocket:
+    image: "rocketchat/rocket.chat:${ROCKETCHAT_VERSION}"
+    command: >
+      bash -c
+        "for i in `seq 1 30`; do
+          node main.js &&
+          s=$$? && break || s=$$?;
+          echo \"Tried $$i times. Waiting 5 secs...\";
+          sleep 5;
+        done; (exit $$s)"
+    restart: "unless-stopped"
+    volumes:
+      - "./data/rocket/uploads:/app/uploads"
+    environment:
+      PORT: "3000"
+      ROOT_URL: "https://rocket.${DOMAIN_NAME}"
+      MONGO_URL: "mongodb://mongo/rocket"
+      MONGO_OPLOG_URL: "mongodb://mongo/local"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.rocket.loadbalancer.server.port=3000"
+      - "traefik.http.routers.rocket.rule=Host(`rocket.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.rocket.entrypoints=web-secure"
+      - "traefik.http.routers.rocket.tls.certresolver=letsencrypt"

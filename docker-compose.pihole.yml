@@ -1,0 +1,35 @@
+version: "3.7"
+networks:
+  default:
+    external:
+      name: "homelab_base_default"
+services:
+  cloudflared:
+    image: "visibilityspots/cloudflared"
+    restart: "unless-stopped"
+    ports:
+      - 54:54/udp
+    networks:
+      default:
+        ipv4_address: "172.18.255.1"
+
+  pihole:
+    image: "pihole/pihole:${PIHOLE_VERSION}"
+    restart: "unless-stopped"
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+    environment:
+      VIRTUAL_HOST: "pihole.${DOMAIN_NAME}"
+    volumes:
+      - "./data/pihole/data:/etc/pihole"
+      - "./data/pihole/dnsmasq:/etc/dnsmasq.d"
+    dns:
+      - "127.0.0.1"
+      - "1.1.1.1"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.pihole.loadbalancer.server.port=80"
+      - "traefik.http.routers.pihole.rule=Host(`pihole.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.pihole.entrypoints=web-secure"
+      - "traefik.http.routers.pihole.tls.certresolver=letsencrypt"

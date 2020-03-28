@@ -1,0 +1,20 @@
+version: "3.7"
+networks:
+  default:
+    external:
+      name: "homelab_base_default"
+services:
+  filebrowser:
+    image: "filebrowser/filebrowser:${FILEBROWSER_VERSION}"
+    restart: "unless-stopped"
+    user: "1000:117"
+    volumes:
+      - "${FILEBROWSER_MEDIA}:/files"
+      - "./data/filebrowser/data:/database"
+      - "./data/filebrowser/config/filebrowser.json:/.filebrowser.json"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.filebrowser.loadbalancer.server.port=8080"
+      - "traefik.http.routers.filebrowser.rule=Host(`files.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.filebrowser.entrypoints=web-secure"
+      - "traefik.http.routers.filebrowser.tls.certresolver=letsencrypt"

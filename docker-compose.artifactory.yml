@@ -1,0 +1,17 @@
+version: "3.7"
+networks:
+  default:
+    external:
+      name: "homelab_base_default"
+services:
+  artifactory:
+    image: "docker.bintray.io/jfrog/artifactory-cpp-ce:${ARTIFACTORY_VERSION}"
+    restart: "unless-stopped"
+    volumes:
+      - "./data/artifactory:/var/opt/jfrog/artifactory"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.artifactory.loadbalancer.server.port=8082"
+      - "traefik.http.routers.artifactory.rule=Host(`artifactory.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.artifactory.entrypoints=web-secure"
+      - "traefik.http.routers.artifactory.tls.certresolver=letsencrypt"
