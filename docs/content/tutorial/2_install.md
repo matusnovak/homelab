@@ -18,6 +18,12 @@ You will need to provide basic configuration via environment variables. These va
 Make sure you can see hidden files in your OS. Files starting with a dot in their filenames are considered hidden.
 {{% /notice %}}
 
-Copy the `.env.sample` to `.env` and edit these common variables: `DOMAIN_NAME`, `DOMAIN_COMPONENT`, `TLS_EMAIL`, `SECRET_KEY_BASE`, `ADMIN_PASSWORD`, and "Extra properties" at the bottom of the file. You can read more about these variables in the next section [**3. Configuration**]({{< ref "3_configuration.md" >}}).
+Copy the `.env.sample` to `.env` and edit these common variables: `DOMAIN_NAME`, `DOMAIN_COMPONENT`, `TLS_EMAIL`, `SECRET_KEY_BASE`, `ADMIN_PASSWORD`, and "Extra properties" at the bottom of the file. You can read more about these variables in the next section [**3. Configuration**]({{< ref "3_configuration.md" >}}). 
+
+After you have configured the `.env` file you will need to setup the configuration files and folder structure. All you have to do is to run the `setup.py` script as root:
+
+```bash
+sudo ./setup.py
+```
 
 

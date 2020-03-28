@@ -3,7 +3,18 @@ title: 4. Deploy
 weight: 40
 ---
 
-After you have configured the environment variables, you can deploy the initial stack. 
+
+### Create configuration files and 
+
+After you have configured the `.env` file you will need to setup the configuration files and folder structure. All you have to do is to run the `setup.py` script as root:
+
+```bash
+sudo ./setup.py
+```
+
+### Docker stacks
+
+After you have configured the environment variables, and have created the data folders, you can deploy the initial stack. 
 
 {{% notice warning %}}
 Don't use `docker-compose up` within the root directory. It will only mess up things. Use the provided `deploy.sh` script instead.

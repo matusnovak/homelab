@@ -51,7 +51,7 @@ Make sure you configure these variables! The default values are only as an examp
 
 #### FILEBROWSER_MEDIA
 
-(example: `/mount/external/share`) The path to to use for FileBrowser. The FileBrowser can be used to upload or download files from this path.
+(example: `/mount/external/share`) The path to to use for FileBrowser. The FileBrowser can be used to upload or download files from this path. Make sure this folder belongs to the user 1000 and group 1000. Running `sudo chown 1000:1000 /mount/external/share` and `sudo chmod 755 /mount/external/share` will do it.
 
 #### CLOUDFLARED_IP
 
