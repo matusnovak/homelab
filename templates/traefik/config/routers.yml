@@ -6,4 +6,4 @@ http:
       middlewares:
         - "httpsredirect"
       rule: "HostRegexp(`{host:.+}`)"
-      service: "noop"
+      service: "noop@internal"
