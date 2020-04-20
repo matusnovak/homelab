@@ -1,8 +1,0 @@
-http:
-  services:
-    noop:
-      loadBalancer:
-        servers:
-          - url: 'http://localhost'
-  
-  
