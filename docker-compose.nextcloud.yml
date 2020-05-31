@@ -24,7 +24,7 @@ services:
       REDIS_HOST: "redis"
       REDIS_HOST_PORT: "6379"
       NEXTCLOUD_HOSTNAME: "nextcloud.${DOMAIN_NAME}"
-      NEXTCLOUD_TRUSTED_DOMAINS: "nextcloud.${DOMAIN_NAME}"
+      NEXTCLOUD_TRUSTED_DOMAINS: "nextcloud.${DOMAIN_NAME} nextcloud"
     labels:
       - "traefik.enable=true"
       - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
