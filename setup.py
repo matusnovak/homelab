@@ -99,7 +99,6 @@ def main():
     copy('traefik/usersfile', env)
     copy('traefik/config/middlewares.yml', env)
     copy('traefik/config/routers.yml', env)
-    copy('traefik/config/services.yml', env)
 
     mkdir('haste')
 
