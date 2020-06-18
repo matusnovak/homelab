@@ -121,7 +121,7 @@ services:
 
   portainer:
     image: "portainer/portainer:${PORTAINER_VERSION}"
-    command: "-H unix:///var/run/docker.sock"
+    command: "-H unix:///var/run/docker.sock --no-analytics"
     restart: "unless-stopped"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
