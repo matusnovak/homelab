@@ -27,20 +27,35 @@ services:
       - "/sys:/host/sys:ro"
       - "/:/rootfs:ro"
 
-  cadvisor:
-    image: "google/cadvisor:${CADVISOR_VERSION}"
+#  cadvisor:
+#    image: "google/cadvisor:${CADVISOR_VERSION}"
+#    volumes:
+#      - "/:/rootfs:ro"
+#      - "/var/run:/var/run:rw"
+#      - "/sys:/sys:ro"
+#      - "/var/lib/docker/:/var/lib/docker:ro"
+#    labels:
+#      - "traefik.enable=true"
+#      - "traefik.http.services.cadvisor.loadbalancer.server.port=8080"
+#      - "traefik.http.routers.cadvisor.rule=Host(`cadvisor.${DOMAIN_NAME}`)"
+#      - "traefik.http.routers.cadvisor.entrypoints=web-secure"
+#      - "traefik.http.routers.cadvisor.tls.certresolver=letsencrypt"
+#      - "traefik.http.routers.cadvisor.middlewares=basicauth@file"
+
+  loki:
+    image: grafana/loki:latest
+    restart: "unless-stopped"
+
+  fluentbit:
+    image: grafana/fluent-bit-plugin-loki:latest
+    restart: "unless-stopped"
+    environment:
+      LOKI_URL: http://loki:3100/loki/api/v1/push
     volumes:
-      - "/:/rootfs:ro"
-      - "/var/run:/var/run:rw"
-      - "/sys:/sys:ro"
-      - "/var/lib/docker/:/var/lib/docker:ro"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.services.cadvisor.loadbalancer.server.port=8080"
-      - "traefik.http.routers.cadvisor.rule=Host(`cadvisor.${DOMAIN_NAME}`)"
-      - "traefik.http.routers.cadvisor.entrypoints=web-secure"
-      - "traefik.http.routers.cadvisor.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.cadvisor.middlewares=basicauth@file"
+      - ./data/fluentbit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+    networks:
+      default:
+        ipv4_address: "172.18.255.2"
 
   alertmanager:
     image: "prom/alertmanager:${ALERTMANAGER_VERSION}"
@@ -88,6 +103,7 @@ services:
       GF_USERS_ALLOW_SIGN_UP: "false"
     volumes:
       - "./data/grafana/data:/var/lib/grafana"
+      - "./data/grafana/dashboards:/var/lib/grafana/dashboards"
       - "./data/grafana/provisioning:/etc/grafana/provisioning"
       - "./data/grafana/config/grafana.ini:/etc/grafana/grafana.ini"
       - "./data/grafana/config/ldap.toml:/etc/grafana/ldap.toml"
@@ -97,3 +113,18 @@ services:
       - "traefik.http.routers.grafana.rule=Host(`grafana.${DOMAIN_NAME}`)"
       - "traefik.http.routers.grafana.entrypoints=web-secure"
       - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
+
+# This is how you create fluentd logging
+#  example:
+#    image: "nginx:${NGINX_VERSION}"
+#    restart: "unless-stopped"
+#    labels:
+#      - "traefik.enable=true"
+#      - "traefik.http.services.example.loadbalancer.server.port=80"
+#      - "traefik.http.routers.example.rule=Host(`example.${DOMAIN_NAME}`)"
+#      - "traefik.http.routers.example.entrypoints=web-secure"
+#      - "traefik.http.routers.example.tls.certresolver=letsencrypt"
+#    logging:
+#      driver: fluentd
+#      options:
+#        fluentd-address: "172.18.255.2:24224"

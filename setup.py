@@ -36,14 +36,17 @@ def get_files(path: str, pattern: str) -> List[str]:
     return glob.iglob(path + pattern, recursive=True)
 
 
-def copy(dst: str, env: dict, uid=UID, gid=UID, mode=0o644) -> str:
+def copy(dst: str, env: dict, uid=UID, gid=UID, mode=0o644, is_template=True) -> str:
     src = os.path.join(ROOT_DIR, 'templates', dst)
     dst = os.path.join(ROOT_DIR, 'data', dst)
     if not os.path.exists(dst):
         with open(src, 'r') as s:
             with open(dst, 'w') as d:
-                t = Template(s.read())
-                d.write(t.substitute(env))
+                if is_template:
+                    t = Template(s.read())
+                    d.write(t.substitute(env))
+                else:
+                    d.write(s.read())
             os.chmod(dst, mode)
             os.chown(dst, uid, gid)
 
@@ -111,8 +114,13 @@ def main():
     copy('alertmanager/config/alertmanager.yml', env)
 
     mkdir('grafana/data')
+    mkdir('grafana/dashboards')
+    mkdir('grafana/provisioning/dashboards')
     mkdir('grafana/provisioning/datasources')
     mkdir('grafana/config')
+    copy('grafana/dashboards/homelab.json', env, is_template=False)
+    copy('grafana/dashboards/logs.json', env, is_template=False)
+    copy('grafana/provisioning/dashboards/all.yml', env)
     copy('grafana/provisioning/datasources/prometheus.yml', env)
     copy('grafana/config/grafana.ini', env)
     copy('grafana/config/ldap.toml', env)
@@ -135,6 +143,13 @@ def main():
     mkdir('drone')
 
     mkdir('artifactory', uid=1030, gid=1030)
+
+    mkdir('jupyterhub')
+    mkdir('jupyterhub/data')
+    copy('jupyterhub/jupyterhub_config.py', env)
+
+    mkdir('fluentbit')
+    copy('fluentbit/fluent-bit.conf', env)
 
 
 if __name__ == '__main__':

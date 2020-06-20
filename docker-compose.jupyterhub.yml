@@ -1,0 +1,18 @@
+version: "3.7"
+networks:
+  default:
+    external:
+      name: "homelab_base_default"
+services:
+  jupyterhub:
+    build: "./containers/jupyterhub-ldap"
+    restart: "unless-stopped"
+    volumes:
+      - "./data/jupyterhub/data:/home"
+      - "./data/jupyterhub/jupyterhub_config.py:/etc/jupyterhub/jupyterhub_config.py"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.jupyterhub.loadbalancer.server.port=8000"
+      - "traefik.http.routers.jupyterhub.rule=Host(`jupyterhub.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.jupyterhub.entrypoints=web-secure"
+      - "traefik.http.routers.jupyterhub.tls.certresolver=letsencrypt"

@@ -1,10 +1,10 @@
 #!/bin/bash
 
-SERVICE="$1"
+STACK="$1"
 
 if [ $# -eq 0 ]; then
     echo "No arguments supplied"
     exit 1
 fi
 
-docker-compose -p homelab_${SERVICE} -f docker-compose.${SERVICE}.yml up -d
+docker-compose -p homelab_${STACK} -f docker-compose.${STACK}.yml up --build -d

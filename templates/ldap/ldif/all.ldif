@@ -65,3 +65,11 @@ cn: artifactory
 objectClass: groupOfUniqueNames
 objectClass: top
 uniqueMember: cn=admin,${DOMAIN_COMPONENT}
+
+# jupyterhub, groups, example.com
+dn: cn=jupyterhub,ou=groups,${DOMAIN_COMPONENT}
+cn: jupyterhub
+objectClass: groupOfUniqueNames
+objectClass: top
+uniqueMember: cn=admin,${DOMAIN_COMPONENT}
+

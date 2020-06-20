@@ -1,0 +1,128 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "$$hashKey": "object:352",
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": 8,
+  "iteration": 1592655076737,
+  "links": [],
+  "panels": [
+    {
+      "datasource": "Loki",
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "repeat": "container",
+      "repeatDirection": "v",
+      "scopedVars": {
+        "container": {
+          "$$hashKey": "object:665",
+          "selected": true,
+          "text": "homelab_base_example_1",
+          "value": "homelab_base_example_1"
+        }
+      },
+      "targets": [
+        {
+          "expr": "{container_name=\"/$container\"}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Container Logs",
+      "transparent": true,
+      "type": "logs"
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 22,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "allValue": null,
+        "current": {
+          "tags": [],
+          "text": "homelab_base_example_1",
+          "value": "homelab_base_example_1"
+        },
+        "datasource": "Loki",
+        "definition": "label_values(container_name)",
+        "hide": 0,
+        "includeAll": false,
+        "index": -1,
+        "label": "Container",
+        "multi": false,
+        "name": "container",
+        "options": [
+          {
+            "$$hashKey": "object:665",
+            "selected": true,
+            "text": "homelab_base_example_1",
+            "value": "homelab_base_example_1"
+          }
+        ],
+        "query": "label_values(container_name)",
+        "refresh": 0,
+        "regex": "/^\\/(.*)$/",
+        "skipUrlSync": false,
+        "sort": 1,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      }
+    ]
+  },
+  "time": {
+    "from": "2020-06-20T02:35:25.693Z",
+    "to": "2020-06-20T14:35:25.693Z"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
+  "timezone": "",
+  "title": "Logs",
+  "uid": "Y2eA0KWGz",
+  "variables": {
+    "list": []
+  },
+  "version": 3
+}
