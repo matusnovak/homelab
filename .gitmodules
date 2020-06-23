@@ -10,3 +10,6 @@
 [submodule "containers/jupyterhub-ldap"]
 	path = containers/jupyterhub-ldap
 	url = https://github.com/matusnovak/jupyterhub-ldap.git
+[submodule "containers/aria2-traefik"]
+	path = containers/aria2-traefik
+	url = https://github.com/m1k1o/aria2-traefik.git
