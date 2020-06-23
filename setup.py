@@ -151,6 +151,8 @@ def main():
     mkdir('fluentbit')
     copy('fluentbit/fluent-bit.conf', env)
 
+    mkdir('aria2/downloads')
+
 
 if __name__ == '__main__':
     main()
