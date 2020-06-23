@@ -4,7 +4,7 @@ networks:
     external:
       name: "homelab_base_default"
 services:
-  artifactory:
+  aria2:
     build: "./containers/aria2-traefik"
     restart: "unless-stopped"
     environment:
