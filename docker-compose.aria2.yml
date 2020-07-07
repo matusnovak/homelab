@@ -1,0 +1,29 @@
+version: "3.7"
+networks:
+  default:
+    external:
+      name: "homelab_base_default"
+services:
+  aria2:
+    build: "./containers/aria2-traefik"
+    restart: "unless-stopped"
+    environment:
+      TZ: "Europe/Bratislava"
+      RPC_PATH: "/jsonrpc"
+      RPC_SECRET: "${ARIA2_SECRET_KEY}"
+    volumes:
+      - "${ARIA2_DATA}:/downloads"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.aria2-webui-frontend.loadbalancer.server.port=8080"
+      - "traefik.http.routers.aria2-webui.rule=Host(`aria2.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.aria2-webui.entrypoints=web-secure"
+      - "traefik.http.routers.aria2-webui.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.aria2-webui.middlewares=basicauth@file"
+      - "traefik.http.routers.aria2-webui.service=aria2-webui-frontend"
+      - "traefik.http.services.aria2-frontend.loadbalancer.server.port=6800"
+      - "traefik.http.routers.aria2.rule=Host(`aria2.${DOMAIN_NAME}`) && Path(`/jsonrpc`)"
+      - "traefik.http.routers.aria2.entrypoints=web-secure"
+      - "traefik.http.routers.aria2.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.aria2.service=aria2-frontend"
+      - "traefik.http.routers.aria2.middlewares=basicauth@file"
