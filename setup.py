@@ -151,6 +151,14 @@ def main():
     mkdir('fluentbit')
     copy('fluentbit/fluent-bit.conf', env)
 
+    mkdir('vpn')
+
+    mkdir('transmission/config')
+    mkdir('transmission/watch')
+
+    mkdir('neko')
+    copy('neko/neko.js', env, is_template=False)
+    copy('neko/policies.json', env, is_template=False)
 
 if __name__ == '__main__':
     main()

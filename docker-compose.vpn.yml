@@ -1,0 +1,74 @@
+version: "3.7"
+networks:
+  default:
+    external:
+      name: "homelab_base_default"
+services:
+  vpn:
+    build: "./containers/ovpn-nodejs"
+    restart: "unless-stopped"
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+    cap_add:
+      - net_admin
+    dns:
+     - 8.8.8.8
+     - 8.8.4.4
+    volumes:
+      - "/dev/net:/dev/net:z"
+      - "./data/vpn:/vpn"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.vpn-frontend.loadbalancer.server.port=80"
+      - "traefik.http.routers.vpn.rule=Host(`vpn.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.vpn.entrypoints=web-secure"
+      - "traefik.http.routers.vpn.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.vpn.middlewares=basicauth@file"
+    command: "80"
+  transmission:
+    image: "linuxserver/transmission:${TRANSMISSION_VERSION}"
+    restart: "unless-stopped"
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TRANSMISSION_WEB_HOME: /kettu/
+    network_mode: "service:vpn"
+    volumes:
+      - "./data/transmission/config:/config"
+      - "./data/transmission/watch:/watch"
+      - "${TRANSMISSION_DOWNLOADS}:/downloads"
+    # External transmission port
+    #ports:
+    #  - 51413:51413
+    #  - 51413:51413/udp
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.transmission-frontend.loadbalancer.server.port=9091"
+      - "traefik.http.routers.transmission.rule=Host(`transmission.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.transmission.entrypoints=web-secure"
+      - "traefik.http.routers.transmission.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.transmission.middlewares=basicauth@file"
+  neko:
+    image: "m1k1o/neko:latest"
+    restart: "unless-stopped"
+    shm_size: "1gb"
+    environment:
+      DISPLAY: ":99.0"
+      NEKO_EPR: "57000-57010"
+      NEKO_PASSWORD_ADMIN: "${ADMIN_PASSWORD}"
+      NEKO_PASSWORD: "${NEKO_PASSWORD}"
+      NEKO_BIND: ":8080"
+      NEKO_SCREEN: "1360x768@60"
+    ports:
+      - "57000-57010:57000-57010/udp"
+    volumes:
+      - "./data/neko/neko.js:/usr/lib/firefox-esr/mozilla.cfg"
+      - "./data/neko/policies.json:/usr/lib/firefox-esr/distribution/policies.json"
+      - "${NEKO_DOWNLOADS}:/home/neko/Downloads/"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.neko-frontend.loadbalancer.server.port=8080"
+      - "traefik.http.routers.neko.rule=Host(`neko.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.neko.entrypoints=web-secure"
+      - "traefik.http.routers.neko.tls.certresolver=letsencrypt"
+
