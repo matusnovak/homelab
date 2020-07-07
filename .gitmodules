@@ -13,3 +13,6 @@
 [submodule "containers/aria2-traefik"]
 	path = containers/aria2-traefik
 	url = https://github.com/m1k1o/aria2-traefik.git
+[submodule "containers/ovpn-nodejs"]
+	path = containers/ovpn-nodejs
+	url = https://github.com/m1k1o/ovpn-nodejs
