@@ -9,7 +9,6 @@ services:
     restart: "unless-stopped"
     environment:
       TZ: "Europe/Bratislava"
-      RPC_PATH: "/jsonrpc"
       RPC_SECRET: "${ARIA2_SECRET_KEY}"
     volumes:
       - "${ARIA2_DATA}:/downloads"
