@@ -49,7 +49,7 @@ services:
       - "traefik.http.routers.transmission.tls.certresolver=letsencrypt"
       - "traefik.http.routers.transmission.middlewares=basicauth@file"
   neko:
-    image: "m1k1o/neko:latest"
+    image: "m1k1o/neko:chromium"
     restart: "unless-stopped"
     shm_size: "1gb"
     environment:
@@ -59,6 +59,8 @@ services:
       NEKO_PASSWORD: "${NEKO_PASSWORD}"
       NEKO_BIND: ":8080"
       NEKO_SCREEN: "1360x768@60"
+    cap_add:
+      - sys_admin
     ports:
       - "57000-57010:57000-57010/udp"
     volumes:
