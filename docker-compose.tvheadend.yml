@@ -1,0 +1,27 @@
+version: "3.7"
+networks:
+  default:
+    external:
+      name: "homelab_base_default"
+services:
+  tvheadend:
+    image: "linuxserver/tvheadend"
+    restart: "unless-stopped"
+    environment:
+      TZ: "Europe/Bratislava"
+      PUID: 0
+      PGID: 0
+    volumes:
+      - "./data/tvheadend/config:/config"
+      - "${TVHEADEND_RECORDINGS}:/recordings"
+    #ports:
+    #  - 9982:9982 # HTSP server port
+    devices:
+      - /dev/dvb:/dev/dvb
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.tvheadend.loadbalancer.server.port=9981"
+      - "traefik.http.routers.tvheadend.rule=Host(`tvheadend.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.tvheadend.entrypoints=web-secure"
+      - "traefik.http.routers.tvheadend.tls.certresolver=letsencrypt"
+
