@@ -160,5 +160,7 @@ def main():
     copy('neko/neko.js', env, is_template=False)
     copy('neko/policies.json', env, is_template=False)
 
+    mkdir('tvheadend/config')
+
 if __name__ == '__main__':
     main()
