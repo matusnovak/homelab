@@ -23,7 +23,7 @@ services:
       - "traefik.http.routers.vpn.rule=Host(`vpn.${DOMAIN_NAME}`)"
       - "traefik.http.routers.vpn.entrypoints=web-secure"
       - "traefik.http.routers.vpn.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.vpn.middlewares=basicauth@file"
+      - "traefik.http.routers.vpn.middlewares=authelia@docker"
     command: "80"
   transmission:
     image: "linuxserver/transmission:${TRANSMISSION_VERSION}"
@@ -47,7 +47,7 @@ services:
       - "traefik.http.routers.transmission.rule=Host(`transmission.${DOMAIN_NAME}`)"
       - "traefik.http.routers.transmission.entrypoints=web-secure"
       - "traefik.http.routers.transmission.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.transmission.middlewares=basicauth@file"
+      - "traefik.http.routers.transmission.middlewares=authelia@docker"
   neko:
     image: "m1k1o/neko:chromium"
     restart: "unless-stopped"

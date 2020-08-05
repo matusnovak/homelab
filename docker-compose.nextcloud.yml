@@ -32,6 +32,7 @@ services:
       - "traefik.http.routers.nextcloud.rule=Host(`nextcloud.${DOMAIN_NAME}`)"
       - "traefik.http.routers.nextcloud.entrypoints=web-secure"
       - "traefik.http.routers.nextcloud.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.nextcloud.middlewares=allowframe@file"
 
   onlyoffice:
     image: "onlyoffice/documentserver:${ONLYOFFICE_VERSION}"
@@ -40,7 +41,7 @@ services:
     tty: true
     environment:
       JWT_ENABLED: "true"
-      JWT_SECRET: "password"
+      JWT_SECRET: "${ONLYOFFICE_JWT_SECRET}"
     volumes:
       - "./data/onlyoffice/data:/var/www/onlyoffice/Data"
       - "./data/onlyoffice/log:/var/log/onlyoffice"

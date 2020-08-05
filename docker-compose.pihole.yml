@@ -21,6 +21,7 @@ services:
       - "53:53/udp"
     environment:
       VIRTUAL_HOST: "pihole.${DOMAIN_NAME}"
+      DNS1: "${CLOUDFLARED_IP}#54"
     volumes:
       - "./data/pihole/data:/etc/pihole"
       - "./data/pihole/dnsmasq:/etc/dnsmasq.d"
@@ -33,3 +34,4 @@ services:
       - "traefik.http.routers.pihole.rule=Host(`pihole.${DOMAIN_NAME}`)"
       - "traefik.http.routers.pihole.entrypoints=web-secure"
       - "traefik.http.routers.pihole.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.pihole.middlewares=allowframe@file"

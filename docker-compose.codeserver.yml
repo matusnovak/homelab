@@ -1,0 +1,25 @@
+version: "3.7"
+networks:
+  default:
+    external:
+      name: "homelab_base_default"
+services:
+  codeserver:
+    image: "linuxserver/code-server:${CODESERVER_VERSION}"
+    restart: "unless-stopped"
+    environment:
+      PUID: "1000"
+      GUID: "1000"
+      TZ: "Europe/London"
+      PROXY_DOMAIN: "codeserver.${DOMAIN_NAME}"
+      SUDO_PASSWORD: "root"
+    volumes:
+      - "${FILEBROWSER_MEDIA}:/files"
+      - "./data/codeserver/config:/config"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.codeserver.loadbalancer.server.port=8443"
+      - "traefik.http.routers.codeserver.rule=Host(`codeserver.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.codeserver.entrypoints=web-secure"
+      - "traefik.http.routers.codeserver.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.codeserver.middlewares=authelia@docker"

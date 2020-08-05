@@ -31,7 +31,56 @@ services:
       - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN_NAME}`)"
       - "traefik.http.routers.traefik.entrypoints=web-secure"
       - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.traefik.middlewares=basicauth@file"
+      - "traefik.http.routers.traefik.middlewares=authelia@docker"
+
+  redis:
+    image: "redis:${REDIS_VERSION}"
+    restart: "unless-stopped"
+
+  postgres:
+    image: "postgres:${POSTGRES_VERSION}"
+    restart: "unless-stopped"
+    environment:
+      POSTGRES_PASSWORD: "${ADMIN_PASSWORD}"
+    volumes:
+      - "./data/postgres/data:/var/lib/postgresql/data"
+      - "./data/postgres/init:/docker-entrypoint-initdb.d"
+
+  mongo:
+    image: "mongo:${MONGO_VERSION}"
+    restart: "unless-stopped"
+    command: "mongod --oplogSize 128 --replSet rs0"
+    volumes:
+      - "./data/mongo/data:/data/db"
+
+  mongo-init-replica:
+    image: "mongo:${MONGO_VERSION}"
+    command: >
+      bash -c
+        "for i in `seq 1 30`; do
+          mongo mongo/rocketchat --eval \"
+            rs.initiate({
+              _id: 'rs0',
+              members: [ { _id: 0, host: 'localhost:27017' } ]})\" &&
+          s=$$? && break || s=$$?;
+          echo \"Tried $$i times. Waiting 5 secs...\";
+          sleep 5;
+        done; (exit $$s)"
+
+  authelia:
+    image: "authelia/authelia:${AUTHELIA_VERSION}"
+    restart: "unless-stopped"
+    volumes:
+      - "./data/authelia:/config"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.authelia.loadbalancer.server.port=9091"
+      - "traefik.http.routers.authelia.rule=Host(`auth.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.authelia.entrypoints=web-secure"
+      - "traefik.http.routers.authelia.tls.certresolver=letsencrypt"
+      - "traefik.http.middlewares.authelia.forwardauth.address=http://authelia:9091/api/verify?rd=https://auth.${DOMAIN_NAME}/"
+      - "traefik.http.middlewares.authelia.forwardauth.trustForwardHeader=true"
+      - "traefik.http.middlewares.authelia.forwardauth.authResponseHeaders=Remote-User, Remote-Groups"
 
   static:
     image: "nginx:${NGINX_VERSION}"
@@ -70,36 +119,7 @@ services:
       - "traefik.http.routers.ldap.rule=Host(`ldap.${DOMAIN_NAME}`)"
       - "traefik.http.routers.ldap.entrypoints=web-secure"
       - "traefik.http.routers.ldap.tls.certresolver=letsencrypt"
-
-  postgres:
-    image: "postgres:${POSTGRES_VERSION}"
-    restart: "unless-stopped"
-    environment:
-      POSTGRES_PASSWORD: "${ADMIN_PASSWORD}"
-    volumes:
-      - "./data/postgres/data:/var/lib/postgresql/data"
-      - "./data/postgres/init:/docker-entrypoint-initdb.d"
-
-  mongo:
-    image: "mongo:${MONGO_VERSION}"
-    restart: "unless-stopped"
-    command: "mongod --oplogSize 128 --replSet rs0"
-    volumes:
-      - "./data/mongo/data:/data/db"
-
-  mongo-init-replica:
-    image: "mongo:${MONGO_VERSION}"
-    command: >
-      bash -c
-        "for i in `seq 1 30`; do
-          mongo mongo/rocketchat --eval \"
-            rs.initiate({
-              _id: 'rs0',
-              members: [ { _id: 0, host: 'localhost:27017' } ]})\" &&
-          s=$$? && break || s=$$?;
-          echo \"Tried $$i times. Waiting 5 secs...\";
-          sleep 5;
-        done; (exit $$s)"
+      - "traefik.http.routers.ldap.middlewares=allowframe@file"
 
   adminer:
     image: "adminer:${ADMINER_VERSION}"
@@ -113,11 +133,7 @@ services:
       - "traefik.http.routers.adminer.rule=Host(`adminer.${DOMAIN_NAME}`)"
       - "traefik.http.routers.adminer.entrypoints=web-secure"
       - "traefik.http.routers.adminer.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.adminer.middlewares=basicauth@file"
-
-  redis:
-    image: "redis:${REDIS_VERSION}"
-    restart: "unless-stopped"
+      - "traefik.http.routers.adminer.middlewares=authelia@docker,allowframe@file"
 
   portainer:
     image: "portainer/portainer:${PORTAINER_VERSION}"

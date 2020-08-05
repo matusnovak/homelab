@@ -16,3 +16,4 @@ services:
       - "traefik.http.routers.jupyterhub.rule=Host(`jupyterhub.${DOMAIN_NAME}`)"
       - "traefik.http.routers.jupyterhub.entrypoints=web-secure"
       - "traefik.http.routers.jupyterhub.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.jupyterhub.middlewares=allowframe@file"

@@ -40,7 +40,7 @@ services:
 #      - "traefik.http.routers.cadvisor.rule=Host(`cadvisor.${DOMAIN_NAME}`)"
 #      - "traefik.http.routers.cadvisor.entrypoints=web-secure"
 #      - "traefik.http.routers.cadvisor.tls.certresolver=letsencrypt"
-#      - "traefik.http.routers.cadvisor.middlewares=basicauth@file"
+#      - "traefik.http.routers.cadvisor.middlewares=authelia@docker,allowframe@file"
 
   loki:
     image: grafana/loki:latest
@@ -72,7 +72,7 @@ services:
       - "traefik.http.routers.alertmanager.rule=Host(`alertmanager.${DOMAIN_NAME}`)"
       - "traefik.http.routers.alertmanager.entrypoints=web-secure"
       - "traefik.http.routers.alertmanager.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.alertmanager.middlewares=basicauth@file"
+      - "traefik.http.routers.alertmanager.middlewares=authelia@docker"
 
   prometheus:
     image: "prom/prometheus:${PROMETHEUS_VERSION}"
@@ -91,7 +91,7 @@ services:
       - "traefik.http.routers.prometheus.rule=Host(`prometheus.${DOMAIN_NAME}`)"
       - "traefik.http.routers.prometheus.entrypoints=web-secure"
       - "traefik.http.routers.prometheus.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.prometheus.middlewares=basicauth@file"
+      - "traefik.http.routers.prometheus.middlewares=authelia@docker"
 
   grafana:
     image: "grafana/grafana:${GRAFANA_VERSION}"
@@ -113,6 +113,7 @@ services:
       - "traefik.http.routers.grafana.rule=Host(`grafana.${DOMAIN_NAME}`)"
       - "traefik.http.routers.grafana.entrypoints=web-secure"
       - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.grafana.middlewares=allowframe@file"
 
 # This is how you create fluentd logging
 #  example:

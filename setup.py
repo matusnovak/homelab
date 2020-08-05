@@ -103,6 +103,9 @@ def main():
     copy('traefik/config/middlewares.yml', env)
     copy('traefik/config/routers.yml', env)
 
+    mkdir('authelia')
+    copy('authelia/configuration.yml', env)
+
     mkdir('haste')
 
     mkdir('prometheus/data')
@@ -161,6 +164,11 @@ def main():
     copy('neko/policies.json', env, is_template=False)
 
     mkdir('tvheadend/config')
+
+    mkdir('codeserver/config')
+
+    mkdir('organizr')
+
 
 if __name__ == '__main__':
     main()

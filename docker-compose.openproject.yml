@@ -18,3 +18,4 @@ services:
       - "traefik.http.routers.openproject.rule=Host(`openproject.${DOMAIN_NAME}`)"
       - "traefik.http.routers.openproject.entrypoints=web-secure"
       - "traefik.http.routers.openproject.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.openproject.middlewares=allowframe@file"
