@@ -13,6 +13,7 @@ services:
       - "./data/nextcloud/apps:/var/www/html/custom_apps"
       - "./data/nextcloud/config:/var/www/html/config"
       - "${NEXTCLOUD_DATA}:/var/www/html/data"
+      - "${NEXTCLOUD_SHARE}:/mnt/share"
       - "./data/nextcloud/theme:/var/www/html/themes/custom"
     environment:
       POSTGRES_DB: "nextcloud"
