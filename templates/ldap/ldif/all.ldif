@@ -17,6 +17,69 @@ gidNumber: 500
 objectClass: posixGroup
 objectClass: top
 
+# traefik, groups, example.com
+dn: cn=traefik,ou=groups,${DOMAIN_COMPONENT}
+cn: traefik
+objectClass: groupOfUniqueNames
+objectClass: top
+uniqueMember: cn=admin,${DOMAIN_COMPONENT}
+
+# adminer, groups, example.com
+dn: cn=adminer,ou=groups,${DOMAIN_COMPONENT}
+cn: adminer
+objectClass: groupOfUniqueNames
+objectClass: top
+uniqueMember: cn=admin,${DOMAIN_COMPONENT}
+
+# cadvisor, groups, example.com
+dn: cn=cadvisor,ou=groups,${DOMAIN_COMPONENT}
+cn: cadvisor
+objectClass: groupOfUniqueNames
+objectClass: top
+uniqueMember: cn=admin,${DOMAIN_COMPONENT}
+
+# alertmanager, groups, example.com
+dn: cn=alertmanager,ou=groups,${DOMAIN_COMPONENT}
+cn: alertmanager
+objectClass: groupOfUniqueNames
+objectClass: top
+uniqueMember: cn=admin,${DOMAIN_COMPONENT}
+
+# prometheus, groups, example.com
+dn: cn=prometheus,ou=groups,${DOMAIN_COMPONENT}
+cn: prometheus
+objectClass: groupOfUniqueNames
+objectClass: top
+uniqueMember: cn=admin,${DOMAIN_COMPONENT}
+
+# codeserver, groups, example.com
+dn: cn=codeserver,ou=groups,${DOMAIN_COMPONENT}
+cn: codeserver
+objectClass: groupOfUniqueNames
+objectClass: top
+uniqueMember: cn=admin,${DOMAIN_COMPONENT}
+
+# aria2, groups, example.com
+dn: cn=aria2,ou=groups,${DOMAIN_COMPONENT}
+cn: aria2
+objectClass: groupOfUniqueNames
+objectClass: top
+uniqueMember: cn=admin,${DOMAIN_COMPONENT}
+
+# vpn, groups, example.com
+dn: cn=vpn,ou=groups,${DOMAIN_COMPONENT}
+cn: vpn
+objectClass: groupOfUniqueNames
+objectClass: top
+uniqueMember: cn=admin,${DOMAIN_COMPONENT}
+
+# transmission, groups, example.com
+dn: cn=transmission,ou=groups,${DOMAIN_COMPONENT}
+cn: transmission
+objectClass: groupOfUniqueNames
+objectClass: top
+uniqueMember: cn=admin,${DOMAIN_COMPONENT}
+
 # portainer, groups, example.com
 dn: cn=portainer,ou=groups,${DOMAIN_COMPONENT}
 cn: portainer

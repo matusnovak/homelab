@@ -15,3 +15,4 @@ services:
       - "traefik.http.routers.artifactory.rule=Host(`artifactory.${DOMAIN_NAME}`)"
       - "traefik.http.routers.artifactory.entrypoints=web-secure"
       - "traefik.http.routers.artifactory.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.artifactory.middlewares=allowframe@file"

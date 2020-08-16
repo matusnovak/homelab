@@ -8,3 +8,9 @@ http:
       redirectScheme:
         scheme: https
         permanent: true
+    
+    allowframe:
+      headers:
+        customResponseHeaders:
+          x-frame-options: "allow-from https://${DOMAIN_NAME}/"
+        contentSecurityPolicy: "upgrade-insecure-requests, frame-ancestors 'self' *.${DOMAIN_NAME} ${DOMAIN_NAME}"

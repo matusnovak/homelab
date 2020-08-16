@@ -38,3 +38,4 @@ services:
       - "traefik.http.routers.gitea.rule=Host(`gitea.${DOMAIN_NAME}`)"
       - "traefik.http.routers.gitea.entrypoints=web-secure"
       - "traefik.http.routers.gitea.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.gitea.middlewares=allowframe@file"

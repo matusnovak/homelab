@@ -22,6 +22,7 @@ services:
       - "traefik.http.routers.drone.rule=Host(`drone.${DOMAIN_NAME}`)"
       - "traefik.http.routers.drone.entrypoints=web-secure"
       - "traefik.http.routers.drone.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.drone.middlewares=allowframe@file"
 
   drone-runner:
     image: "drone/drone-runner-docker:${DRONE_RUNNER_VERSION}"
