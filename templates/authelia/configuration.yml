@@ -64,10 +64,6 @@ access_control:
     - domain: vpn.${DOMAIN_NAME}
       subject: 'group:vpn'
       policy: one_factor
-    # Neko
-    - domain: neko.${DOMAIN_NAME}
-      subject: 'group:neko'
-      policy: one_factor
     # Transmission
     - domain: transmission.${DOMAIN_NAME}
       subject: 'group:transmission'
