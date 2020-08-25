@@ -34,7 +34,7 @@ access_control:
 
   rules:
     # Organizr
-    - domain: ${DOMAIN_NAME}
+    - domain: home.${DOMAIN_NAME}
       policy: one_factor
     # Traefik
     - domain: traefik.${DOMAIN_NAME}
