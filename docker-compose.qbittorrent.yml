@@ -6,7 +6,7 @@ networks:
       name: "homelab_base_default"
 services:
   qbittorrent:
-    image: "markusmcnugen/qbittorrentvpn:latest"
+    image: "markusmcnugen/qbittorrentvpn:${QBITTORRENT_VERSION}"
     restart: "unless-stopped"
     privileged: true
     environment:
