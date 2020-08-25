@@ -1,12 +1,6 @@
 [submodule "docs/themes/hugo-theme-learn"]
 	path = docs/themes/hugo-theme-learn
 	url = https://github.com/matcornic/hugo-theme-learn
-[submodule "optional/prometheus-smartctl"]
-	path = optional/prometheus-smartctl
-	url = https://github.com/matusnovak/prometheus-smartctl.git
-[submodule "optional/prometheus-zfs"]
-	path = optional/prometheus-zfs
-	url = https://github.com/matusnovak/prometheus-zfs.git
 [submodule "containers/jupyterhub-ldap"]
 	path = containers/jupyterhub-ldap
 	url = https://github.com/matusnovak/jupyterhub-ldap.git
