@@ -1,0 +1,22 @@
+version: "3.7"
+networks:
+  default:
+    external:
+      name: "homelab_base_default"
+services:
+  miniflux:
+    image: "miniflux/miniflux:${MINIFLUX_VERSION}"
+    restart: "unless-stopped"
+    environment:
+      RUN_MIGRATIONS: "1"
+      CREATE_ADMIN: "1"
+      ADMIN_USERNAME: "admin"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD}"
+      DATABASE_URL: "postgres://miniflux:${ADMIN_PASSWORD}@postgres:5432/miniflux?sslmode=disable"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.miniflux.loadbalancer.server.port=8080"
+      - "traefik.http.routers.miniflux.rule=Host(`miniflux.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.miniflux.entrypoints=web-secure"
+      - "traefik.http.routers.miniflux.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.miniflux.middlewares=allowframe@file"
