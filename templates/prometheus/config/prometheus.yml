@@ -26,11 +26,11 @@ scrape_configs:
 #  - job_name: 'zfs'
 #    scrape_interval: 60s
 #    static_configs:
-#      - targets: ['dockerhost:9901']
+#      - targets: ['zfsprom:9901']
 #  - job_name: 'smart'
 #    scrape_interval: 30s
 #    static_configs:
-#      - targets: ['dockerhost:9902']
+#      - targets: ['smartprom:9902']
 rule_files:
   - 'alerts.yml'
 alerting:
