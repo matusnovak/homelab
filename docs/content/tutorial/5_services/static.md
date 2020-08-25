@@ -1,6 +1,0 @@
----
-title: Static (Nginx)
----
-
-TODO
-

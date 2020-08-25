@@ -1,6 +1,0 @@
----
-title: Hastebin
----
-
-TODO
-
