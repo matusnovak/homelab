@@ -33,27 +33,42 @@ access_control:
   default_policy: deny
 
   rules:
+    # Organizr
+    - domain: ${DOMAIN_NAME}
+      policy: one_factor
+    # Traefik
     - domain: traefik.${DOMAIN_NAME}
       subject: 'group:traefik'
       policy: one_factor
+    # Adminer
     - domain: adminer.${DOMAIN_NAME}
       subject: 'group:adminer'
       policy: one_factor
+    # CodeServer
     - domain: codeserver.${DOMAIN_NAME}
       subject: 'group:codeserver'
       policy: one_factor
+    # Aria2
     - domain: aria2.${DOMAIN_NAME}
       subject: 'group:aria2'
       policy: one_factor
+    # cAdvisor
     - domain: cadvisor.${DOMAIN_NAME}
       subject: 'group:cadvisor'
       policy: one_factor
+    # AlertManager
     - domain: alertmanager.${DOMAIN_NAME}
       subject: 'group:alertmanager'
       policy: one_factor
+    # Vpn
     - domain: vpn.${DOMAIN_NAME}
       subject: 'group:vpn'
       policy: one_factor
+    # Neko
+    - domain: neko.${DOMAIN_NAME}
+      subject: 'group:neko'
+      policy: one_factor
+    # Transmission
     - domain: transmission.${DOMAIN_NAME}
       subject: 'group:transmission'
       policy: one_factor

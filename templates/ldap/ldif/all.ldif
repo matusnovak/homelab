@@ -73,6 +73,13 @@ objectClass: groupOfUniqueNames
 objectClass: top
 uniqueMember: cn=admin,${DOMAIN_COMPONENT}
 
+# neko, groups, example.com
+dn: cn=neko,ou=groups,${DOMAIN_COMPONENT}
+cn: neko
+objectClass: groupOfUniqueNames
+objectClass: top
+uniqueMember: cn=admin,${DOMAIN_COMPONENT}
+
 # transmission, groups, example.com
 dn: cn=transmission,ou=groups,${DOMAIN_COMPONENT}
 cn: transmission
