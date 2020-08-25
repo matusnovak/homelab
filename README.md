@@ -4,7 +4,7 @@ This is a partially pre-configured Homelab via Docker Compose. All you have to d
 
 ## Documentation
 
-All of the documentation is stored in the [**docs folder**](docs/README.md). Please note that this is a work in progress documentation. 
+Documentation is available on the [Wiki](https://github.com/matusnovak/homelab/wiki) of this repository.
 
 ## Contributing
 
