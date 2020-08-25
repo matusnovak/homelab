@@ -22,12 +22,10 @@ services:
     environment:
       VIRTUAL_HOST: "pihole.${DOMAIN_NAME}"
       DNS1: "${CLOUDFLARED_IP}#54"
+      WEBPASSWORD: "${ADMIN_PASSWORD}"
     volumes:
       - "./data/pihole/data:/etc/pihole"
       - "./data/pihole/dnsmasq:/etc/dnsmasq.d"
-    dns:
-      - "127.0.0.1"
-      - "1.1.1.1"
     labels:
       - "traefik.enable=true"
       - "traefik.http.services.pihole.loadbalancer.server.port=80"
