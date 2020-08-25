@@ -1,0 +1,33 @@
+
+version: "3.7"
+networks:
+  default:
+    external:
+      name: "homelab_base_default"
+services:
+  qbittorrent:
+    image: "markusmcnugen/qbittorrentvpn:latest"
+    restart: "unless-stopped"
+    privileged: true
+    environment:
+      PUID: "1000"
+      PGID: "117"
+      UMASK: "002"
+      LAN_NETWORK: "172.18.0.0/16"
+      NAME_SERVERS: "1.1.1.1,8.8.8.8"
+      TZ: "Europe/London"
+      VPN_ENABLED: "yes"
+      WEBUI_PORT_ENV: "8080"
+      VPN_USERNAME: "${QBITTORRENT_VPN_USERNAME}"
+      VPN_PASSWORD: "${QBITTORRENT_VPN_PASSWORD}"
+    volumes:
+      - "./data/qbittorrent/downloads:/downloads-temp"
+      - "./data/qbittorrent/config:/config"
+      - "${QBITTORRENT_DOWNLOADS}:/downloads"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.qbittorrent.loadbalancer.server.port=8080"
+      - "traefik.http.routers.qbittorrent.rule=Host(`qbittorrent.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.qbittorrent.entrypoints=web-secure"
+      - "traefik.http.routers.qbittorrent.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.qbittorrent.middlewares=authelia@docker,allowframe@file"
