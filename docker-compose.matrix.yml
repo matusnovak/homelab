@@ -1,0 +1,104 @@
+version: "3.7"
+networks:
+  default:
+    external:
+      name: "homelab_base_default"
+
+services:
+  synapse:
+    image: "matrixdotorg/synapse:${MATRIX_SYNAPSE_VERSION}"
+    restart: "unless-stopped"
+    environment:
+      SYNAPSE_CONFIG_DIR: "/data"
+      SYNAPSE_CONFIG_PATH: "/data/homeserver.yaml"
+      UID: "1000"
+      GID: "1000"
+      TZ: "Europe/London"
+    volumes:
+      - "./data/matrix/synapse:/data"
+      - "./data/matrix/hangouts:/bridges/hangouts"
+      - "./data/matrix/discord:/bridges/discord"
+      - "./data/matrix/facebook:/bridges/facebook"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.synapse.loadbalancer.server.port=8008"
+      - "traefik.http.routers.synapse.rule=Host(`synapse.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.synapse.entrypoints=web-secure"
+      - "traefik.http.routers.synapse.tls.certresolver=letsencrypt"
+
+  nginx:
+    image: "nginx:${MATRIX_NGINX_VERSION}"
+    restart: "unless-stopped"
+    volumes:
+      - "./data/matrix/nginx/matrix.conf:/etc/nginx/conf.d/matrix.conf"
+      - ./data/matrix/nginx/www:/var/www/
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.matrix.loadbalancer.server.port=80"
+      - "traefik.http.routers.matrix.rule=Host(`matrix.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.matrix.entrypoints=web-secure"
+      - "traefik.http.routers.matrix.tls.certresolver=letsencrypt"
+
+  riot:
+    image: "bubuntux/riot-web:${MATRIX_RIOT_VERSION}"
+    restart: "unless-stopped"
+    volumes:
+      - "./data/matrix/riot/config.json:/etc/riot-web/config.json:ro"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.riot.loadbalancer.server.port=80"
+      - "traefik.http.routers.riot.rule=Host(`riot.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.riot.entrypoints=web-secure"
+      - "traefik.http.routers.riot.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.riot.middlewares=allowframe@file"
+      
+  coturn:
+    image: "instrumentisto/coturn:${MATRIX_COTURN_VERSION}"
+    restart: "unless-stopped"
+    volumes:
+      - "./data/matrix/coturn/turnserver.conf:/etc/coturn/turnserver.conf"
+    ports:
+      - "49160-49200:49160-49200/udp"
+      - "3478:3478"
+      - "5349:5349"
+  
+# Optional Hangouts bridge!
+# TODO!
+# Warning! Not well tested and needs additional work (should allow Traefik in here?)
+#  hangouts:
+#    image: "dock.mau.dev/tulir/mautrix-hangouts:latest"
+#    restart: "unless-stopped"
+#    volumes:
+#      - "./data/matrix/hangouts:/data:z"
+#    labels:
+#      - "traefik.enable=true"
+#      - "traefik.http.services.hangouts.loadbalancer.server.port=29320"
+#      - "traefik.http.routers.hangouts.rule=Host(`hangouts.${DOMAIN_NAME}`)"
+#      - "traefik.http.routers.hangouts.entrypoints=web-secure"
+#      - "traefik.http.routers.hangouts.tls.certresolver=letsencrypt"
+#      - "traefik.http.routers.hangouts.middlewares=allowframe@file"
+
+# Optional Discord bridge!
+# TODO!
+#  discord:
+#    image: "transcaffeine/mx-puppet-discord:latest"
+#    restart: "unless-stopped"
+#    volumes:
+#      - "./data/matrix/discord:/data:z"
+
+# Optional Facebook Messenger bridge!
+# TODO!
+# Warning! Not well tested and needs additional work (should allow Traefik in here?)
+#  facebook:
+#    image: "dock.mau.dev/tulir/mautrix-facebook:latest"
+#    restart: "unless-stopped"
+#    volumes:
+#      - "./data/matrix/facebook:/data:z"
+#    labels:
+#      - "traefik.enable=true"
+#      - "traefik.http.services.facebook.loadbalancer.server.port=29319"
+#      - "traefik.http.routers.facebook.rule=Host(`facebook.${DOMAIN_NAME}`)"
+#      - "traefik.http.routers.facebook.entrypoints=web-secure"
+#      - "traefik.http.routers.facebook.tls.certresolver=letsencrypt"
+#      - "traefik.http.routers.facebook.middlewares=allowframe@file"
+
