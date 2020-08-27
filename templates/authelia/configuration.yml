@@ -60,6 +60,10 @@ access_control:
     - domain: alertmanager.${DOMAIN_NAME}
       subject: 'group:alertmanager'
       policy: one_factor
+    # Prometheus
+    - domain: prometheus.${DOMAIN_NAME}
+      subject: 'group:prometheus'
+      policy: one_factor
     # Vpn
     - domain: vpn.${DOMAIN_NAME}
       subject: 'group:vpn'
