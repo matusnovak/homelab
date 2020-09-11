@@ -5,23 +5,37 @@ networks:
     external:
       name: "homelab_base_default"
 services:
+  openvpn:
+    image: "dperson/openvpn-client"
+    restart: "unless-stopped"
+    environment:
+      TZ: "Europe/London"
+      VPN_AUTH: "${QBITTORRENT_VPN_USERNAME};${QBITTORRENT_VPN_PASSWORD}"
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+    cap_add:
+      - net_admin
+    read_only: true
+    tmpfs:
+      - /run
+      - /tmp
+    security_opt:
+      - label:disable
+    volumes:
+      - "./data/qbittorrent/openvpn:/vpn"
+      - "/dev/net:/dev/net:z"
   qbittorrent:
-    image: "markusmcnugen/qbittorrentvpn:${QBITTORRENT_VERSION}"
+    image: "linuxserver/qbittorrent:${QBITTORRENT_VERSION}"
     restart: "unless-stopped"
     privileged: true
     environment:
       PUID: "1000"
       PGID: "117"
-      UMASK: "002"
-      LAN_NETWORK: "172.18.0.0/16"
-      NAME_SERVERS: "1.1.1.1,8.8.8.8"
+      UMASK_SET: "002"
       TZ: "Europe/London"
-      VPN_ENABLED: "yes"
-      WEBUI_PORT_ENV: "8080"
-      VPN_USERNAME: "${QBITTORRENT_VPN_USERNAME}"
-      VPN_PASSWORD: "${QBITTORRENT_VPN_PASSWORD}"
+      WEBUI_PORT: "8080"
+    network_mode: "service:openvpn"
     volumes:
-      - "./data/qbittorrent/downloads:/downloads-temp"
       - "./data/qbittorrent/config:/config"
       - "${QBITTORRENT_DOWNLOADS}:/downloads"
     labels:
