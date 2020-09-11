@@ -8,7 +8,8 @@ services:
     image: "visibilityspots/cloudflared"
     restart: "unless-stopped"
     ports:
-      - 54:54/udp
+      - 5054:5054/udp
+      - 5054:5054/tcp
     networks:
       default:
         ipv4_address: "${CLOUDFLARED_IP}"
@@ -21,7 +22,7 @@ services:
       - "53:53/udp"
     environment:
       VIRTUAL_HOST: "pihole.${DOMAIN_NAME}"
-      DNS1: "${CLOUDFLARED_IP}#54"
+      DNS1: "${CLOUDFLARED_IP}#5054"
       WEBPASSWORD: "${ADMIN_PASSWORD}"
     volumes:
       - "./data/pihole/data:/etc/pihole"
