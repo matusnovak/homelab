@@ -158,6 +158,7 @@ def main():
 
     mkdir('transmission/config')
     mkdir('transmission/watch')
+    copy('transmission/config/settings.json', env)
 
     mkdir('neko')
     copy('neko/neko.js', env, is_template=False)
