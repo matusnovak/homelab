@@ -14,7 +14,6 @@ services:
       PROXY_DOMAIN: "codeserver.${DOMAIN_NAME}"
       SUDO_PASSWORD: "root"
     volumes:
-      - "${FILEBROWSER_MEDIA}:/files"
       - "./data/codeserver/config:/config"
     labels:
       - "traefik.enable=true"
