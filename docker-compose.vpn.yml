@@ -31,7 +31,6 @@ services:
     environment:
       PUID: 1000
       PGID: 1000
-      TRANSMISSION_WEB_HOME: /kettu/
     network_mode: "service:vpn"
     volumes:
       - "./data/transmission/config:/config"
