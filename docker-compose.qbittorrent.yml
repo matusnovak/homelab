@@ -1,0 +1,47 @@
+
+version: "3.7"
+networks:
+  default:
+    external:
+      name: "homelab_base_default"
+services:
+  openvpn:
+    image: "dperson/openvpn-client"
+    restart: "unless-stopped"
+    environment:
+      TZ: "Europe/London"
+      VPN_AUTH: "${QBITTORRENT_VPN_USERNAME};${QBITTORRENT_VPN_PASSWORD}"
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+    cap_add:
+      - net_admin
+    read_only: true
+    tmpfs:
+      - /run
+      - /tmp
+    security_opt:
+      - label:disable
+    volumes:
+      - "./data/qbittorrent/openvpn:/vpn"
+      - "/dev/net:/dev/net:z"
+  qbittorrent:
+    image: "linuxserver/qbittorrent:${QBITTORRENT_VERSION}"
+    restart: "unless-stopped"
+    privileged: true
+    environment:
+      PUID: "1000"
+      PGID: "117"
+      UMASK_SET: "002"
+      TZ: "Europe/London"
+      WEBUI_PORT: "8080"
+    network_mode: "service:openvpn"
+    volumes:
+      - "./data/qbittorrent/config:/config"
+      - "${QBITTORRENT_DOWNLOADS}:/downloads"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.qbittorrent.loadbalancer.server.port=8080"
+      - "traefik.http.routers.qbittorrent.rule=Host(`qbittorrent.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.qbittorrent.entrypoints=web-secure"
+      - "traefik.http.routers.qbittorrent.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.qbittorrent.middlewares=authelia@docker,allowframe@file"

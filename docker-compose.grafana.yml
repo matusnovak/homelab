@@ -114,6 +114,18 @@ services:
       - "traefik.http.routers.grafana.entrypoints=web-secure"
       - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
       - "traefik.http.routers.grafana.middlewares=allowframe@file"
+  
+# Optional ZFS metrics for Prometheus
+#  zfsprom:
+#    image: matusnovak/prometheus-zfs:latest
+#    restart: unless-stopped
+#    privileged: true
+
+# Optional S.M.A.R.T metrics for Prometheus
+#  smartprom:
+#    image: matusnovak/prometheus-smartctl:latest
+#    restart: unless-stopped
+#    privileged: true
 
 # This is how you create fluentd logging
 #  example:

@@ -1,6 +1,0 @@
----
-title: OpenLDAP
----
-
-TODO
-

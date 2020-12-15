@@ -1,6 +1,0 @@
----
-title: Grafana + Prometheus
----
-
-TODO
-

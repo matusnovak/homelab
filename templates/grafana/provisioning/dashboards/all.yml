@@ -6,6 +6,7 @@ providers:
   folder: ''
   type: 'file'
   disableDeletion: false
+  editable: true
   updateIntervalSeconds: 60
   options:
     folder: '/var/lib/grafana/dashboards'

@@ -1,6 +1,0 @@
----
-title: Artifactory
----
-
-TODO
-
