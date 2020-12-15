@@ -102,6 +102,7 @@ def main():
     copy('traefik/usersfile', env)
     copy('traefik/config/middlewares.yml', env)
     copy('traefik/config/routers.yml', env)
+    copy('traefik/config/tls.yml', env, is_template=False)
 
     mkdir('authelia')
     copy('authelia/configuration.yml', env)
