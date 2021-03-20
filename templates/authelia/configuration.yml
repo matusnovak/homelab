@@ -36,6 +36,10 @@ access_control:
     # Organizr
     - domain: home.${DOMAIN_NAME}
       policy: one_factor
+    # Portainer
+    - domain: portainer.${DOMAIN_NAME}
+      subject: 'group:portainer'
+      policy: one_factor
     # Traefik
     - domain: traefik.${DOMAIN_NAME}
       subject: 'group:traefik'

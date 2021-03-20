@@ -137,7 +137,7 @@ services:
 
   portainer:
     image: "portainer/portainer:${PORTAINER_VERSION}"
-    command: "-H unix:///var/run/docker.sock --no-analytics"
+    command: "-H unix:///var/run/docker.sock --no-auth --no-analytics"
     restart: "unless-stopped"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
@@ -148,3 +148,4 @@ services:
       - "traefik.http.routers.portainer.rule=Host(`portainer.${DOMAIN_NAME}`)"
       - "traefik.http.routers.portainer.entrypoints=web-secure"
       - "traefik.http.routers.portainer.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.portainer.middlewares=authelia@docker,allowframe@file"
