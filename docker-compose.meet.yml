@@ -1,0 +1,27 @@
+version: "3.7"
+
+networks:
+  default:
+    external: true
+    name: "homelab_base_default"
+
+services:
+  neko-rooms:
+    image: "m1k1o/neko-rooms:latest"
+    restart: "unless-stopped"
+    environment:
+      - "TZ=Europe/Vienna"
+      - "NEKO_ROOMS_EPR=57010-57099"
+      - "NEKO_ROOMS_TRAEFIK_DOMAIN=meet.${DOMAIN_NAME}"
+      - "NEKO_ROOMS_TRAEFIK_ENTRYPOINT=web-secure"
+      - "NEKO_ROOMS_TRAEFIK_CERTRESOLVER=letsencrypt"
+      - "NEKO_ROOMS_TRAEFIK_NETWORK=homelab_base_default"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.neko-rooms-frontend.loadbalancer.server.port=8080"
+      - "traefik.http.routers.neko-rooms.rule=Host(`meet.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.neko-rooms.entrypoints=web-secure"
+      - "traefik.http.routers.neko-rooms.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.neko-rooms.middlewares=authelia@docker"
