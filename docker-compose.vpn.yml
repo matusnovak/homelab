@@ -24,7 +24,7 @@ services:
       - "traefik.http.routers.vpn.entrypoints=web-secure"
       - "traefik.http.routers.vpn.tls.certresolver=letsencrypt"
       - "traefik.http.routers.vpn.middlewares=authelia@docker"
-    command: "80"
+    command: "80 ${VPN_DEFAULT}"
   transmission:
     image: "linuxserver/transmission:${TRANSMISSION_VERSION}"
     restart: "unless-stopped"
@@ -52,16 +52,14 @@ services:
     restart: "unless-stopped"
     shm_size: "1gb"
     environment:
-      DISPLAY: ":99.0"
-      NEKO_EPR: "57000-57010"
+      NEKO_EPR: "57000-57009"
       NEKO_PASSWORD_ADMIN: "${ADMIN_PASSWORD}"
       NEKO_PASSWORD: "${NEKO_PASSWORD}"
-      NEKO_BIND: ":8080"
       NEKO_SCREEN: "1360x768@60"
     cap_add:
       - sys_admin
     ports:
-      - "57000-57010:57000-57010/udp"
+      - "57000-57009:57000-57009/udp"
     volumes:
       - "./data/neko/neko.js:/usr/lib/firefox-esr/mozilla.cfg"
       - "./data/neko/policies.json:/usr/lib/firefox-esr/distribution/policies.json"
