@@ -1,0 +1,19 @@
+---
+traefik:
+  https:
+    enabled: true
+    port: 4430
+  http: 
+    enabled: true
+    port: 8080
+  dashboard:
+    enabled: true
+    authelia: false
+  acme:
+    enabled: false
+    email: 'email@example.com'
+  metrics:
+    enabled: true
+  middlewares:
+    https_redirect: true
+    allow_frame: true

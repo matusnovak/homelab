@@ -1,0 +1,11 @@
+http:
+  {% if traefik.middlewares.https_redirect -%}
+  routers:
+    redirecttohttps:
+      entryPoints:
+        - "web"
+      middlewares:
+        - "httpsredirect"
+      rule: "HostRegexp(`{host:.+}`)"
+      service: "noop"
+  {% endif %}

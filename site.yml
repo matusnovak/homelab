@@ -1,0 +1,4 @@
+---
+- hosts: homelab
+  roles:
+    - traefik

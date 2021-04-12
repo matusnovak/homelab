@@ -1,0 +1,46 @@
+entryPoints:
+{% if traefik.http.enabled %}
+  web:
+    address: ":80"
+{% endif %}{% if traefik.https.enabled %}
+  web-secure:
+    address: ":443"
+{% endif %}
+
+{% if traefik.dashboard.enabled %}
+api:
+  dashboard: true
+  insecure: true
+{% endif %}
+
+providers:
+  file:
+    directory: "/config"
+    watch: true
+  docker:
+    endpoint: "{{docker.host}}"
+    network: "{{docker_network.name}}"
+    watch: true
+    exposedByDefault: false
+    constraints: Label(`com.docker.compose.project`,`{{base.name}}`)
+
+{% if traefik.acme.enabled %}
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: "{{traefik.acme.email}}"
+      storage: "/acme.json"
+      httpChallenge:
+        entryPoint: "web"
+{% endif %}
+
+{% if traefik.metrics.enabled %}
+metrics:
+  prometheus:
+    entryPoint: "traefik"
+    buckets:
+      - 0.1
+      - 0.3
+      - 1.2
+      - 5.0
+{%- endif %}

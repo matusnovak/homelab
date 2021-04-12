@@ -1,0 +1,6 @@
+---
+base:
+  destination: '/var/lib/homelab-ansible/temp'
+  name: 'example'
+  hostname: 'example.com'
+  registry: 'docker.io'

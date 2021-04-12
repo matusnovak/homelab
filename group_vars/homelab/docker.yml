@@ -1,0 +1,6 @@
+---
+docker:
+  host: 'unix://var/run/docker.sock'
+  tls_verify: False
+  cert_path: ''
+

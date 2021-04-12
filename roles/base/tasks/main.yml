@@ -1,0 +1,19 @@
+---
+- name: 'Install python dependencies'
+  pip:
+    name: ['docker']
+    state: 'latest'
+
+- name: 'Create shared docker network'
+  docker_network:
+    host: '{{docker.host}}'
+    project: '{{base.name}}'
+    network:
+      name: 'default'
+      attachable: true
+  register: 'docker_network'
+
+- name: Collect only facts returned by facter
+  ansible.builtin.debug:
+    msg: 'Docker host: {{docker.host}} network: {{docker_network.subnet}}'
+
