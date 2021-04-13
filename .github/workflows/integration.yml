@@ -18,6 +18,4 @@ jobs:
 
       - name: Ansible
         run: |
-          sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1
-          python --version
           ansible-playbook integration.yml -v

@@ -4,10 +4,10 @@
   file:
     path: "{{ data_dir }}/data/postgres/{{item}}"
     state: directory
-    mode: 0755
-    owner: root
-    group: root
-    recurse: yes
+    mode: 0700
+    owner: "999"
+    group: "0"
+    recurse: false
   loop:
     - "data"
 
@@ -25,4 +25,7 @@
         - host: "{{ data_dir }}/data/postgres/data"
           guest: "/var/lib/postgresql/data"
           read_only: false
+      environment:
+        - key: "POSTGRES_PASSWORD"
+          value: "{{ passwords.postgres_admin }}"
   register: postgres_container

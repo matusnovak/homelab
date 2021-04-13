@@ -3,6 +3,7 @@ from ansible.module_utils.basic import AnsibleModule
 from docker.client import DockerClient
 from docker.tls import TLSConfig
 from docker.errors import NotFound
+import copy
 
 DOCKER_PROJECT_LABEL = 'com.docker.compose.project'
 
@@ -10,6 +11,24 @@ DOCKER_PROJECT_LABEL = 'com.docker.compose.project'
 def pull_image(docker: DockerClient, name: str):
     tokens = name.split(':')
     docker.images.pull(tokens[0], tokens[1])
+
+
+def get_image(docker: DockerClient, name: str):
+    try:
+        return docker.images.get(name)
+    except NotFound:
+        return None
+
+
+def add_image_env_vars(image, definition):
+    envs = image.attrs['Config']['Env']
+    for env in envs:
+        tokens = env.split('=', maxsplit=2)
+        key = tokens[0].strip()
+        value = tokens[1].strip()
+
+        if key not in definition['environment']:
+            definition['environment'][key] = value
 
 
 def create_definition(params: dict, name: str):
@@ -25,6 +44,8 @@ def create_definition(params: dict, name: str):
             DOCKER_PROJECT_LABEL: params['project']
         },
         'volumes': {
+        },
+        'environment': {
         }
     }
 
@@ -51,6 +72,13 @@ def create_definition(params: dict, name: str):
         key = label['key']
         definition['labels'][key] = label['value']
 
+    for environment in params['container']['environment']:
+        if not environment['key'] or not environment['value']:
+            continue
+
+        key = environment['key']
+        definition['environment'][key] = environment['value']
+
     for volume in params['container']['volumes']:
         if not volume['host'] or not volume['guest']:
             continue
@@ -76,6 +104,7 @@ def create_definition_existing(container):
     definition['ports'] = {}
     definition['labels'] = {}
     definition['volumes'] = {}
+    definition['environment'] = {}
 
     # network = attrs['NetworkSettings']['Networks'][network_name] \
     #    if network_name in attrs['NetworkSettings']['Networks'] else None
@@ -108,6 +137,11 @@ def create_definition_existing(container):
             continue
 
         definition['labels'][key] = value
+
+    for env in attrs['Config']['Env']:
+        tokens = env.split('=', maxsplit=2)
+        key = tokens[0].strip()
+        definition['environment'][key] = tokens[1].strip()
 
     for mount in attrs['Mounts']:
         key = mount['Source']
@@ -165,6 +199,7 @@ def deploy(docker: DockerClient, definition: dict):
         'name': definition['name'],
         'hostname': definition['hostname'],
         'labels': definition['labels'],
+        'environment': definition['environment'],
         'volumes': volumes,
         'ports': ports,
         'host_config': docker.api.create_host_config(**host_config),
@@ -242,6 +277,11 @@ def main():
                     'type': 'list',
                     'required': False,
                     'default': []
+                },
+                'environment': {
+                    'type': 'list',
+                    'required': False,
+                    'default': []
                 }
             }
         }
@@ -278,15 +318,31 @@ def main():
     if container is not None:
         existing_def = create_definition_existing(container)
 
+        # The definition from the existing container will contain environment
+        # variables that were not defined by the user. These come automatically from
+        # the image itself. The definition we have created in here will not
+        # contain those variables. We will have to add them, but only if missing, from
+        # the image. We will also need to make a copy of the definition, because
+        # we do not want to create a container with those default environment variables.
+        # If we would do that, they would be persistent, and if they change in a new image,
+        # we would be still using the old ones. The original definition must not contain these
+        # unless explicitly provided in the params from the role/user.
+        copied_def = copy.deepcopy(definition)
+
+        image = get_image(docker, definition['image'])
+
+        # Add env variables from image into the copied definition, if they are missing
+        add_image_env_vars(image, copied_def)
+
         # Are they same?
-        if existing_def != definition:
+        if existing_def != copied_def:
             # We will have to re-create the container
             if module.check_mode:
                 module.exit_json(changed=changed, msg='Re-creating')
                 return
 
             # module.exit_json(
-            #    failed=True, container=existing_def, definition=definition)
+            #     failed=True, container=existing_def, definition=copied_def)
             # return
             container.stop()
             container.remove()

@@ -2,3 +2,4 @@
 images: 
   traefik: 'library/traefik:v2.1'
   haste: 'jonasled/haste-server:latest'
+  postgres: 'library/postgres:11'
