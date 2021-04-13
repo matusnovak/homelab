@@ -6,11 +6,14 @@ TODO
 
 ## Apps
 
-TODO
+**See [docs/apps.md](docs/apps.md) to see list of all available apps.**
 
 ## Deploy
 
-Edit `site.yml` and select what apps you want to use. You will have to modify configuration files for each app accordingly in the `group_vars/homelab/*.yml` files. After that, simply deploy with:
+Edit `homelab.yml` and select what apps you want to use. You will have to modify configuration files for each app accordingly in the `group_vars/homelab/*.yml` files.
+
+
+After that, simply deploy with:
 
 ```
 ansible-playbook site.yml -v --ask-become-pass

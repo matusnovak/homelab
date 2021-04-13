@@ -33,20 +33,17 @@ Make sure your `hosts` file only contains your localhost. The following are the 
 127.0.0.1 ansible_connection=local
 ```
 
-Create a new file of `app-xyz.yml` (for example `app-gitlab.yml`) and specify whatever roles your app needs first included your app's role as the last one. Example below:
+Create a new file named `dev.yml` and specify the role of your app you wish to work on. Example below:
 
 ```yml
 ---
 - hosts: homelab
   roles:
-    - base    # The base needs to be added ALWAYS!
-    - traefik # Specify that app xyz needs Traefik
-    # - postgres # Any other dependencies if required
-    - xyz     # Your app
+    - nextcloud # Name of the role
 ```
 
 You can use the following command to run Ansible with admin password at the same time. It is very recommended to use `--ask-become-pass` but you can use `ansible_become_pass=password` if you are too lazy like me.
 
 ```
-ansible-playbook app-xyz.yml -v --extra-vars='ansible_become_pass=admin_password_here'
+ansible-playbook dev.yml -v --extra-vars='ansible_become_pass=admin_password_here'
 ```
