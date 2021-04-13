@@ -1,4 +1,6 @@
 ---
 - hosts: homelab
   roles:
+    - base
     - traefik
+    - haste

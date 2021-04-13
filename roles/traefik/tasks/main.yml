@@ -1,11 +1,13 @@
 ---
-- include_role:
-    name: base
+- name: Make sure base role has been included
+  fail:
+    msg: Traefik needs the base role in order to work
+  when: "'base' not in role_names"
 
-- name: Create traefik folder structure
+- name: Create Traefik folder structure
   become: yes
   file:
-    path: "{{ base.destination}}/data/traefik/{{item}}"
+    path: "{{ data_dir }}/data/traefik/{{item}}"
     state: directory
     mode: 0755
     owner: root
@@ -18,35 +20,34 @@
   become: yes
   template:
     src: "roles/traefik/files/{{item}}.j2"
-    dest: "{{ base.destination}}/data/traefik/{{item}}"
+    dest: "{{ data_dir }}/data/traefik/{{item}}"
   loop:
     - "traefik.yml"
     - "config/middlewares.yml"
     - "config/routers.yml"
     - "config/services.yml"
+  register: traefik_config
 
 - name: Create traefik acme.json file
   become: yes
   copy:
     content: "{}"
-    dest: "{{ base.destination}}/data/traefik/acme.json"
+    dest: "{{ data_dir }}/data/traefik/acme.json"
     force: no
     mode: 0600
     owner: root
     group: root
 
-- name: Set traefik entrypoints
+- name: Set Traefik entrypoints
   set_fact:
     traefik_entrypoints: >-
-      {%- if traefik.http.enabled and traefik.https.enabled -%}
-      web,web-secure
-      {%- elif traefik.https.enabled -%}
+      {%- if traefik.https.enabled -%}
       web-secure
       {%- else -%}
       web
       {%- endif -%}
 
-- name: Set traefik certs resolver
+- name: Set Traefik certs resolver
   set_fact:
     traefik_certresolver: >-
       {%- if traefik.https.enabled and traefik.acme.enabled -%}
@@ -54,20 +55,25 @@
       {%- else -%}
       {%- endif -%}
 
-- name: Docker check
-  ansible.builtin.debug:
-    msg: 'Docker host: {{ docker.host }} network: {{ docker_network.subnet }}'
+- name: Set Traefik entrypoint
+  set_fact:
+    traefik_entrypoint: >-
+      {%- if traefik.https.enabled -%}
+      https://localhost:{{ traefik.https.port }}
+      {%- else -%}
+      http://localhost:{{ traefik.http.port }}
+      {%- endif -%}
 
-- name: Deploy traefik
+- name: Deploy Traefik
   docker_deploy:
-    host: '{{ docker.host }}'
-    project: '{{ base.name }}'
+    host: "{{ docker.host }}"
+    project: "{{ project_name }}"
     container:
-      image: "{{ base.registry }}/{{ images.traefik }}"
+      image: "{{ docker.registry }}/{{ images.traefik }}"
       name: "traefik"
-      network:
-        name: "{{ docker_network.name }}"
-        alias: "traefik"
+      networks:
+        - name: "{{ docker_network.name }}"
+          alias: "traefik"
       ports:
         - host: "{{ traefik.https.port }}"
           guest: "443"
@@ -79,25 +85,52 @@
         - host: "/var/run/docker.sock" # TODO
           guest: "/var/run/docker.sock"
           read_only: false
-        - host: "{{ base.destination }}/data/traefik/traefik.yml"
+        - host: "{{ data_dir }}/data/traefik/traefik.yml"
           guest: "/etc/traefik/traefik.yml"
           read_only: true
-        - host: "{{ base.destination }}/data/traefik/config"
+        - host: "{{ data_dir }}/data/traefik/config"
           guest: "/config"
           read_only: true
-        - host: "{{ base.destination }}/data/traefik/acme.json"
+        - host: "{{ data_dir }}/data/traefik/acme.json"
           guest: "/acme.json"
           read_only: false
       labels:
         - key: "traefik.enable"
           value: "{{ 'true' if traefik.dashboard.enabled else 'false' }}"
-        - key: "traefik.http.services.traefik.loadbalancer.server.port"
-          value: "8080"
         - key: "traefik.http.routers.traefik.rule"
-          value: "Host(`traefik.{{ base.hostname }}`)"
+          value: "Host(`traefik.{{ domain_name }}`)"
+        - key: "traefik.http.routers.traefik.service"
+          value: "api@internal"
         - key: "traefik.http.routers.traefik.entrypoints"
           value: "{{ traefik_entrypoints }}"
+        - key: "traefik.http.routers.traefik.tls"
+          value: "{{ 'true' if traefik.http.enabled else 'false' }}"
         - key: "traefik.http.routers.traefik.tls.certresolver"
           value: "{{ traefik_certresolver }}"
         - key: "traefik.http.routers.traefik.middlewares"
           value: "{{ 'authelia@docker' if traefik.dashboard.authelia else '' }}"
+  register: traefik_container
+
+- name: Restart if config changes
+  docker_restart:
+    host: "{{ docker.host }}"
+    project: "{{ project_name }}"
+    containers:
+      - "traefik"
+  when: traefik_container.changed == false and traefik_config.changed
+
+- name: Wait for Traefik load balancer HTTP
+  http_wait:
+    url: "http://localhost:{{ traefik.http.port }}/"
+    status_code: 200, 304, 404
+    retries: 3
+    delay: 5
+  when: traefik.http.enabled
+
+- name: Wait for Traefik load balancer HTTPS
+  http_wait:
+    url: "https://localhost:{{ traefik.https.port }}/"
+    status_code: 200, 304, 404
+    retries: 3
+    delay: 5
+  when: traefik.https.enabled

@@ -6,8 +6,8 @@
 
 - name: 'Create shared docker network'
   docker_network:
-    host: '{{docker.host}}'
-    project: '{{base.name}}'
+    host: '{{ docker.host }}'
+    project: '{{ project_name }}'
     network:
       name: 'default'
       attachable: true
@@ -15,5 +15,5 @@
 
 - name: Collect only facts returned by facter
   ansible.builtin.debug:
-    msg: 'Docker host: {{docker.host}} network: {{docker_network.subnet}}'
+    msg: 'Docker host: {{ docker.host }} network: {{ docker_network.subnet }}'
 

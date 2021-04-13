@@ -10,5 +10,5 @@ http:
     {% if traefik.middlewares.allow_frame -%}
     allowframe:
       headers:
-        contentSecurityPolicy: "upgrade-insecure-requests, frame-ancestors 'self' *.{{base.hostname}}"
+        contentSecurityPolicy: "upgrade-insecure-requests, frame-ancestors 'self' *.{{ domain_name }}"
     {% endif %}

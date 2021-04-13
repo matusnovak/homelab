@@ -1,0 +1,56 @@
+---
+- name: Make sure Traefik has been deployed
+  fail:
+    msg: Haste needs Traefik in order to work
+  when: "'traefik' not in role_names"
+
+- name: Create Haste folder structure
+  become: yes
+  file:
+    path: "{{ data_dir }}/data/haste/{{item}}"
+    state: directory
+    mode: 0755
+    owner: "1000"
+    group: "1000"
+    recurse: yes
+  loop:
+    - "data"
+
+- name: Deploy Haste
+  docker_deploy:
+    host: "{{ docker.host }}"
+    project: "{{ project_name }}"
+    container:
+      image: "{{ docker.registry }}/{{ images.haste }}"
+      name: "haste"
+      networks:
+        - name: "{{ docker_network.name }}"
+          alias: "haste"
+      volumes:
+        - host: "{{ data_dir }}/data/haste/data"
+          guest: "/srv/haste/data"
+          read_only: false
+      labels:
+        - key: "traefik.enable"
+          value: "true"
+        - key: "traefik.http.services.haste.loadbalancer.server.port"
+          value: "7777"
+        - key: "traefik.http.routers.haste.rule"
+          value: "Host(`haste.{{ domain_name }}`)"
+        - key: "traefik.http.routers.haste.entrypoints"
+          value: "{{ traefik_entrypoints }}"
+        - key: "traefik.http.routers.haste.tls.certresolver"
+          value: "{{ traefik_certresolver }}"
+        - key: "traefik.http.routers.haste.tls"
+          value: "{{ 'true' if traefik.http.enabled else 'false' }}"
+  register: haste_container
+
+- name: Healthcheck for Haste 
+  http_wait:
+    url: "{{traefik_entrypoint}}"
+    status_code: "200"
+    retries: 3
+    delay: 5
+    headers:
+      - "Host: haste.{{ domain_name }}"
+  when: traefik.https.enabled

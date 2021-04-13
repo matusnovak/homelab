@@ -18,17 +18,17 @@ providers:
     directory: "/config"
     watch: true
   docker:
-    endpoint: "{{docker.host}}"
-    network: "{{docker_network.name}}"
+    endpoint: "{{ docker.host }}"
+    network: "{{ docker_network.name }}"
     watch: true
     exposedByDefault: false
-    constraints: Label(`com.docker.compose.project`,`{{base.name}}`)
+    constraints: Label(`com.docker.compose.project`,`{{ project_name }}`)
 
 {% if traefik.acme.enabled %}
 certificatesResolvers:
   letsencrypt:
     acme:
-      email: "{{traefik.acme.email}}"
+      email: "{{ traefik.acme.email }}"
       storage: "/acme.json"
       httpChallenge:
         entryPoint: "web"

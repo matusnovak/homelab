@@ -1,3 +1,4 @@
 ---
 images: 
-  traefik: 'library/traefik:v2.4'
+  traefik: 'library/traefik:v2.1'
+  haste: 'jonasled/haste-server:latest'

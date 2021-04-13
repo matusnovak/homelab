@@ -1,3 +1,4 @@
+from typing import List
 from ansible.module_utils.basic import AnsibleModule
 from docker.client import DockerClient
 from docker.tls import TLSConfig
@@ -16,7 +17,8 @@ def create_definition(params: dict, name: str):
         'image': params['container']['image'],
         'name': name,
         'hostname': params['container']['name'],
-        'alias': params['container']['network']['alias'],
+        'networks': {
+        },
         'ports': {
         },
         'labels': {
@@ -26,6 +28,15 @@ def create_definition(params: dict, name: str):
         }
     }
 
+    for network in params['container']['networks']:
+        if not network['name']:
+            continue
+
+        key = network['name']
+        definition['networks'][key] = {
+            'aliases': [network['alias']]
+        }
+
     for port in params['container']['ports']:
         if not port['guest'] or not port['host']:
             continue
@@ -34,7 +45,7 @@ def create_definition(params: dict, name: str):
         definition['ports'][key] = port['host']
 
     for label in params['container']['labels']:
-        if not label['key'] or label['value']:
+        if not label['key'] or not label['value']:
             continue
 
         key = label['key']
@@ -53,11 +64,69 @@ def create_definition(params: dict, name: str):
     return definition
 
 
-def find_network(docker: DockerClient, name: str):
-    try:
-        return docker.networks.get(name)
-    except NotFound:
-        return None
+def create_definition_existing(container):
+    definition = {}
+
+    attrs = container.attrs
+
+    definition['image'] = attrs['Config']['Image']
+    definition['name'] = attrs['Name'].split('/')[-1]
+    definition['hostname'] = attrs['Config']['Hostname']
+    definition['networks'] = {}
+    definition['ports'] = {}
+    definition['labels'] = {}
+    definition['volumes'] = {}
+
+    # network = attrs['NetworkSettings']['Networks'][network_name] \
+    #    if network_name in attrs['NetworkSettings']['Networks'] else None
+
+    # if network is not None:
+    #    ignore_alias = attrs['Id'][:12]
+    #    definition['alias'] = list(
+    #        filter(lambda a: a != ignore_alias, network['Aliases']))
+
+    ignore_alias = attrs['Id'][:12]
+
+    for network_name, data in attrs['NetworkSettings']['Networks'].items():
+        if network_name == 'bridge':
+            continue
+
+        definition['networks'][network_name] = {
+            'aliases': list(filter(lambda a: a != ignore_alias, data['Aliases']))
+        }
+
+    ports = attrs['HostConfig']['PortBindings']
+    for key, values in ports.items():
+        host_port = ''
+        if len(values) > 0:
+            host_port = values[0]['HostPort']
+
+        definition['ports'][key] = host_port
+
+    for key, value in attrs['Config']['Labels'].items():
+        if key.startswith('org.opencontainers'):
+            continue
+
+        definition['labels'][key] = value
+
+    for mount in attrs['Mounts']:
+        key = mount['Source']
+        definition['volumes'][key] = {
+            'bind': mount['Destination'],
+            'mode': mount['Mode']
+        }
+
+    return definition
+
+
+def find_networks(docker: DockerClient, names: List[str]):
+    networks = []
+    for name in names:
+        try:
+            networks.append(docker.networks.get(name))
+        except NotFound:
+            return None
+    return networks
 
 
 def find_container(docker: DockerClient, name: str):
@@ -67,12 +136,53 @@ def find_container(docker: DockerClient, name: str):
         return None
 
 
-def deploy(docker: DockerClient, network, definition: dict):
-    alias = definition['alias']
-    del definition['alias']
-    container = docker.containers.create(detach=True, **definition)
-    network.connect(container.id, aliases=[alias])
-    container.start()
+def deploy(docker: DockerClient, definition: dict):
+    networking_config = {}
+    for network_name, network in definition['networks'].items():
+        networking_config[network_name] = docker.api.create_endpoint_config(**{
+            'aliases': network['aliases']
+        })
+
+    volumes = []
+    ports = []
+
+    host_config = {
+        'port_bindings': definition['ports'],
+        'binds': definition['volumes']
+    }
+
+    for _, volume in definition['volumes'].items():
+        volumes.append(volume['bind'])
+
+    for port_protocol, _ in definition['ports'].items():
+        tokens = port_protocol.split('/')
+        port = int(tokens[0])
+        protocol = tokens[1]
+        ports.append((port, protocol))
+
+    args = {
+        'image': definition['image'],
+        'name': definition['name'],
+        'hostname': definition['hostname'],
+        'labels': definition['labels'],
+        'volumes': volumes,
+        'ports': ports,
+        'host_config': docker.api.create_host_config(**host_config),
+        'detach': True,
+        'networking_config': docker.api.create_networking_config(networking_config)
+    }
+
+    container_id = docker.api.create_container(**args)
+    container = docker.containers.get(container_id)
+
+    try:
+        container.start()
+
+    except Exception as e:
+        container.stop()
+        container.remove()
+        raise e
+
     return container
 
 
@@ -113,19 +223,10 @@ def main():
                     'type': 'str',
                     'required': True
                 },
-                'network': {
-                    'type': 'dict',
-                    'required': True,
-                    'options': {
-                        'name': {
-                            'type': 'str',
-                            'required': True
-                        },
-                        'alias': {
-                            'type': 'str',
-                            'required': True
-                        }
-                    }
+                'networks': {
+                    'type': 'list',
+                    'required': False,
+                    'default': []
                 },
                 'ports': {
                     'type': 'list',
@@ -159,25 +260,39 @@ def main():
         )
     )
 
+    # Container naming follows a strict convention
     container_name = '{}_{}'.format(
         module.params['project'],
         module.params['container']['name']
     )
-    network_name = module.params['container']['network']['name']
 
-    network = find_network(docker, network_name)
-    if network is None:
-        module.exit_json(
-            failed=True,
-            msg='Docker network does not exist'
-        )
-        return
-
+    # Create the expected container definition using parameters passed
     definition = create_definition(module.params, container_name)
 
+    # Find an existing container
     changed = False
     container = find_container(docker, container_name)
 
+    # If we have an existing container, create a definition out of it
+    # We will use that for comparison
+    if container is not None:
+        existing_def = create_definition_existing(container)
+
+        # Are they same?
+        if existing_def != definition:
+            # We will have to re-create the container
+            if module.check_mode:
+                module.exit_json(changed=changed, msg='Re-creating')
+                return
+
+            # module.exit_json(
+            #    failed=True, container=existing_def, definition=definition)
+            # return
+            container.stop()
+            container.remove()
+            container = None
+
+    # Container found, do we need to start it?
     if container is not None and should_start(container):
         changed = True
 
@@ -187,6 +302,7 @@ def main():
 
         container.start()
 
+    # No container found, we will create it
     if container is None:
         changed = True
 
@@ -198,14 +314,18 @@ def main():
         pull_image(docker, definition['image'])
 
         # Create the container
-        container = deploy(docker, network, definition)
+        container = deploy(docker, definition)
+
+    address = None
+    if len(module.params['container']['networks']) > 0:
+        address = module.params['container']['networks'][0]['alias']
 
     meta = {
         'id': container.id,
         'state': container.attrs['State']['Status'],
         'hostname': definition['hostname'],
         'image': container.attrs['Config']['Image'],
-        'address': module.params['container']['network']['alias']
+        'address': address
     }
 
     module.exit_json(changed=changed, msg='Success', **meta)
