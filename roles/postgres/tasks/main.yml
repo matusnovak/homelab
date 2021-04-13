@@ -1,0 +1,28 @@
+---
+- name: Create PostgreSQL folder structure
+  become: yes
+  file:
+    path: "{{ data_dir }}/data/postgres/{{item}}"
+    state: directory
+    mode: 0755
+    owner: root
+    group: root
+    recurse: yes
+  loop:
+    - "data"
+
+- name: Deploy PostgreSQL
+  docker_deploy:
+    host: "{{ docker.host }}"
+    project: "{{ project_name }}"
+    container:
+      image: "{{ docker.registry }}/{{ images.postgres }}"
+      name: "postgres"
+      networks:
+        - name: "{{ docker_network.name }}"
+          alias: "postgres"
+      volumes:
+        - host: "{{ data_dir }}/data/postgres/data"
+          guest: "/var/lib/postgresql/data"
+          read_only: false
+  register: postgres_container

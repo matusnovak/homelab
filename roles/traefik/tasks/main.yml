@@ -1,9 +1,4 @@
 ---
-- name: Make sure base role has been included
-  fail:
-    msg: Traefik needs the base role in order to work
-  when: "'base' not in role_names"
-
 - name: Create Traefik folder structure
   become: yes
   file:

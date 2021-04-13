@@ -1,0 +1,10 @@
+---
+- hosts: homelab
+  roles:
+    # List of apps to deploy
+    # Uncomment them in order to enable them
+    # (i.e. remove '#' before '- appname')
+    
+    # [Haste]
+    # Haste is an open-source pastebin software written in node.js
+    # - haste

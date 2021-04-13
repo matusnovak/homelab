@@ -1,9 +1,4 @@
 ---
-- name: Make sure Traefik has been deployed
-  fail:
-    msg: Haste needs Traefik in order to work
-  when: "'traefik' not in role_names"
-
 - name: Create Haste folder structure
   become: yes
   file:
