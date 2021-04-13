@@ -372,16 +372,28 @@ def main():
         # Create the container
         container = deploy(docker, definition)
 
+    alias = None
     address = None
+
+    # Find first network
     if len(module.params['container']['networks']) > 0:
-        address = module.params['container']['networks'][0]['alias']
+        networks_dict = container.attrs['NetworkSettings']['Networks']
+        network_name = module.params['container']['networks'][0]['name']
+
+        network = networks_dict[network_name]
+        alias_ignore = container.attrs['Id'][:12]
+
+        alias = list(
+            filter(lambda a: a != alias_ignore, network['Aliases']))[0]
+        address = network['IPAddress']
 
     meta = {
         'id': container.id,
         'state': container.attrs['State']['Status'],
         'hostname': definition['hostname'],
         'image': container.attrs['Config']['Image'],
-        'address': address
+        'address': address,
+        'alias': alias
     }
 
     module.exit_json(changed=changed, msg='Success', **meta)

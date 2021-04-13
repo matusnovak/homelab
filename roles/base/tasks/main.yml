@@ -1,7 +1,12 @@
 ---
+- name: 'Install apt dependencies'
+  apt:
+    pkg:
+      - 'libpq-dev'
+
 - name: 'Install python dependencies'
   pip:
-    name: ['docker']
+    name: ['docker', 'psycopg2']
     state: 'latest'
 
 - name: 'Create shared docker network'
