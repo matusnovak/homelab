@@ -1,0 +1,21 @@
+name: integration
+on: [push, pull_requests]
+jobs:
+  haste:
+    name: 'App: Haste'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Generate playbook
+        run: |
+          echo "---" > integration.yml
+          echo "- hosts: homelab" >> integration.yml
+          echo "  roles:" >> integration.yml
+          echo "    - haste" integration.yml
+
+      - name: Ansible
+        run: |
+          ansible-playbook integration.yml -v
