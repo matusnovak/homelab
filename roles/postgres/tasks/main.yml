@@ -30,11 +30,12 @@
           value: "{{ passwords.postgres_admin }}"
   register: postgres_container
 
-- name: Healthcheck for PostgreSQL 
-  psql_exec:
-    host: "{{ postgres_container.address }}"
-    dbname: "postgres"
-    user: "postgres"
-    password: "{{ passwords.postgres_admin }}"
-    query: "SELECT version();"
-  when: traefik.https.enabled
+# TODO: Fix for GitHub actions
+#- name: Healthcheck for PostgreSQL 
+#  psql_exec:
+#    host: "{{ postgres_container.address }}"
+#    dbname: "postgres"
+#    user: "postgres"
+#    password: "{{ passwords.postgres_admin }}"
+#    query: "SELECT version();"
+#  when: traefik.https.enabled

@@ -32,18 +32,20 @@ def get_image(docker: DockerClient, name: str):
 
 def add_image_vars(image, definition):
     envs = image.attrs['Config']['Env']
-    for env in envs:
-        tokens = env.split('=', maxsplit=2)
-        key = tokens[0].strip()
-        value = tokens[1].strip()
+    if envs is not None:
+        for env in envs:
+            tokens = env.split('=', maxsplit=2)
+            key = tokens[0].strip()
+            value = tokens[1].strip()
 
-        if key not in definition['environment']:
-            definition['environment'][key] = value
+            if key not in definition['environment']:
+                definition['environment'][key] = value
 
     labels = image.attrs['Config']['Labels']
-    for label_key, label_value in labels.items():
-        if label_key not in definition['labels']:
-            definition['labels'][label_key] = label_value
+    if labels is not None:
+        for label_key, label_value in labels.items():
+            if label_key not in definition['labels']:
+                definition['labels'][label_key] = label_value
 
 
 def create_container_name(project_name: str, name: str):
