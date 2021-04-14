@@ -4,7 +4,6 @@ project_name: 'example'
 domain_name: 'example.com'
 
 docker:
-  registry: 'docker.io'
   host: 'unix://var/run/docker.sock'
   tls_verify: False
   cert_path: ''

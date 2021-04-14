@@ -16,7 +16,7 @@
     host: "{{ docker.host }}"
     project: "{{ project_name }}"
     container:
-      image: "{{ docker.registry }}/{{ images.postgres }}"
+      image: "{{ images.postgres }}"
       name: "postgres"
       networks:
         - name: "{{ docker_network.name }}"

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 from ansible.module_utils.basic import AnsibleModule
 from docker.client import DockerClient
 from docker.tls import TLSConfig
@@ -8,9 +8,19 @@ import copy
 DOCKER_PROJECT_LABEL = 'com.docker.compose.project'
 
 
+def extract_image_and_tag(name: str) -> Tuple[str, str]:
+    # TODO: Fix to work with registry that contains ports
+    # example: registry.example.com:5000/library/image:tag
+    tokens = name.split(':', maxsplit=2)
+    return (tokens[0], tokens[1])
+
+
 def pull_image(docker: DockerClient, name: str):
-    tokens = name.split(':')
-    docker.images.pull(tokens[0], tokens[1])
+    if name.startswith('sha256:'):
+        docker.images.pull(name, tag=None)
+    else:
+        image, tag = extract_image_and_tag(name)
+        docker.images.pull(image, tag)
 
 
 def get_image(docker: DockerClient, name: str):
@@ -20,7 +30,7 @@ def get_image(docker: DockerClient, name: str):
         return None
 
 
-def add_image_env_vars(image, definition):
+def add_image_vars(image, definition):
     envs = image.attrs['Config']['Env']
     for env in envs:
         tokens = env.split('=', maxsplit=2)
@@ -30,11 +40,20 @@ def add_image_env_vars(image, definition):
         if key not in definition['environment']:
             definition['environment'][key] = value
 
+    labels = image.attrs['Config']['Labels']
+    for label_key, label_value in labels.items():
+        if label_key not in definition['labels']:
+            definition['labels'][label_key] = label_value
 
-def create_definition(params: dict, name: str):
+
+def create_container_name(project_name: str, name: str):
+    return '{}_{}'.format(project_name, name)
+
+
+def create_definition(params: dict):
     definition = {
         'image': params['container']['image'],
-        'name': name,
+        'name': create_container_name(params['project'], params['container']['name']),
         'hostname': params['container']['name'],
         'networks': {
         },
@@ -55,7 +74,7 @@ def create_definition(params: dict, name: str):
 
         key = network['name']
         definition['networks'][key] = {
-            'aliases': [network['alias']]
+            'aliases': [network['alias']] if network['alias'] else []
         }
 
     for port in params['container']['ports']:
@@ -106,23 +125,17 @@ def create_definition_existing(container):
     definition['volumes'] = {}
     definition['environment'] = {}
 
-    # network = attrs['NetworkSettings']['Networks'][network_name] \
-    #    if network_name in attrs['NetworkSettings']['Networks'] else None
-
-    # if network is not None:
-    #    ignore_alias = attrs['Id'][:12]
-    #    definition['alias'] = list(
-    #        filter(lambda a: a != ignore_alias, network['Aliases']))
-
     ignore_alias = attrs['Id'][:12]
 
     for network_name, data in attrs['NetworkSettings']['Networks'].items():
-        if network_name == 'bridge':
-            continue
-
         definition['networks'][network_name] = {
-            'aliases': list(filter(lambda a: a != ignore_alias, data['Aliases']))
+            'aliases': []
         }
+
+        if data['Aliases'] is not None:
+            aliases = list(
+                filter(lambda a: a != ignore_alias, data['Aliases']))
+            definition['networks'][network_name]['aliases'] = aliases
 
     ports = attrs['HostConfig']['PortBindings']
     for key, values in ports.items():
@@ -133,9 +146,6 @@ def create_definition_existing(container):
         definition['ports'][key] = host_port
 
     for key, value in attrs['Config']['Labels'].items():
-        if key.startswith('org.opencontainers'):
-            continue
-
         definition['labels'][key] = value
 
     for env in attrs['Config']['Env']:
@@ -170,7 +180,7 @@ def find_container(docker: DockerClient, name: str):
         return None
 
 
-def deploy(docker: DockerClient, definition: dict):
+def create_container(docker: DockerClient, definition: dict):
     networking_config = {}
     for network_name, network in definition['networks'].items():
         networking_config[network_name] = docker.api.create_endpoint_config(**{
@@ -223,6 +233,112 @@ def deploy(docker: DockerClient, definition: dict):
 
 def should_start(container):
     return container.attrs['State']['Running'] == False
+
+
+def create_meta(params: dict, definition: dict, container) -> dict:
+    alias = None
+    address = None
+
+    # Find first network
+    if len(params['container']['networks']) > 0:
+        networks_dict = container.attrs['NetworkSettings']['Networks']
+        network_name = params['container']['networks'][0]['name']
+
+        network = networks_dict[network_name]
+        alias_ignore = container.attrs['Id'][:12]
+
+        if network['Aliases'] != None:
+            alias = list(
+                filter(lambda a: a != alias_ignore, network['Aliases']))[0]
+
+        address = network['IPAddress']
+
+    return {
+        'id': container.id,
+        'state': container.attrs['State']['Status'],
+        'hostname': definition['hostname'],
+        'image': container.attrs['Config']['Image'],
+        'address': address,
+        'alias': alias
+    }
+
+
+def deploy(check_mode: bool, params: dict):
+    docker = DockerClient(
+        base_url=params['host'],
+        tls=TLSConfig(
+            verify=params['tls_verify'],
+            ca_cert=params['cert_path']
+        )
+    )
+
+    # Container naming follows a strict convention
+    container_name = create_container_name(
+        params['project'], params['container']['name'])
+
+    # Create the expected container definition using parameters passed
+    definition = create_definition(params)
+
+    # Find an existing container
+    changed = False
+    container = find_container(docker, container_name)
+
+    # If we have an existing container, create a definition out of it
+    # We will use that for comparison
+    if container is not None:
+        existing_def = create_definition_existing(container)
+
+        # The definition from the existing container will contain environment
+        # variables that were not defined by the user. These come automatically from
+        # the image itself. The definition we have created in here will not
+        # contain those variables. We will have to add them, but only if missing, from
+        # the image. We will also need to make a copy of the definition, because
+        # we do not want to create a container with those default environment variables.
+        # If we would do that, they would be persistent, and if they change in a new image,
+        # we would be still using the old ones. The original definition must not contain these
+        # unless explicitly provided in the params from the role/user.
+        copied_def = copy.deepcopy(definition)
+
+        image = get_image(docker, container.attrs['Image'])
+
+        # Add env variables from image into the copied definition, if they are missing
+        add_image_vars(image, copied_def)
+
+        # Are they same?
+        if existing_def != copied_def:
+            # We will have to re-create the container
+            if check_mode:
+                return dict(changed=False, msg='Re-creating')
+
+            container.stop()
+            container.remove()
+            container = None
+            changed = True
+
+    # Container found, do we need to start it?
+    if container is not None and should_start(container):
+        if check_mode:
+            meta = create_meta(params, definition, container)
+            return dict(changed=True, msg='Starting', **meta)
+
+        container.start()
+        changed = True
+
+    # No container found, we will create it
+    if container is None:
+        if check_mode:
+            return dict(changed=True, msg='Creating')
+
+        # Must pull image before creating the container
+        pull_image(docker, definition['image'])
+
+        # Create the container
+        container = create_container(docker, definition)
+        changed = True
+
+    meta = create_meta(params, definition, container)
+
+    return dict(changed=changed, msg='Success', **meta)
 
 
 def main():
@@ -292,111 +408,7 @@ def main():
         supports_check_mode=True
     )
 
-    docker = DockerClient(
-        base_url=module.params['host'],
-        tls=TLSConfig(
-            verify=module.params['tls_verify'],
-            ca_cert=module.params['cert_path']
-        )
-    )
-
-    # Container naming follows a strict convention
-    container_name = '{}_{}'.format(
-        module.params['project'],
-        module.params['container']['name']
-    )
-
-    # Create the expected container definition using parameters passed
-    definition = create_definition(module.params, container_name)
-
-    # Find an existing container
-    changed = False
-    container = find_container(docker, container_name)
-
-    # If we have an existing container, create a definition out of it
-    # We will use that for comparison
-    if container is not None:
-        existing_def = create_definition_existing(container)
-
-        # The definition from the existing container will contain environment
-        # variables that were not defined by the user. These come automatically from
-        # the image itself. The definition we have created in here will not
-        # contain those variables. We will have to add them, but only if missing, from
-        # the image. We will also need to make a copy of the definition, because
-        # we do not want to create a container with those default environment variables.
-        # If we would do that, they would be persistent, and if they change in a new image,
-        # we would be still using the old ones. The original definition must not contain these
-        # unless explicitly provided in the params from the role/user.
-        copied_def = copy.deepcopy(definition)
-
-        image = get_image(docker, definition['image'])
-
-        # Add env variables from image into the copied definition, if they are missing
-        add_image_env_vars(image, copied_def)
-
-        # Are they same?
-        if existing_def != copied_def:
-            # We will have to re-create the container
-            if module.check_mode:
-                module.exit_json(changed=changed, msg='Re-creating')
-                return
-
-            # module.exit_json(
-            #     failed=True, container=existing_def, definition=copied_def)
-            # return
-            container.stop()
-            container.remove()
-            container = None
-
-    # Container found, do we need to start it?
-    if container is not None and should_start(container):
-        changed = True
-
-        if module.check_mode:
-            module.exit_json(changed=changed, msg='Starting')
-            return
-
-        container.start()
-
-    # No container found, we will create it
-    if container is None:
-        changed = True
-
-        if module.check_mode:
-            module.exit_json(changed=changed, msg='Creating')
-            return
-
-        # Must pull image before creating the container
-        pull_image(docker, definition['image'])
-
-        # Create the container
-        container = deploy(docker, definition)
-
-    alias = None
-    address = None
-
-    # Find first network
-    if len(module.params['container']['networks']) > 0:
-        networks_dict = container.attrs['NetworkSettings']['Networks']
-        network_name = module.params['container']['networks'][0]['name']
-
-        network = networks_dict[network_name]
-        alias_ignore = container.attrs['Id'][:12]
-
-        alias = list(
-            filter(lambda a: a != alias_ignore, network['Aliases']))[0]
-        address = network['IPAddress']
-
-    meta = {
-        'id': container.id,
-        'state': container.attrs['State']['Status'],
-        'hostname': definition['hostname'],
-        'image': container.attrs['Config']['Image'],
-        'address': address,
-        'alias': alias
-    }
-
-    module.exit_json(changed=changed, msg='Success', **meta)
+    module.exit_json(**deploy(module.check_mode, module.params))
 
 
 if __name__ == '__main__':

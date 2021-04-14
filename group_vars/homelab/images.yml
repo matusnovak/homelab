@@ -1,5 +1,5 @@
 ---
 images: 
-  traefik: 'library/traefik:v2.1'
-  haste: 'jonasled/haste-server:latest'
-  postgres: 'library/postgres:11'
+  traefik: 'docker.io/library/traefik:v2.1'
+  haste: 'docker.io/jonasled/haste-server:latest'
+  postgres: 'docker.io/library/postgres:11'

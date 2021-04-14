@@ -1,10 +1,25 @@
 name: integration
 on: [push, pull_request]
 jobs:
-  haste:
+  unit_tests:
+    name: 'Unit Tests'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Dependencies
+        run: python3 -m pip install pytest docker ansible
+
+      - name: Run Tests
+        run: python3 -m pytest './tests/unit/' -s
+
+  app_haste:
     name: 'App: Haste'
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    needs: [unit_tests]
     steps:
       - name: Checkout
         uses: actions/checkout@v1
