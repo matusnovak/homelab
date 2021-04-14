@@ -15,8 +15,16 @@ jobs:
       - name: Run Tests
         run: python3 -m pytest './tests/unit/' -s
 
-  app_haste:
-    name: 'App: Haste'
+  dependencies:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: 'Traefik'
+            role: 'traefik'
+          - name: 'Postgres'
+            role: 'postgres'
+    name: 'App: {{ matrix.name }} (dependency)'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     needs: [unit_tests]
@@ -29,8 +37,38 @@ jobs:
           echo "---" > integration.yml
           echo "- hosts: homelab" >> integration.yml
           echo "  roles:" >> integration.yml
-          echo "    - haste" >> integration.yml
+          echo "    - ${{ matrix.role }}" >> integration.yml
 
       - name: Ansible
         run: |
-          ansible-playbook integration.yml -v
+          cp ./.github/workflows/vault.yml ./group_vars/homelab/
+          cp ./.github/workflows/vault.pass .
+          ansible-playbook integration.yml -v --vault-password-file=vault.pass
+
+  apps:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: 'Haste'
+            role: 'haste'
+    name: 'App: {{ matrix.name }}'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [dependencies]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Generate playbook
+        run: |
+          echo "---" > integration.yml
+          echo "- hosts: homelab" >> integration.yml
+          echo "  roles:" >> integration.yml
+          echo "    - ${{ matrix.role }}" >> integration.yml
+
+      - name: Ansible
+        run: |
+          cp ./.github/workflows/vault.yml ./group_vars/homelab/
+          cp ./.github/workflows/vault.pass .
+          ansible-playbook integration.yml -v --vault-password-file=vault.pass

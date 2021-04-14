@@ -4,3 +4,5 @@ dev.yml
 vault.yml
 .vault_pass
 __pycache__/
+!.github/workflows/vault.yml
+!.github/workflows/vault.pass
