@@ -24,7 +24,7 @@ jobs:
             role: 'traefik'
           - name: 'Postgres'
             role: 'postgres'
-    name: 'App: {{ matrix.name }} (dependency)'
+    name: 'App: ${{ matrix.name }} (dependency)'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     needs: [unit_tests]
@@ -41,7 +41,7 @@ jobs:
 
       - name: Ansible
         run: |
-          cp ./.github/workflows/vault.yml ./group_vars/homelab/
+          cp ./.github/workflows/vault.yml.sample ./group_vars/homelab/vault.yml
           cp ./.github/workflows/vault.pass .
           ansible-playbook integration.yml -v --vault-password-file=vault.pass
 
@@ -52,7 +52,7 @@ jobs:
         include:
           - name: 'Haste'
             role: 'haste'
-    name: 'App: {{ matrix.name }}'
+    name: 'App: ${{ matrix.name }}'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     needs: [dependencies]
@@ -69,6 +69,6 @@ jobs:
 
       - name: Ansible
         run: |
-          cp ./.github/workflows/vault.yml ./group_vars/homelab/
+          cp ./.github/workflows/vault.yml.sample ./group_vars/homelab/vault.yml
           cp ./.github/workflows/vault.pass .
           ansible-playbook integration.yml -v --vault-password-file=vault.pass
