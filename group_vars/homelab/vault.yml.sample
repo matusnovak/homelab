@@ -1,0 +1,5 @@
+---
+passwords:
+  postgres_admin: "Password1!"
+  portainer_agent: "Password1!"
+  portainer_admin: "Password1!"

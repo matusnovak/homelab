@@ -6,3 +6,4 @@ vault.yml
 __pycache__/
 !.github/workflows/vault.yml.sample
 !.github/workflows/vault.pass
+group_vars/homelab/*.yml
