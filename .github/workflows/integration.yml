@@ -42,7 +42,7 @@ jobs:
       - name: Ansible
         run: |
           for f in ./group_vars/homelab/*.yml.sample; do mv -- "$f" "${f%.yml.sample}.yml"; done
-          ansible-playbook integration.yml -v --vault-password-file=vault.pass
+          ansible-playbook integration.yml -v
 
   apps:
     strategy:
@@ -71,4 +71,4 @@ jobs:
       - name: Ansible
         run: |
           for f in ./group_vars/homelab/*.yml.sample; do mv -- "$f" "${f%.yml.sample}.yml"; done
-          ansible-playbook integration.yml -v --vault-password-file=vault.pass
+          ansible-playbook integration.yml -v
