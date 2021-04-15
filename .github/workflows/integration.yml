@@ -24,6 +24,8 @@ jobs:
             role: 'traefik'
           - name: 'Postgres'
             role: 'postgres'
+          - name: 'OpenLDAP'
+            role: 'ldap'
     name: 'App: ${{ matrix.name }} (dependency)'
     runs-on: ubuntu-latest
     timeout-minutes: 5

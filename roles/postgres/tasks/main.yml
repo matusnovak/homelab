@@ -39,4 +39,3 @@
     user: "postgres"
     password: "{{ passwords.postgres_admin }}"
     query: "SELECT version();"
-  when: traefik.https.enabled

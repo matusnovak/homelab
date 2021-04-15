@@ -2,6 +2,7 @@
 data_dir: '/var/lib/homelab-ansible/temp'
 project_name: 'example'
 domain_name: 'example.com'
+domain_component: 'dc=example,dc=com'
 
 docker:
   host: 'unix://var/run/docker.sock'

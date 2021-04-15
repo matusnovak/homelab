@@ -1,0 +1,56 @@
+---
+- name: Create OpenLDAP folder structure
+  become: yes
+  file:
+    path: "{{ data_dir }}/data/ldap/{{item}}"
+    state: directory
+    mode: 0700
+    owner: "911"
+    group: "911"
+    recurse: false
+  loop:
+    - "data"
+    - "config"
+
+- name: Deploy OpenLDAP
+  docker_deploy:
+    host: "{{ docker.host }}"
+    project: "{{ project_name }}"
+    container:
+      image: "{{ images.openldap }}"
+      name: "openldap"
+      networks:
+        - name: "{{ docker_network.name }}"
+          alias: "openldap"
+      volumes:
+        - host: "{{ data_dir }}/data/ldap/data"
+          guest: "/var/lib/ldap"
+          read_only: false
+        - host: "{{ data_dir }}/data/ldap/config"
+          guest: "/etc/ldap/slapd.d"
+          read_only: false
+      environment:
+        - key: "LDAP_ORGANISATION"
+          value: "{{ ldap.organisation }}"
+        - key: "LDAP_BASE_DN"
+          value: "{{ ldap.domain }}"
+        - key: "LDAP_DOMAIN"
+          value: "{{ domain_name }}"
+        - key: "LDAP_ADMIN_PASSWORD"
+          value: "{{ passwords.ldap_admin }}"
+  register: openldap_container
+
+- name: Healthcheck for OpenLDAP 
+  proxy_ldap:
+    docker:
+      host: "{{ docker.host }}"
+    container: "{{ openldap_container.id }}"
+    user: "cn=admin,{{ ldap.domain }}"
+    password: "{{ passwords.ldap_admin }}"
+    base: "{{ ldap.domain }}"
+    filter: "(&(objectClass=top))"
+    exact: "1"
+    attrs:
+      - "dc"
+      - "cn"
+      - "objectClass"

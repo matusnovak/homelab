@@ -83,7 +83,7 @@
         - key: "traefik.http.routers.portainer.tls.certresolver"
           value: "{{ traefik_certresolver }}"
         - key: "traefik.http.routers.portainer.tls"
-          value: "{{ 'true' if traefik.http.enabled else 'false' }}"
+          value: "{{ 'true' if traefik.https.enabled else 'false' }}"
   register: portainer_container
 
 - name: Healthcheck for Portainer 

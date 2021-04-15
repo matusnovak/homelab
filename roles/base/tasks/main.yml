@@ -1,12 +1,19 @@
 ---
 - name: 'Install apt dependencies'
+  become: yes
   apt:
     pkg:
+      - 'python3-dev'
       - 'libpq-dev'
+      - 'libldap2-dev'
+      - 'libsasl2-dev'
+      - 'slapd'
+      - 'ldap-utils'
+      - 'tox'
 
 - name: 'Install python dependencies'
   pip:
-    name: ['docker', 'psycopg2']
+    name: ['requests', 'docker', 'psycopg2', 'python-ldap']
     state: 'latest'
 
 - name: 'Create shared docker network'

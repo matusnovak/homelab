@@ -5,3 +5,4 @@ images:
   postgres: 'docker.io/library/postgres:11'
   portainer: 'docker.io/portainer/portainer:latest'
   portainer_agent: 'docker.io/portainer/agent:latest'
+  openldap: 'docker.io/osixia/openldap:latest'

@@ -1,0 +1,4 @@
+---
+ldap:
+  organisation: "Example"
+  domain: "dc=example,dc=com"
