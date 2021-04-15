@@ -3,9 +3,11 @@ from ansible.module_utils.basic import AnsibleModule
 from docker.client import DockerClient
 from docker.tls import TLSConfig
 from docker.errors import NotFound
-import copy
+import json
+import hashlib
 
 DOCKER_PROJECT_LABEL = 'com.docker.compose.project'
+DOCKER_CONFIG_HASH_LABEL = 'com.docker.compose.config-hash'
 
 
 def extract_image_and_tag(name: str) -> Tuple[str, str]:
@@ -16,53 +18,43 @@ def extract_image_and_tag(name: str) -> Tuple[str, str]:
 
 
 def pull_image(docker: DockerClient, name: str):
-    if name.startswith('sha256:'):
-        docker.images.pull(name, tag=None)
-    else:
-        image, tag = extract_image_and_tag(name)
-        docker.images.pull(image, tag)
-
-
-def get_image(docker: DockerClient, name: str):
     try:
-        return docker.images.get(name)
+        docker.images.get(name)
     except NotFound:
-        return None
-
-
-def add_image_vars(image, definition):
-    envs = image.attrs['Config']['Env']
-    if envs is not None:
-        for env in envs:
-            tokens = env.split('=', maxsplit=2)
-            key = tokens[0].strip()
-            value = tokens[1].strip()
-
-            if key not in definition['environment']:
-                definition['environment'][key] = value
-
-    labels = image.attrs['Config']['Labels']
-    if labels is not None:
-        for label_key, label_value in labels.items():
-            if label_key not in definition['labels']:
-                definition['labels'][label_key] = label_value
+        if name.startswith('sha256:'):
+            docker.images.pull(name, tag=None)
+        else:
+            image, tag = extract_image_and_tag(name)
+            docker.images.pull(image, tag)
 
 
 def create_container_name(project_name: str, name: str):
     return '{}_{}'.format(project_name, name)
 
 
+def get_config_hash_value(container):
+    labels = container.attrs['Config']['Labels']
+    if DOCKER_CONFIG_HASH_LABEL in labels:
+        return labels[DOCKER_CONFIG_HASH_LABEL]
+    return None
+
+
+def make_hash(definition: dict):
+    return str(hashlib.md5(json.dumps(definition, sort_keys=True).encode('utf-8')).hexdigest())
+
+
 def create_definition(params: dict):
     definition = {
         'image': params['container']['image'],
+        'command': params['container']['command'],
         'name': create_container_name(params['project'], params['container']['name']),
-        'hostname': params['container']['name'],
+        'hostname': params['container']['hostname'],
         'networks': {
         },
         'ports': {
         },
         'labels': {
-            DOCKER_PROJECT_LABEL: params['project']
+            DOCKER_PROJECT_LABEL: params['project'],
         },
         'volumes': {
         },
@@ -110,57 +102,7 @@ def create_definition(params: dict):
             'mode': 'ro' if volume['read_only'] else 'rw'
         }
 
-    return definition
-
-
-def create_definition_existing(container):
-    definition = {}
-
-    attrs = container.attrs
-
-    definition['image'] = attrs['Config']['Image']
-    definition['name'] = attrs['Name'].split('/')[-1]
-    definition['hostname'] = attrs['Config']['Hostname']
-    definition['networks'] = {}
-    definition['ports'] = {}
-    definition['labels'] = {}
-    definition['volumes'] = {}
-    definition['environment'] = {}
-
-    ignore_alias = attrs['Id'][:12]
-
-    for network_name, data in attrs['NetworkSettings']['Networks'].items():
-        definition['networks'][network_name] = {
-            'aliases': []
-        }
-
-        if data['Aliases'] is not None:
-            aliases = list(
-                filter(lambda a: a != ignore_alias, data['Aliases']))
-            definition['networks'][network_name]['aliases'] = aliases
-
-    ports = attrs['HostConfig']['PortBindings']
-    for key, values in ports.items():
-        host_port = ''
-        if len(values) > 0:
-            host_port = values[0]['HostPort']
-
-        definition['ports'][key] = host_port
-
-    for key, value in attrs['Config']['Labels'].items():
-        definition['labels'][key] = value
-
-    for env in attrs['Config']['Env']:
-        tokens = env.split('=', maxsplit=2)
-        key = tokens[0].strip()
-        definition['environment'][key] = tokens[1].strip()
-
-    for mount in attrs['Mounts']:
-        key = mount['Source']
-        definition['volumes'][key] = {
-            'bind': mount['Destination'],
-            'mode': mount['Mode']
-        }
+    definition['labels'][DOCKER_CONFIG_HASH_LABEL] = make_hash(definition)
 
     return definition
 
@@ -189,6 +131,10 @@ def create_container(docker: DockerClient, definition: dict):
             'aliases': network['aliases']
         })
 
+        # Docker container can not be connected to multiple networks at once
+        # We will have to do that manually if > 1
+        break
+
     volumes = []
     ports = []
 
@@ -208,6 +154,7 @@ def create_container(docker: DockerClient, definition: dict):
 
     args = {
         'image': definition['image'],
+        'command': definition['command'],
         'name': definition['name'],
         'hostname': definition['hostname'],
         'labels': definition['labels'],
@@ -221,6 +168,14 @@ def create_container(docker: DockerClient, definition: dict):
 
     container_id = docker.api.create_container(**args)
     container = docker.containers.get(container_id)
+
+    # Connect to all other networks
+    for network_name, item in definition['networks'].items():
+        if network_name in networking_config:
+            continue
+
+        network = docker.networks.get(network_name)
+        network.connect(container_id, aliases=item['aliases'])
 
     try:
         container.start()
@@ -288,29 +243,19 @@ def deploy(check_mode: bool, params: dict):
     # If we have an existing container, create a definition out of it
     # We will use that for comparison
     if container is not None:
-        existing_def = create_definition_existing(container)
+        # Calculate our hash
+        definition_hash = definition['labels'][DOCKER_CONFIG_HASH_LABEL]
 
-        # The definition from the existing container will contain environment
-        # variables that were not defined by the user. These come automatically from
-        # the image itself. The definition we have created in here will not
-        # contain those variables. We will have to add them, but only if missing, from
-        # the image. We will also need to make a copy of the definition, because
-        # we do not want to create a container with those default environment variables.
-        # If we would do that, they would be persistent, and if they change in a new image,
-        # we would be still using the old ones. The original definition must not contain these
-        # unless explicitly provided in the params from the role/user.
-        copied_def = copy.deepcopy(definition)
-
-        image = get_image(docker, container.attrs['Image'])
-
-        # Add env variables from image into the copied definition, if they are missing
-        add_image_vars(image, copied_def)
+        # Get the label for the existing container
+        existing_hash = get_config_hash_value(container)
 
         # Are they same?
-        if existing_def != copied_def:
+        if existing_hash is None or existing_hash != definition_hash:
             # We will have to re-create the container
             if check_mode:
                 return dict(changed=False, msg='Re-creating')
+
+            # return dict(failed=True, existing=existing_hash, our=definition_hash)
 
             container.stop()
             container.remove()
@@ -372,9 +317,19 @@ def main():
                     'type': 'str',
                     'required': True
                 },
+                'command': {
+                    'type': 'list',
+                    'required': False,
+                    'default': None
+                },
                 'name': {
                     'type': 'str',
                     'required': True
+                },
+                'hostname': {
+                    'type': 'str',
+                    'required': False,
+                    'default': None
                 },
                 'networks': {
                     'type': 'list',

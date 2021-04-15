@@ -31,8 +31,9 @@
   register: postgres_container
 
 - name: Healthcheck for PostgreSQL 
-  psql_exec:
-    host: "{{ docker.host }}"
+  proxy_psql:
+    docker:
+      host: "{{ docker.host }}"
     container: "{{ postgres_container.id }}"
     dbname: "postgres"
     user: "postgres"

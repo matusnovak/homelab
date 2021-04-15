@@ -52,6 +52,8 @@ jobs:
         include:
           - name: 'Haste'
             role: 'haste'
+          - name: 'Portainer'
+            role: 'portainer'
     name: 'App: ${{ matrix.name }}'
     runs-on: ubuntu-latest
     timeout-minutes: 5

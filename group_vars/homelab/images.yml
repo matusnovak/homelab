@@ -3,3 +3,5 @@ images:
   traefik: 'docker.io/library/traefik:v2.1'
   haste: 'docker.io/jonasled/haste-server:latest'
   postgres: 'docker.io/library/postgres:11'
+  portainer: 'docker.io/portainer/portainer:latest'
+  portainer_agent: 'docker.io/portainer/agent:latest'

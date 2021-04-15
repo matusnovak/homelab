@@ -26,6 +26,10 @@ def test_create_definition():
         'project': 'example',
         'container': {
             'image': 'docker.io/library/traefik:latest',
+            'command': [
+                'traefik'
+            ],
+            'hostname': None,
             'name': 'traefik',
             'networks': [
                 {
@@ -94,6 +98,7 @@ def test_create_definition():
 
     assert definition['image'] == 'docker.io/library/traefik:latest'
     assert definition['name'] == 'example_traefik'
+    assert definition['command'] == ['traefik']
 
     assert 'default' in definition['networks']
     assert definition['networks']['default']['aliases'] == ['traefik']
@@ -138,6 +143,9 @@ def test_add_image_vars():
 
     definition = {
         'image': 'docker.io/library/traefik:v2.1',
+        'command': [
+            'traefik'
+        ],
         'networks': {
             'bridge': {
                 'aliases': []
@@ -207,6 +215,8 @@ def test_deploy():
         'project': 'pytest',
         'container': {
             'image': 'docker.io/library/traefik:v2.1',
+            'command': None,
+            'hostname': None,
             'name': 'traefik',
             'networks': [{
                 'name': 'bridge',

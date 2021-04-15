@@ -1,0 +1,116 @@
+---
+- name: Create Portainer folder structure
+  become: yes
+  file:
+    path: "{{ data_dir }}/data/portainer/{{item}}"
+    state: directory
+    mode: 0755
+    owner: "1000"
+    group: "1000"
+    recurse: no
+  loop:
+    - "data"
+
+- name: "Create Portainer network"
+  docker_network:
+    host: "{{ docker.host }}"
+    project: "{{ project_name }}"
+    network:
+      name: "portainer"
+      attachable: true
+  register: "portainer_agent_network"
+
+# TODO: Deploy globally if in swarm mode
+- name: Deploy Portainer Agent
+  docker_deploy:
+    host: "{{ docker.host }}"
+    project: "{{ project_name }}"
+    container:
+      image: "{{ images.portainer_agent }}"
+      name: "portainer_agent"
+      hostname: "{{ project_name }}_portainer_agent"
+      networks:
+        - name: "{{ portainer_agent_network.name }}"
+          alias: "portainer_agent"
+      environment:
+        - key: "AGENT_CLUSTER_ADDR"
+          value: "portainer_agent"
+        - key: "AGENT_PORT"
+          value: "9001"
+        - key: "AGENT_SECRET"
+          value: "{{ passwords.portainer_agent }}"
+      volumes:
+        - host: "/var/run/docker.sock" # TODO
+          guest: "/var/run/docker.sock"
+          read_only: false
+        - host: "/var/lib/docker/volumes" # TODO
+          guest: "/var/lib/docker/volumes"
+          read_only: false
+  register: portainer_agent_container
+
+- name: Deploy Portainer
+  docker_deploy:
+    host: "{{ docker.host }}"
+    project: "{{ project_name }}"
+    container:
+      image: "{{ images.portainer }}"
+      name: "portainer"
+      command:
+        - "-H"
+        - "tcp://{{ project_name }}_portainer_agent:9001"
+        - "--tlsskipverify"
+      networks:
+        - name: "{{ docker_network.name }}"
+          alias: "portainer"
+        - name: "{{ portainer_agent_network.name }}"
+          alias: "portainer"
+      environment:
+        - key: "AGENT_SECRET"
+          value: "{{ passwords.portainer_agent }}"
+      volumes:
+        - host: "{{ data_dir }}/data/portainer/data"
+          guest: "/data"
+          read_only: false
+      labels:
+        - key: "traefik.enable"
+          value: "true"
+        - key: "traefik.http.services.portainer.loadbalancer.server.port"
+          value: "9000"
+        - key: "traefik.http.routers.portainer.rule"
+          value: "Host(`portainer.{{ domain_name }}`)"
+        - key: "traefik.http.routers.portainer.entrypoints"
+          value: "{{ traefik_entrypoints }}"
+        - key: "traefik.http.routers.portainer.tls.certresolver"
+          value: "{{ traefik_certresolver }}"
+        - key: "traefik.http.routers.portainer.tls"
+          value: "{{ 'true' if traefik.http.enabled else 'false' }}"
+  register: portainer_container
+
+- name: Healthcheck for Portainer 
+  http_wait:
+    url: "{{traefik_entrypoint}}"
+    status_code: "200"
+    retries: 3
+    delay: 5
+    headers:
+      - "Host: portainer.{{ domain_name }}"
+  when: traefik.https.enabled
+
+- name: Copy scripts for Portainer
+  copy:
+    src: "roles/portainer/scripts/main.py"
+    dest: "/tmp/portainer.py"
+
+- name: Run scripts for Portainer
+  proxy_script:
+    docker:
+      host: "{{ docker.host }}"
+    container: "{{ portainer_container.id }}"
+    port: "9000"
+    script: "/tmp/portainer.py"
+    args:
+      - "--username"
+      - "admin"
+      - "--password"
+      - "{{ passwords.portainer_admin }}"
+    

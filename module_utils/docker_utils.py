@@ -15,7 +15,7 @@ def find_free_port():
 PROXY_IMAGE = 'hpello/tcp-proxy'
 
 
-def _create_proxy(params: dict, port: int):
+def _create_proxy(params: dict, container_id: str, port: int):
     docker = DockerClient(
         base_url=params['host'],
         tls=TLSConfig(
@@ -25,7 +25,7 @@ def _create_proxy(params: dict, port: int):
     )
 
     # Find the container
-    container = docker.containers.get(params['container'])
+    container = docker.containers.get(container_id)
 
     # Get the network alias
     networks = container.attrs['NetworkSettings']['Networks']
@@ -67,8 +67,8 @@ def _create_proxy(params: dict, port: int):
 
 
 @contextmanager
-def create_proxy(params: dict, port: int):
-    proxy, port = _create_proxy(params, port)
+def create_proxy(params: dict, container_id: str, port: int):
+    proxy, port = _create_proxy(params, container_id, port)
     try:
         yield port
     finally:
