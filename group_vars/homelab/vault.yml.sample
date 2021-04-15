@@ -1,3 +1,16 @@
+# Please encrypt this file with Ansible by creating your own vault.
+# Use these variables below as placeholders but use your own passwords!
+#
+# To create random password:
+#    $ openssl rand -base64 16
+#
+# To create your vault:
+#    $ export EDITOR=nano
+#    $ ansible-vault create group_vars/homelab/vault.yml
+# 
+# You will need to provide password for the vault when creating it.
+# And during executing Ansible playbook, use:
+#    $ ansible-playbook site.yml [...] --ask-vault-pass
 ---
 passwords:
   postgres_admin: "Password1!"

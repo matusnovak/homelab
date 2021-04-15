@@ -41,8 +41,7 @@ jobs:
 
       - name: Ansible
         run: |
-          cp ./.github/workflows/vault.yml.sample ./group_vars/homelab/vault.yml
-          cp ./.github/workflows/vault.pass .
+          for f in ./group_vars/homelab/*.yml.sample; do mv -- "$f" "${f%.yml.sample}.yml"; done
           ansible-playbook integration.yml -v --vault-password-file=vault.pass
 
   apps:
@@ -71,6 +70,5 @@ jobs:
 
       - name: Ansible
         run: |
-          cp ./.github/workflows/vault.yml.sample ./group_vars/homelab/vault.yml
-          cp ./.github/workflows/vault.pass .
+          for f in ./group_vars/homelab/*.yml.sample; do mv -- "$f" "${f%.yml.sample}.yml"; done
           ansible-playbook integration.yml -v --vault-password-file=vault.pass
