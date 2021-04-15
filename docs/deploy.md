@@ -10,13 +10,15 @@ Your host system will need:
 
 ## Configure
 
-**See [docs/apps.md](docs/apps.md) to see list of all available apps.**
+**See [apps.md](apps.md) to see list of all available apps.**
 
-Edit `homelab.yml` and select what apps you want to use. You will have to modify configuration files for each app accordingly in the `group_vars/homelab/*.yml` files. The default configuration will work out of the box in most cases.
+Edit `homelab.yml` and select what apps you want to use. You will have to modify configuration files for each app accordingly in the `group_vars/homelab/*.yml` files. You can use the sample files provided in the `group_vars/homelab/` folder. Simply copy them and rename `*.yml.sample` into `*.yml`. The default configuration will work out of the box in most cases.
 
 ## Vault (passwords)
 
-Next, you will have to create a vault file that contains your passwords. For example, a password for PostgreSQL admin user. To do that, execute the following:
+Next, you will have to create a vault file that contains your passwords. For example, a password for PostgreSQL admin user. An example is provided in `group_vars/homelab/vault.yml.sample` that is not encrypted.
+
+To create your own encrypted vault, execute the following:
 
 ```bash
 # Select your editor (optional)
@@ -26,13 +28,7 @@ export EDITOR=nano
 ansible-vault create group_vars/homelab/vault.yml
 ```
 
-Add the following section:
-
-```yml
----
-passwords:
-  postgres_admin: password
-```
+Add copy the sample contents from `group_vars/homelab/vault.yml.sample` into your own vault.
 
 You can generate a random password via `openssl rand -base64 16`
 

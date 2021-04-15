@@ -35,6 +35,17 @@ PostgreSQL is a powerful, open source object-relational database system with ove
 * **Authentication:** N/A
 * **Resource usage:** Low CPU and low RAM
 
+## App: OpenLDAP (dependency)
+
+OpenLDAP is a free, open-source implementation of the Lightweight Directory Access Protocol developed by the OpenLDAP Project.
+
+* **Official page:** <https://www.openldap.org/>
+* **Role name:** `ldap`
+* **Config file:** `group_vars/homelab/ldap.yml`
+* **Web location:** N/A
+* **Authentication:** N/A
+* **Resource usage:** Low CPU and low RAM
+
 ## App: Haste
 
 Haste is an open-source pastebin software written in node.js, which is easily installable in any network.
