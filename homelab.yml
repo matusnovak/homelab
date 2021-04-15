@@ -7,4 +7,10 @@
     
     # [Haste]
     # Haste is an open-source pastebin software written in node.js
+    # No config file
     # - haste
+
+    # [Portainer]
+    # Portainer is a universal container management tool for Docker.
+    # Config file: group_vars/homelab/portainer.yml
+    # - portainer
