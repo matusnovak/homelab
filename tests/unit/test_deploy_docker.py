@@ -129,68 +129,6 @@ def test_pull_image():
     library.pull_image(client, 'docker.io/library/ubuntu:18.04')
 
 
-def test_add_image_vars():
-    client = docker.from_env()
-
-    library.pull_image(client, 'docker.io/library/traefik:v2.1')
-
-    image = library.get_image(client, 'docker.io/library/traefik:v2.1')
-    assert image is not None
-    assert 'traefik:v2.1' in image.attrs['RepoTags']
-
-    assert 'org.opencontainers.image.title' in image.attrs['Config']['Labels']
-    assert image.attrs['Config']['Labels']['org.opencontainers.image.title'] == 'Traefik'
-
-    definition = {
-        'image': 'docker.io/library/traefik:v2.1',
-        'command': [
-            'traefik'
-        ],
-        'networks': {
-            'bridge': {
-                'aliases': []
-            }
-        },
-        'ports': {
-            '80/tcp': '80'
-        },
-        'volumes': {
-            '/tmp/traefik/config': '/config'
-        },
-        'labels': {
-            'com.docker.compose.project': 'example',
-            'org.opencontainers.image.title': 'Example'
-        },
-        'environment': {
-            'WEB_PORT': '80'
-        }
-    }
-
-    library.add_image_vars(image, definition)
-
-    assert 'PATH' in definition['environment']
-    assert definition['environment']['PATH'] == '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
-    assert sorted(definition['environment'].keys()) == sorted([
-        'PATH',
-        'WEB_PORT'
-    ])
-
-    assert 'org.opencontainers.image.description' in definition['labels']
-    assert 'org.opencontainers.image.title' in definition['labels']
-    assert definition['labels']['org.opencontainers.image.title'] == 'Example'
-    assert 'com.docker.compose.project' in definition['labels']
-    assert definition['labels']['com.docker.compose.project'] == 'example'
-    assert sorted(definition['labels'].keys()) == sorted([
-        'org.opencontainers.image.description',
-        'org.opencontainers.image.documentation',
-        'org.opencontainers.image.title',
-        'org.opencontainers.image.url',
-        'org.opencontainers.image.vendor',
-        'org.opencontainers.image.version',
-        'com.docker.compose.project'
-    ])
-
-
 def test_deploy():
     client = docker.from_env()
 
