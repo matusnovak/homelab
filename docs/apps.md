@@ -1,4 +1,4 @@
-# Apps
+# Homelab: Apps
 
 The following is a list of available apps and some basic information.
 
