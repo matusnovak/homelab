@@ -2,7 +2,7 @@
 # Where all application data will be stored.
 # This must be a persistent folder. 
 # Changing it may cause loss of data.
-data_dir: '/var/lib/homelab-ansible/temp'
+data_dir: '/var/lib/homelab'
 
 # Name of the project that all Docker containers will use.
 # Think of it as a namespace.
