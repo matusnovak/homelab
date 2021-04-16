@@ -1,0 +1,33 @@
+---
+- name: Create MongoDB folder structure
+  become: yes
+  file:
+    path: "{{ data_dir }}/data/mongo/{{item}}"
+    state: directory
+    mode: 0755
+    owner: "999"
+    group: "999"
+    recurse: false
+  loop:
+    - "data"
+
+- name: Deploy MongoDB
+  docker_deploy:
+    host: "{{ docker.host }}"
+    project: "{{ project_name }}"
+    container:
+      image: "{{ images.mongo }}"
+      name: "mongo"
+      networks:
+        - name: "{{ docker_network.name }}"
+          alias: "mongo"
+      volumes:
+        - host: "{{ data_dir }}/data/mongo/data"
+          guest: "/data/db"
+          read_only: false
+      environment:
+        - key: "MONGO_INITDB_ROOT_USERNAME"
+          value: "admin"
+        - key: "MONGO_INITDB_ROOT_PASSWORD"
+          value: "{{ passwords.mongo_admin }}"
+  register: container_mongo

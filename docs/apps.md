@@ -35,6 +35,17 @@ PostgreSQL is a powerful, open source object-relational database system with ove
 * **Authentication:** N/A
 * **Resource usage:** Low CPU and low RAM
 
+## App: MongoDB (dependency)
+
+MongoDB is a general purpose, document-based, distributed database built for modern application developers and for the cloud era.
+
+* **Official page:** <https://www.mongodb.com/>
+* **Role name:** `mongo`
+* **Config file:** N/A
+* **Web location:** N/A
+* **Authentication:** N/A
+* **Resource usage:** Low CPU and low RAM
+
 ## App: OpenLDAP (dependency)
 
 OpenLDAP is a free, open-source implementation of the Lightweight Directory Access Protocol developed by the OpenLDAP Project.

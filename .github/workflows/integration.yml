@@ -26,6 +26,8 @@ jobs:
             role: 'postgres'
           - name: 'OpenLDAP'
             role: 'ldap'
+          - name: 'MongoDB'
+            role: 'mongo'
     name: 'App: ${{ matrix.name }} (dependency)'
     runs-on: ubuntu-latest
     timeout-minutes: 5

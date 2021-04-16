@@ -31,3 +31,7 @@ passwords:
   # This password is for the root user named "cn=admin,dc=example,dc=com" in LDAP.
   # This can not be changed later!
   ldap_admin: "Password1!"
+  
+  # This password is for Mongo database.
+  # This can not be changed later!
+  mongo_admin: "Password1!"
