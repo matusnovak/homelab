@@ -68,6 +68,17 @@ phpLDAPadmin is a web app for administering Lightweight Directory Access Protoco
 * **Authentication:** LDAP-integrated
 * **Resource usage:** Low CPU and low RAM
 
+## App: Adminer
+
+Database management in a single PHP file.
+
+* **Official page:** <https://www.adminer.org/>
+* **Role name:** `adminer`
+* **Config file:** N/A
+* **Web location:** `https://adminer.example.com/`
+* **Authentication:** Database specific
+* **Resource usage:** Low CPU and low RAM
+
 ## App: Haste
 
 Haste is an open-source pastebin software written in node.js, which is easily installable in any network.

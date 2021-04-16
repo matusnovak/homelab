@@ -57,6 +57,8 @@ jobs:
             role: 'portainer'
           - name: 'phpLDAPadmin'
             role: 'phpldapadmin'
+          - name: 'Adminer'
+            role: 'adminer'
     name: 'App: ${{ matrix.name }}'
     runs-on: ubuntu-latest
     timeout-minutes: 5

@@ -20,3 +20,8 @@
     # Access Protocol servers.
     # Config file: None
     # - phpldapadmin
+    
+    # [Adminer]
+    # Database management in a single PHP file.
+    # Config file: None
+    # - adminer

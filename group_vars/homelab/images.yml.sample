@@ -7,3 +7,4 @@ images:
   portainer_agent: 'docker.io/portainer/agent:latest'
   openldap: 'docker.io/osixia/openldap:latest'
   phpldapadmin: 'docker.io/osixia/phpldapadmin:latest'
+  adminer: 'docker.io/library/adminer:latest'
