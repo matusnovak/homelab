@@ -77,8 +77,8 @@
           guest: "80"
           protocol: "tcp"
       volumes:
-        - host: "/var/run/docker.sock" # TODO
-          guest: "/var/run/docker.sock"
+        - host: "{{ traefik.docker.host }}" # TODO
+          guest: "{{ traefik.docker.host }}"
           read_only: false
         - host: "{{ data_dir }}/data/traefik/traefik.yml"
           guest: "/etc/traefik/traefik.yml"

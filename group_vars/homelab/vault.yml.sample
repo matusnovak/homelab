@@ -13,7 +13,21 @@
 #    $ ansible-playbook site.yml [...] --ask-vault-pass
 ---
 passwords:
+  # This password will be used for the "postgres" user that has the
+  # highest privileges. Will be used to create databases and to populate data.
+  # The apps will use their own users.
+  # This can not be changed later!
   postgres_admin: "Password1!"
+
+  # This password will be used for communication between Portainer
+  # and portainer agent. Changing this is allowed.
   portainer_agent: "Password1!"
+
+  # This password will be used for the "admin" user in Portainer.
+  # This user is created when Portainer is run for the first time.
+  # This can not be changed later!
   portainer_admin: "Password1!"
+
+  # This password is for the root user named "cn=admin,dc=example,dc=com" in LDAP.
+  # This can not be changed later!
   ldap_admin: "Password1!"

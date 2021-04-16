@@ -1,0 +1,14 @@
+---
+portainer:
+  # LDAP inetgration
+  # Does not affect the "admin" user.
+  ldap:
+    
+    # Enable LDAP for portainer?
+    # Set this to false if you wish to remove LDAP from Portainer.
+    enabled: true
+
+    # Name of the LDAP group that the users must be part of in order
+    # to log in into Portainer. Does not affect the "admin" user.
+    group: "portainer"
+    

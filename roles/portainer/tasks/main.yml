@@ -96,21 +96,39 @@
       - "Host: portainer.{{ domain_name }}"
   when: traefik.https.enabled
 
-- name: Copy scripts for Portainer
-  copy:
-    src: "roles/portainer/scripts/main.py"
-    dest: "/tmp/portainer.py"
+- name: Create LDAP group for Portainer
+  proxy_ldap:
+    docker:
+      host: "{{ docker.host }}"
+    container: "{{ ldap_container.id }}"
+    user: "cn=admin,{{ ldap.domain }}"
+    password: "{{ passwords.ldap_admin }}"
+    base: "{{ ldap_groups.dn }}"
+    group:
+      name: "{{ portainer.ldap.group }}"
+      members:
+        # At least one member must be present
+        - name: "cn=admin,{{ ldap.domain }}"
+  register: "portainer_ldap"
+  when: "portainer.ldap.enabled"
 
-- name: Run scripts for Portainer
+- name: Copy script for Portainer
+  copy:
+    src: "roles/portainer/scripts/init.py"
+    dest: "/tmp/portainer-init.py"
+
+- name: Create options for script for Portainer
+  template:
+    src: "roles/portainer/scripts/init.json.j2"
+    dest: "/tmp/portainer-init.json"
+
+- name: Run script for Portainer
   proxy_script:
     docker:
       host: "{{ docker.host }}"
     container: "{{ portainer_container.id }}"
     port: "9000"
-    script: "/tmp/portainer.py"
+    script: "/tmp/portainer-init.py"
     args:
-      - "--username"
-      - "admin"
-      - "--password"
-      - "{{ passwords.portainer_admin }}"
-    
+      - "/tmp/portainer-init.json"
+

@@ -18,7 +18,7 @@ providers:
     directory: "/config"
     watch: true
   docker:
-    endpoint: "{{ docker.host }}"
+    endpoint: "unix:/{{ traefik.docker.host }}"
     network: "{{ docker_network.name }}"
     watch: true
     exposedByDefault: false

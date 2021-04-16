@@ -2,7 +2,7 @@
 - name: Create OpenLDAP folder structure
   become: yes
   file:
-    path: "{{ data_dir }}/data/ldap/{{item}}"
+    path: "{{ data_dir }}/data/ldap/{{ item }}"
     state: directory
     mode: 0700
     owner: "911"
@@ -38,19 +38,37 @@
           value: "{{ domain_name }}"
         - key: "LDAP_ADMIN_PASSWORD"
           value: "{{ passwords.ldap_admin }}"
-  register: openldap_container
+  register: ldap_container
 
 - name: Healthcheck for OpenLDAP 
   proxy_ldap:
     docker:
       host: "{{ docker.host }}"
-    container: "{{ openldap_container.id }}"
+    container: "{{ ldap_container.id }}"
     user: "cn=admin,{{ ldap.domain }}"
     password: "{{ passwords.ldap_admin }}"
     base: "{{ ldap.domain }}"
-    filter: "(&(objectClass=top))"
-    exact: "1"
-    attrs:
-      - "dc"
-      - "cn"
-      - "objectClass"
+
+- name: Create LDAP groups organisation unit
+  proxy_ldap:
+    docker:
+      host: "{{ docker.host }}"
+    container: "{{ ldap_container.id }}"
+    user: "cn=admin,{{ ldap.domain }}"
+    password: "{{ passwords.ldap_admin }}"
+    base: "{{ ldap.domain }}"
+    organisational_unit:
+      name: "groups"
+  register: "ldap_groups"
+
+- name: Create LDAP users organisation unit
+  proxy_ldap:
+    docker:
+      host: "{{ docker.host }}"
+    container: "{{ ldap_container.id }}"
+    user: "cn=admin,{{ ldap.domain }}"
+    password: "{{ passwords.ldap_admin }}"
+    base: "{{ ldap.domain }}"
+    organisational_unit:
+      name: "users"
+  register: "ldap_users"

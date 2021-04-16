@@ -6,11 +6,10 @@ import json
 
 def exec(params: dict):
     with create_proxy(params['docker'], params['container'], params['port']) as port:
-        port_arg = ['--port', str(port)]
         args = params['args']
         script = params['script']
 
-        p = Popen(['python3', script] + port_arg + args, stdin=PIPE,
+        p = Popen(['/usr/bin/python3', script, str(port)] + args, stdin=PIPE,
                   stdout=PIPE, stderr=PIPE, bufsize=-1)
 
         output, error = p.communicate()
