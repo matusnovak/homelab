@@ -28,14 +28,28 @@
       environment:
         - key: "POSTGRES_PASSWORD"
           value: "{{ passwords.postgres_admin }}"
-  register: postgres_container
+  register: container_postgres
+
+- name: Copy script for PostgreSQL
+  copy:
+    src: "roles/postgres/files/postgres.py"
+    dest: "/tmp/postgres.py"
 
 - name: Healthcheck for PostgreSQL 
-  proxy_psql:
+  docker_script:
     docker:
       host: "{{ docker.host }}"
-    container: "{{ postgres_container.id }}"
-    dbname: "postgres"
-    user: "postgres"
-    password: "{{ passwords.postgres_admin }}"
-    query: "SELECT version();"
+    network: "{{ docker_network.name }}"
+    image: "{{ scriptrunner.id }}"
+    script: "/tmp/postgres.py"
+    args:
+      - "query"
+      - |
+        {
+          "host": "{{ container_postgres.alias }}",
+          "user": "postgres",
+          "password": "{{ passwords.postgres_admin }}",
+          "port": 5432,
+          "database": "postgres",
+          "query": "SELECT version();"
+        }

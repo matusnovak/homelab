@@ -1,8 +1,9 @@
 from docker.client import DockerClient
 from docker.tls import TLSConfig
-from docker.errors import NotFound
+from docker.errors import NotFound, ContainerError
 import socket
 from contextlib import closing, contextmanager
+import json
 
 
 def find_free_port():

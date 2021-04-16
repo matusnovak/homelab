@@ -45,5 +45,5 @@ Create a new file named `dev.yml` and specify the role of your app you wish to w
 You can use the following command to run Ansible with admin password at the same time. It is very recommended to use `--ask-become-pass` but you can use `ansible_become_pass=password` if you are too lazy like me. The `.vault_pass` is a password for `group_vars/homelab/vault.yml` which contains passwords.
 
 ```
-ansible-playbook dev.yml -v --extra-vars='ansible_become_pass=admin_password_here' --vault-password-file=.vault_pass
+ansible-playbook dev.yml -i hosts -v --extra-vars='ansible_become_pass=admin_password_here' --vault-password-file=.vault_pass
 ```

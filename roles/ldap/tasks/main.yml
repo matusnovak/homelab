@@ -38,37 +38,63 @@
           value: "{{ domain_name }}"
         - key: "LDAP_ADMIN_PASSWORD"
           value: "{{ passwords.ldap_admin }}"
-  register: ldap_container
+  register: container_ldap
 
-- name: Healthcheck for OpenLDAP 
-  proxy_ldap:
+- name: Copy script for OpenLDAP
+  copy:
+    src: "roles/ldap/files/openldap.py"
+    dest: "/tmp/openldap.py"
+
+- name: Healthcheck for OpenLDAP
+  docker_script:
     docker:
       host: "{{ docker.host }}"
-    container: "{{ ldap_container.id }}"
-    user: "cn=admin,{{ ldap.domain }}"
-    password: "{{ passwords.ldap_admin }}"
-    base: "{{ ldap.domain }}"
+    network: "{{ docker_network.name }}"
+    image: "{{ scriptrunner.id }}"
+    script: "/tmp/openldap.py"
+    args:
+      - "healthcheck"
+      - |
+        {
+          "address": "ldap://{{ container_ldap.alias }}:389",
+          "user": "cn=admin,{{ ldap.domain }}",
+          "password": "{{ passwords.ldap_admin }}"
+        }
 
 - name: Create LDAP groups organisation unit
-  proxy_ldap:
+  docker_script:
     docker:
       host: "{{ docker.host }}"
-    container: "{{ ldap_container.id }}"
-    user: "cn=admin,{{ ldap.domain }}"
-    password: "{{ passwords.ldap_admin }}"
-    base: "{{ ldap.domain }}"
-    organisational_unit:
-      name: "groups"
+    network: "{{ docker_network.name }}"
+    image: "{{ scriptrunner.id }}"
+    script: "/tmp/openldap.py"
+    args:
+      - "organizationa_unit"
+      - |
+        {
+          "address": "ldap://{{ container_ldap.alias }}:389",
+          "user": "cn=admin,{{ ldap.domain }}",
+          "password": "{{ passwords.ldap_admin }}",
+          "base": "{{ ldap.domain }}",
+          "name": "{{ ldap.groups_unit }}"
+        }
   register: "ldap_groups"
 
 - name: Create LDAP users organisation unit
-  proxy_ldap:
+  docker_script:
     docker:
       host: "{{ docker.host }}"
-    container: "{{ ldap_container.id }}"
-    user: "cn=admin,{{ ldap.domain }}"
-    password: "{{ passwords.ldap_admin }}"
-    base: "{{ ldap.domain }}"
-    organisational_unit:
-      name: "users"
+    network: "{{ docker_network.name }}"
+    image: "{{ scriptrunner.id }}"
+    script: "/tmp/openldap.py"
+    args:
+      - "organizationa_unit"
+      - |
+        {
+          "address": "ldap://{{ container_ldap.alias }}:389",
+          "user": "cn=admin,{{ ldap.domain }}",
+          "password": "{{ passwords.ldap_admin }}",
+          "base": "{{ ldap.domain }}",
+          "name": "{{ ldap.users_unit }}"
+        }
   register: "ldap_users"

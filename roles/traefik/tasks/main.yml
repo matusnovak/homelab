@@ -104,7 +104,7 @@
           value: "{{ traefik_certresolver }}"
         - key: "traefik.http.routers.traefik.middlewares"
           value: "{{ 'authelia@docker' if traefik.dashboard.authelia else '' }}"
-  register: traefik_container
+  register: container_traefik
 
 - name: Restart if config changes
   docker_restart:
@@ -112,7 +112,7 @@
     project: "{{ project_name }}"
     containers:
       - "traefik"
-  when: traefik_container.changed == false and traefik_config.changed
+  when: container_traefik.changed == false and traefik_config.changed
 
 - name: Wait for Traefik load balancer HTTP
   http_wait:

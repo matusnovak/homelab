@@ -46,7 +46,7 @@
         - host: "/var/lib/docker/volumes" # TODO
           guest: "/var/lib/docker/volumes"
           read_only: false
-  register: portainer_agent_container
+  register: container_portainer_agent
 
 - name: Deploy Portainer
   docker_deploy:
@@ -84,7 +84,7 @@
           value: "{{ traefik_certresolver }}"
         - key: "traefik.http.routers.portainer.tls"
           value: "{{ 'true' if traefik.https.enabled else 'false' }}"
-  register: portainer_container
+  register: container_portainer
 
 - name: Healthcheck for Portainer 
   http_wait:
@@ -97,38 +97,51 @@
   when: traefik.https.enabled
 
 - name: Create LDAP group for Portainer
-  proxy_ldap:
+  docker_script:
     docker:
       host: "{{ docker.host }}"
-    container: "{{ ldap_container.id }}"
-    user: "cn=admin,{{ ldap.domain }}"
-    password: "{{ passwords.ldap_admin }}"
-    base: "{{ ldap_groups.dn }}"
-    group:
-      name: "{{ portainer.ldap.group }}"
-      members:
-        # At least one member must be present
-        - name: "cn=admin,{{ ldap.domain }}"
-  register: "portainer_ldap"
+    network: "{{ docker_network.name }}"
+    image: "{{ scriptrunner.id }}"
+    script: "/tmp/openldap.py"
+    args:
+      - "group"
+      - |
+        {
+          "address": "ldap://{{ container_ldap.alias }}:389",
+          "user": "cn=admin,{{ ldap.domain }}",
+          "password": "{{ passwords.ldap_admin }}",
+          "base": "{{ ldap.domain }}",
+          "name": "{{ portainer.ldap.group }}"
+        }
+  register: "ldap_groups_portainer"
   when: "portainer.ldap.enabled"
 
 - name: Copy script for Portainer
   copy:
-    src: "roles/portainer/scripts/init.py"
-    dest: "/tmp/portainer-init.py"
-
-- name: Create options for script for Portainer
-  template:
-    src: "roles/portainer/scripts/init.json.j2"
-    dest: "/tmp/portainer-init.json"
+    src: "roles/portainer/files/portainer.py"
+    dest: "/tmp/portainer.py"
 
 - name: Run script for Portainer
-  proxy_script:
+  docker_script:
     docker:
       host: "{{ docker.host }}"
-    container: "{{ portainer_container.id }}"
-    port: "9000"
-    script: "/tmp/portainer-init.py"
+    network: "{{ docker_network.name }}"
+    image: "{{ scriptrunner.id }}"
+    script: "/tmp/portainer.py"
     args:
-      - "/tmp/portainer-init.json"
-
+      - "init"
+      - |
+        {
+          "url": "http://{{ container_portainer.alias }}:9000",
+          "username": "admin",
+          "password": "{{ passwords.portainer_admin }}"{% if portainer.ldap.enabled %},
+          "ldap": {
+            "host": "{{ container_ldap.alias }}:389",
+            "port": 389,
+            "user": "cn=admin,{{ ldap.domain }}",
+            "password": "{{ passwords.ldap_admin }}",
+            "base": "{{ ldap_users.dn }}",
+            "filter": "(memberOf={{ ldap_groups_portainer.dn }})",
+            "user_attribute": "uid"
+          }{% endif %}
+        }

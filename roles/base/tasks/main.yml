@@ -1,20 +1,16 @@
 ---
-- name: 'Install apt dependencies'
-  become: yes
-  apt:
-    pkg:
-      - 'python3-dev'
-      - 'libpq-dev'
-      - 'libldap2-dev'
-      - 'libsasl2-dev'
-      - 'slapd'
-      - 'ldap-utils'
-      - 'tox'
+- name: 'Copy Dockerfile for script runner image'
+  copy:
+    src: 'roles/base/files/scriptrunner'
+    dest: '/tmp'
 
-- name: 'Install python dependencies'
-  pip:
-    name: ['requests', 'docker', 'psycopg2', 'python-ldap']
-    state: 'latest'
+- name: 'Create image for running scripts'
+  docker_build:
+    docker:
+      host: '{{ docker.host }}'
+    path: '/tmp/scriptrunner'
+    name: '{{ project_name }}_scriptrunner'
+  register: 'scriptrunner'
 
 - name: 'Create shared docker network'
   docker_network:

@@ -15,7 +15,9 @@ def json_file(path: str):
         return json.load(f)
 
 
-def create_admin(base_url: str, args: dict) -> bool:
+def create_admin(args: dict) -> bool:
+    base_url = args['url']
+
     # Check if user has been created
     res = requests.get(f'{base_url}/api/users/admin/check')
 
@@ -36,7 +38,9 @@ def create_admin(base_url: str, args: dict) -> bool:
     return False
 
 
-def login(base_url: str, args: dict) -> str:
+def login(args: dict) -> str:
+    base_url = args['url']
+
     # Log in
     data = {
         'username': args['username'],
@@ -67,7 +71,9 @@ def check_ldap_match(ldap: dict, args: dict) -> bool:
     )
 
 
-def enable_ldap(base_url: str, jwt: str, args: dict, settings: dict):
+def enable_ldap(jwt: str, args: dict, settings: dict):
+    base_url = args['url']
+
     headers = {
         'Authorization': f'Bearer {jwt}'
     }
@@ -104,7 +110,9 @@ def enable_ldap(base_url: str, jwt: str, args: dict, settings: dict):
     expect(res, 200)
 
 
-def disable_ldap(base_url: str, jwt: str, args: dict, settings: dict):
+def disable_ldap(jwt: str, args: dict, settings: dict):
+    base_url = args['url']
+
     headers = {
         'Authorization': f'Bearer {jwt}'
     }
@@ -133,7 +141,9 @@ def disable_ldap(base_url: str, jwt: str, args: dict, settings: dict):
     expect(res, 200)
 
 
-def update_settings(base_url: str, jwt: str, args: dict) -> bool:
+def update_settings(jwt: str, args: dict) -> bool:
+    base_url = args['url']
+
     headers = {
         'Authorization': f'Bearer {jwt}'
     }
@@ -148,7 +158,7 @@ def update_settings(base_url: str, jwt: str, args: dict) -> bool:
     ldap_enabled = is_ldap_enabled(settings)
 
     # Should we enable LDAP?
-    if args['ldap']['enabled']:
+    if 'ldap' in args:
         match = False
 
         # Check if the expected LDAP config matches with what is in Portainer
@@ -157,31 +167,38 @@ def update_settings(base_url: str, jwt: str, args: dict) -> bool:
 
         # No match or not yet enabled
         if not match:
-            enable_ldap(base_url, jwt, args, settings)
+            enable_ldap(jwt, args, settings)
             return True
 
     # Should we disable LDAP?
-    elif not args['ldap']['enabled'] and ldap_enabled:
-        disable_ldap(base_url, jwt, args, settings)
+    elif 'ldap' not in args and ldap_enabled:
+        disable_ldap(jwt, args, settings)
         return True
 
     return False
 
 
-def main():
-    port = int(sys.argv[1])
-    args = json_file(sys.argv[2])
+def command_init(args: dict) -> dict:
     changed = False
 
     # Check if user has been created
-    base_url = f'http://localhost:{port}'
+    changed |= create_admin(args)
+    jwt = login(args)
 
-    changed |= create_admin(base_url, args)
-    jwt = login(base_url, args)
-
-    changed |= update_settings(base_url, jwt, args)
+    changed |= update_settings(jwt, args)
 
     return dict(msg='Success', changed=changed)
+
+
+def main():
+    command = sys.argv[1]
+    args = json.loads(sys.argv[2])
+
+    commands = {
+        'init': command_init
+    }
+
+    return commands[command](args)
 
 
 if __name__ == '__main__':

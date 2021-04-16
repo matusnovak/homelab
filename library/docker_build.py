@@ -1,24 +1,28 @@
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.docker_utils import create_proxy
-from subprocess import Popen, PIPE
-import json
+from docker.client import DockerClient
+from docker.tls import TLSConfig
 
+def build(params: dict):
+    docker = DockerClient(
+        base_url=params['docker']['host'],
+        tls=TLSConfig(
+            verify=params['docker']['tls_verify'],
+            ca_cert=params['docker']['cert_path']
+        )
+    )
 
-def exec(params: dict):
-    with create_proxy(params['docker'], params['container'], params['port']) as port:
-        args = params['args']
-        script = params['script']
+    docker.images.build(
+        path=params['path'],
+        tag=params['name']
+    )
 
-        p = Popen(['/usr/bin/python3', script, str(port)] + args, stdin=PIPE,
-                  stdout=PIPE, stderr=PIPE, bufsize=-1)
+    image = docker.images.get(params['name'])
 
-        output, error = p.communicate()
+    meta = {
+        'id': image.attrs['Id']
+    }
 
-        if p.returncode == 0:
-            res = json.loads(output)
-            return res
-        else:
-            return dict(failed=True, msg='Error code {}'.format(p.returncode), stdout=output, stderr=error)
+    return dict(msg='Success', **meta)
 
 
 def main():
@@ -41,25 +45,16 @@ def main():
                     'type': 'str',
                     'required': False,
                     'default': None
-                },
+                }
             }
         },
-        'container': {
+        'name': {
             'type': 'str',
             'required': True
         },
-        'port': {
-            'type': 'int',
-            'required': True
-        },
-        'script': {
+        'path': {
             'type': 'str',
             'required': True
-        },
-        'args': {
-            'type': 'list',
-            'required': False,
-            'default': []
         }
     }
 
@@ -68,7 +63,7 @@ def main():
         supports_check_mode=False
     )
 
-    module.exit_json(**exec(module.params))
+    module.exit_json(**build(module.params))
 
 
 if __name__ == '__main__':
