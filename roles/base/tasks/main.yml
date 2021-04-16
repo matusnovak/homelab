@@ -1,4 +1,9 @@
 ---
+- name: 'Install python dependencies'
+  pip:
+    name: ['requests', 'docker', 'ansible']
+    state: 'latest'
+
 - name: 'Copy Dockerfile for script runner image'
   copy:
     src: 'roles/base/files/scriptrunner'
