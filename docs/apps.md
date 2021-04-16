@@ -46,17 +46,6 @@ OpenLDAP is a free, open-source implementation of the Lightweight Directory Acce
 * **Authentication:** N/A
 * **Resource usage:** Low CPU and low RAM
 
-## App: Haste
-
-Haste is an open-source pastebin software written in node.js, which is easily installable in any network.
-
-* **Official page:** <http://hastebin.com/>
-* **Role name:** `haste`
-* **Config file:** `group_vars/homelab/haste.yml`
-* **Web location:** `https://haste.example.com/`
-* **Authentication:** None or LDAP-redirect
-* **Resource usage:** Low CPU and low RAM
-
 ## App: Portainer
 
 Portainer is a universal container management tool. It works with Kubernetes, Docker, Docker Swarm and Azure ACI and allows you to manage containers without needing to know platform-specific code.
@@ -66,4 +55,26 @@ Portainer is a universal container management tool. It works with Kubernetes, Do
 * **Config file:** `group_vars/homelab/portainer.yml`
 * **Web location:** `https://portainer.example.com/`
 * **Authentication:** Internal or LDAP-integrated (not able to select Portainer specific group permissions via LDAP)
+* **Resource usage:** Low CPU and low RAM
+
+## App: phpLDAPadmin
+
+phpLDAPadmin is a web app for administering Lightweight Directory Access Protocol servers.
+
+* **Official page:** <http://phpldapadmin.sourceforge.net/wiki/index.php/Main_Page>
+* **Role name:** `phpldapadmin`
+* **Config file:** N/A
+* **Web location:** `https://ldap.example.com/`
+* **Authentication:** LDAP-integrated
+* **Resource usage:** Low CPU and low RAM
+
+## App: Haste
+
+Haste is an open-source pastebin software written in node.js, which is easily installable in any network.
+
+* **Official page:** <http://hastebin.com/>
+* **Role name:** `haste`
+* **Config file:** `group_vars/homelab/haste.yml`
+* **Web location:** `https://haste.example.com/`
+* **Authentication:** None or LDAP-redirect
 * **Resource usage:** Low CPU and low RAM

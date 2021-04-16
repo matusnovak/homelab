@@ -1,0 +1,4 @@
+---
+dependencies:
+  - role: traefik
+  - role: ldap

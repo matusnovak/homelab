@@ -1,0 +1,39 @@
+---
+- name: Deploy phpLDAPadmin
+  docker_deploy:
+    host: "{{ docker.host }}"
+    project: "{{ project_name }}"
+    container:
+      image: "{{ images.phpldapadmin }}"
+      name: "phpldapadmin"
+      networks:
+        - name: "{{ docker_network.name }}"
+          alias: "phpldapadmin"
+      environment:
+        - key: "PHPLDAPADMIN_LDAP_HOSTS"
+          value: "{{ container_ldap.alias }}"
+        - key: "PHPLDAPADMIN_HTTPS"
+          value: "false"
+      labels:
+        - key: "traefik.enable"
+          value: "true"
+        - key: "traefik.http.services.phpldapadmin.loadbalancer.server.port"
+          value: "80"
+        - key: "traefik.http.routers.phpldapadmin.rule"
+          value: "Host(`ldap.{{ domain_name }}`)"
+        - key: "traefik.http.routers.phpldapadmin.entrypoints"
+          value: "{{ traefik_entrypoints }}"
+        - key: "traefik.http.routers.phpldapadmin.tls.certresolver"
+          value: "{{ traefik_certresolver }}"
+        - key: "traefik.http.routers.phpldapadmin.tls"
+          value: "{{ 'true' if traefik.https.enabled else 'false' }}"
+  register: container_phpldapadmin
+
+- name: Healthcheck for phpLDAPadmin 
+  http_wait:
+    url: "{{traefik_entrypoint}}"
+    status_code: "200"
+    retries: 3
+    delay: 5
+    headers:
+      - "Host: ldap.{{ domain_name }}"

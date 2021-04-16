@@ -14,3 +14,9 @@
     # Portainer is a universal container management tool for Docker.
     # Config file: group_vars/homelab/portainer.yml
     # - portainer
+    
+    # [phpLDAPadmin]
+    # phpLDAPadmin is a web app for administering Lightweight Directory 
+    # Access Protocol servers.
+    # Config file: None
+    # - phpldapadmin
