@@ -34,4 +34,4 @@ passwords:
   
   # This password is for Mongo database.
   # This can not be changed later!
-  mongo_admin: "Password1!"
+  mongo_root: "Password1!"

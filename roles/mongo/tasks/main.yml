@@ -27,7 +27,7 @@
           read_only: false
       environment:
         - key: "MONGO_INITDB_ROOT_USERNAME"
-          value: "admin"
+          value: "root"
         - key: "MONGO_INITDB_ROOT_PASSWORD"
-          value: "{{ passwords.mongo_admin }}"
+          value: "{{ passwords.mongo_root }}"
   register: container_mongo
