@@ -111,7 +111,12 @@
           "user": "cn=admin,{{ ldap.domain }}",
           "password": "{{ passwords.ldap_admin }}",
           "base": "{{ ldap.domain }}",
-          "name": "{{ portainer.ldap.group }}"
+          "name": "{{ portainer.ldap.group }}",
+          "members": [
+            {
+              "name": "cn=admin,{{ ldap.domain }}"
+            }
+          ]
         }
   register: "ldap_groups_portainer"
   when: "portainer.ldap.enabled"
