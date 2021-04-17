@@ -66,7 +66,7 @@ def query_apps(args: dict, session):
     return res.json()['apps']
 
 
-def enable_ldap(args: dict, session):
+def enable_app(args: dict, session, name: str):
     base_url = args['url']
 
     res = session.get(f'{base_url}/settings/apps')
@@ -77,7 +77,7 @@ def enable_ldap(args: dict, session):
     }
 
     data = {
-        'appIds': ['user_ldap'],
+        'appIds': [name],
         'groups': []
     }
 
@@ -137,7 +137,7 @@ def configure_ldap(args: dict, session):
     post_action('save', 'ldap_configuration_active', '1')
 
 
-def disable_ldap(args: dict, session):
+def disable_app(args: dict, session, name: str):
     base_url = args['url']
 
     res = session.get(f'{base_url}/settings/apps')
@@ -148,7 +148,7 @@ def disable_ldap(args: dict, session):
     }
 
     data = {
-        'appIds': ['user_ldap'],
+        'appIds': [name],
         'groups': []
     }
 
@@ -156,14 +156,29 @@ def disable_ldap(args: dict, session):
                        json=data, headers=headers)
     expect(res, 200)
 
-    # Configure LDAP
 
-    res = session.get(f'{base_url}/settings/admin/ldap')
+def configure_onlyoffice(args: dict, session):
+    base_url = args['url']
+
+    res = session.get(f'{base_url}/settings/admin/onlyoffice')
     expect(res, 200)
 
     headers = {
         'requesttoken': get_token(res.text)
     }
+
+    data = {
+        'documentserver': args['onlyoffice']['address'],
+        'documentserverInternal': args['onlyoffice']['internal'],
+        'storageUrl': args['onlyoffice']['storage'],
+        'verifyPeerOff': 'true',
+        'secret': args['onlyoffice']['password'],
+        'demo': 'false'
+    }
+
+    res = session.put(f'{base_url}/apps/onlyoffice/ajax/settings/address',
+                      data=data, headers=headers)
+    expect(res, 200)
 
 
 def command_init(args: dict) -> dict:
@@ -175,26 +190,45 @@ def command_init(args: dict) -> dict:
 
     ldap_found = False
     ldap_active = False
+    onlyoffice_found = False
+    onlyoffice_active = False
 
     for app in apps:
         if app['id'] == 'user_ldap':
             ldap_found = True
             ldap_active = app['active']
+        if app['id'] == 'onlyoffice':
+            onlyoffice_found = True
+            onlyoffice_active = app['active']
 
     if not ldap_found:
         return dict(failed=True, msg='No LDAP app found in NextCloud, possibly a bug')
+    if not onlyoffice_found:
+        return dict(failed=True, msg='No OnlyOffice app found in NextCloud, possibly a bug')
 
     if not ldap_active and 'ldap' in args:
         changed = True
         ldap_active = True
-        enable_ldap(args, session)
+        enable_app(args, session, 'user_ldap')
 
     elif ldap_active and 'ldap' not in args:
         changed = True
-        disable_ldap(args, session)
+        disable_app(args, session, 'user_ldap')
 
     if ldap_active and 'ldap' in args:
         configure_ldap(args, session)
+
+    if not onlyoffice_active and 'onlyoffice' in args:
+        changed = True
+        onlyoffice_active = True
+        enable_app(args, session, 'onlyoffice')
+
+    elif onlyoffice_active and 'onlyoffice' not in args:
+        changed = True
+        disable_app(args, session, 'onlyoffice')
+
+    if onlyoffice_active and 'onlyoffice' in args:
+        configure_onlyoffice(args, session)
 
     return dict(msg='Success', changed=changed)
 

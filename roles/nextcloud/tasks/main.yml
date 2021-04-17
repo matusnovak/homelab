@@ -172,6 +172,88 @@
     headers:
       - "Host: nextcloud.{{ domain_name }}"
 
+- name: Set allow remote servers for NextCloud
+  docker_exec:
+    docker:
+      host: "{{ docker.host }}"
+    container: "{{ container_nextcloud.id }}"
+    user: "33"
+    args:
+      - "/var/www/html/occ"
+      - "config:system:set"
+      - "allow_local_remote_servers"
+      - "--value"
+      - "true"
+      - "--type"
+      - "bool"
+
+- name: Create OnlyOffice folder structure
+  become: yes
+  file:
+    path: "{{ data_dir }}/data/nextcloud/onlyoffice/{{item}}"
+    state: directory
+    mode: 0755
+    recurse: no
+  loop:
+    - "data"
+    - "log"
+  when: nextcloud.office.enabled
+
+- name: Deploy OnlyOffice
+  docker_deploy:
+    host: "{{ docker.host }}"
+    project: "{{ project_name }}"
+    container:
+      image: "{{ images.nextcloud_office }}"
+      name: "nextcloud_office"
+      hostname: "office.{{ domain_name }}"
+      networks:
+        - name: "{{ docker_network.name }}"
+          alias: "nextcloud_office"
+      volumes:
+        - host: "{{ data_dir }}/data/nextcloud/onlyoffice/data"
+          guest: "/var/www/onlyoffice/Data"
+          read_only: false
+        - host: "{{ data_dir }}/data/nextcloud/onlyoffice/log"
+          guest: "/var/log/onlyoffice"
+          read_only: false
+      environment:
+        - key: "JWT_ENABLED"
+          value: "true"
+        - key: "JWT_SECRET"
+          value: "{{ passwords.nextcloud_office_jwt }}"
+      labels:
+        - key: "traefik.enable"
+          value: "true"
+        - key: "traefik.http.services.office.loadbalancer.server.port"
+          value: "80"
+        - key: "traefik.http.routers.office.rule"
+          value: "Host(`office.{{ domain_name }}`)"
+        - key: "traefik.http.routers.office.entrypoints"
+          value: "{{ traefik_entrypoints }}"
+        - key: "traefik.http.routers.office.tls.certresolver"
+          value: "{{ traefik_certresolver }}"
+        - key: "traefik.http.routers.office.tls"
+          value: "{{ 'true' if traefik.https.enabled else 'false' }}"
+        - key: "traefik.http.routers.office.middlewares"
+          value: "office-sslheaders"
+        - key: "traefik.http.middlewares.office-sslheaders.headers.customrequestheaders.X-Forwarded-Proto"
+          value: "https"
+        - key: "traefik.http.middlewares.office-sslheaders.headers.accessControlAllowOrigin"
+          value: "*"
+  register: container_nextcloud_office
+  when: nextcloud.office.enabled
+
+- name: Healthcheck for OnlyOffice (takes a while!)
+  http_wait:
+    url: "{{traefik_entrypoint}}/welcome/"
+    status_code: "200"
+    retries: 5
+    delay: 30
+    headers:
+      - "Host: office.{{ domain_name }}"
+  when: nextcloud.office.enabled
+
 - name: Copy script for NextCloud
   copy:
     src: "roles/nextcloud/files/nextcloud.py"
@@ -199,5 +281,11 @@
             "base": "{{ ldap_users.dn }}",
             "filter": "(memberOf={{ ldap_groups_nextcloud.dn }})",
             "user_attribute": "uid"
+          }{% endif %}{% if nextcloud.office.enabled %},
+          "onlyoffice": {
+            "address": "{{ traefik_protocol }}://office.{{ domain_name }}/",
+            "internal": "http://{{ container_nextcloud_office.alias }}/",
+            "storage": "http://{{ container_nextcloud.alias }}/",
+            "password": "{{ passwords.nextcloud_office_jwt }}"
           }{% endif %}
         }

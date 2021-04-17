@@ -24,3 +24,9 @@ nextcloud:
     # Maybe this can be a USB mounted drive?
     # It is not advised to change this later.
     path: '/nextcloud'
+  
+  # NextCloud has an optional support for Only Office
+  office:
+
+    # Enable Only Office integration?
+    enabled: true

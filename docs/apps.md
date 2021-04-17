@@ -133,3 +133,15 @@ Nextcloud is a suite of client-server software for creating and using file hosti
 * **Web location:** `https://nextcloud.example.com/`
 * **Authentication:** Internal or LDAP-integrated
 * **Resource usage:** Low CPU and low RAM
+
+## App: OnlyOffice
+
+OnlyOffice offers a secure online office suite highly compatible with MS Office formats. **This is part of NextCloud!**
+
+* **Official page:** <https://www.onlyoffice.com>
+* **Role name:** `nextcloud` (part of nextcloud!)
+* **Config file:** `group_vars/homelab/nextcloud.yml`
+* **Web location:** `https://nextcloud.example.com/`
+* **Authentication:** Uses NextCloud for authentication
+* **Resource usage:** Medium CPU and High RAM (depends on number of users)
+

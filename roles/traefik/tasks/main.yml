@@ -33,6 +33,15 @@
     owner: root
     group: root
 
+- name: Set Traefik protocol
+  set_fact:
+    traefik_protocol: >-
+      {%- if traefik.https.enabled -%}
+      https
+      {%- else -%}
+      http
+      {%- endif -%}
+
 - name: Set Traefik entrypoints
   set_fact:
     traefik_entrypoints: >-

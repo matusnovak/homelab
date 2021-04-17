@@ -13,3 +13,4 @@ images:
   devdocs: 'docker.io/devdocs/devdocs:latest'
   nextcloud: 'docker.io/library/nextcloud:apache'
   nextcloud_redis: 'docker.io/library/redis:latest'
+  nextcloud_office: 'docker.io/onlyoffice/documentserver:latest'

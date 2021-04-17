@@ -54,3 +54,6 @@ passwords:
   # A database with a nextcloud user will be created using this password.
   # Changing this must be done manually via psql and you will have to update NextCloud config files.
   nextcloud_database: "Password1!"
+  
+  # This is used for communication between NextCloud and OnlyOffice
+  nextcloud_office_jwt: "Password1!"
