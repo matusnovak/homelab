@@ -69,7 +69,7 @@ jobs:
             role: 'nextcloud'
     name: 'App: ${{ matrix.name }}'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     needs: [dependencies]
     steps:
       - name: Checkout
