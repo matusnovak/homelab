@@ -63,6 +63,8 @@ jobs:
             role: 'adminer'
           - name: 'FileBrowser'
             role: 'filebrowser'
+          - name: 'DevDocs'
+            role: 'devdocs'
     name: 'App: ${{ matrix.name }}'
     runs-on: ubuntu-latest
     timeout-minutes: 5

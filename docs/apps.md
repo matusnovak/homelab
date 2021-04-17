@@ -112,3 +112,14 @@ FileFrowser provides a file managing interface within a specified directory and 
 * **Authentication:** Internal only
 * **Resource usage:** Low CPU and low RAM
 
+## App: DevDocs
+
+DevDocs combines multiple API documentations in a fast, organized, and searchable interface. 
+
+* **Official page:** <https://devdocs.io/>
+* **Role name:** `devdocs`
+* **Config file:** N/A
+* **Web location:** `https://devdocs.example.com/`
+* **Authentication:** None
+* **Resource usage:** Low CPU and low RAM
+

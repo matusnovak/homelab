@@ -10,3 +10,4 @@ images:
   adminer: 'docker.io/library/adminer:latest'
   mongo: 'docker.io/library/mongo:latest'
   filebrowser: 'docker.io/filebrowser/filebrowser:latest'
+  devdocs: 'docker.io/devdocs/devdocs:latest'

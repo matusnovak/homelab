@@ -25,3 +25,13 @@
     # Database management in a single PHP file.
     # Config file: None
     # - adminer
+    
+    # [FileBrowser]
+    # FileFrowser provides a file managing interface
+    # Config file: group_vars/homelab/filebrowser.yml
+    # - filebrowser
+    
+    # [DevDocs]
+    # DevDocs combines multiple API documentations in a fast, organized, and searchable interface. 
+    # Config file: None
+    # - devdocs
