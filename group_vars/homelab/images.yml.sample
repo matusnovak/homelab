@@ -9,3 +9,4 @@ images:
   phpldapadmin: 'docker.io/osixia/phpldapadmin:latest'
   adminer: 'docker.io/library/adminer:latest'
   mongo: 'docker.io/library/mongo:latest'
+  filebrowser: 'docker.io/filebrowser/filebrowser:latest'

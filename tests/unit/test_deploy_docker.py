@@ -26,6 +26,7 @@ def test_create_definition():
         'project': 'example',
         'container': {
             'image': 'docker.io/library/traefik:latest',
+            'user': None,
             'command': [
                 'traefik'
             ],
@@ -155,6 +156,7 @@ def test_deploy():
             'image': 'docker.io/library/traefik:v2.1',
             'command': None,
             'hostname': None,
+            'user': None,
             'name': 'traefik',
             'networks': [{
                 'name': 'bridge',

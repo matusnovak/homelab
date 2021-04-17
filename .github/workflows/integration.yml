@@ -61,6 +61,8 @@ jobs:
             role: 'phpldapadmin'
           - name: 'Adminer'
             role: 'adminer'
+          - name: 'FileBrowser'
+            role: 'filebrowser'
     name: 'App: ${{ matrix.name }}'
     runs-on: ubuntu-latest
     timeout-minutes: 5

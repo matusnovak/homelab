@@ -100,3 +100,15 @@ Haste is an open-source pastebin software written in node.js, which is easily in
 * **Web location:** `https://haste.example.com/`
 * **Authentication:** None or LDAP-redirect
 * **Resource usage:** Low CPU and low RAM
+
+## App: FileBrowser
+
+FileFrowser provides a file managing interface within a specified directory and it can be used to upload, delete, preview, rename and edit your files.
+
+* **Official page:** <https://filebrowser.org/>
+* **Role name:** `filebrowser`
+* **Config file:** `group_vars/homelab/filebrowser.yml`
+* **Web location:** `https://filebrowser.example.com/`
+* **Authentication:** Internal only
+* **Resource usage:** Low CPU and low RAM
+

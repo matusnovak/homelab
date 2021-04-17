@@ -25,13 +25,17 @@ passwords:
 
   # This password will be used for the "admin" user in Portainer.
   # This user is created when Portainer is run for the first time.
-  # This can not be changed later!
+  # This can not be changed later! You will have to do that manually.
   portainer_admin: "Password1!"
 
   # This password is for the root user named "cn=admin,dc=example,dc=com" in LDAP.
-  # This can not be changed later!
+  # This can not be changed later! You will have to do that manually.
   ldap_admin: "Password1!"
   
   # This password is for Mongo database.
-  # This can not be changed later!
+  # This can not be changed later! You will have to do that manually.
   mongo_root: "Password1!"
+
+  # This password is for File Browser
+  # This can not be changed later! You will have to do that manually.
+  filebrowser_admin: "Password1!"

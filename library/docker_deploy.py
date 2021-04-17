@@ -47,6 +47,7 @@ def create_definition(params: dict):
     definition = {
         'image': params['container']['image'],
         'command': params['container']['command'],
+        'user': params['container']['user'],
         'name': create_container_name(params['project'], params['container']['name']),
         'hostname': params['container']['hostname'],
         'networks': {
@@ -161,6 +162,7 @@ def create_container(docker: DockerClient, definition: dict):
         'environment': definition['environment'],
         'volumes': volumes,
         'ports': ports,
+        'user': definition['user'],
         'host_config': docker.api.create_host_config(**host_config),
         'detach': True,
         'networking_config': docker.api.create_networking_config(networking_config)
@@ -319,6 +321,11 @@ def main():
                 },
                 'command': {
                     'type': 'list',
+                    'required': False,
+                    'default': None
+                },
+                'user': {
+                    'type': 'str',
                     'required': False,
                     'default': None
                 },

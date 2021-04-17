@@ -1,0 +1,17 @@
+---
+filebrowser:
+  # The user ID to use for accessing files.
+  # The FileBrowser will act on behalf of this user on your host path.
+  uid: 1000
+
+  # The user group ID to use for accessing files.
+  # The FileBrowser will act on behalf of this group on your host path.
+  # If you are using Samba share and you would like for FileBrowser
+  # to access it, you probably will have to use group ID of 118.
+  gid: 1000
+
+  # The folder that the FileBrowser will be able to access
+  path: '/home'
+
+  # Should the mounted path be read only?
+  read_only: false
