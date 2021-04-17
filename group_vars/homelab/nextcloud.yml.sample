@@ -1,0 +1,26 @@
+---
+nextcloud:
+  # LDAP inetgration
+  # Does not affect the "admin" user.
+  ldap:
+    
+    # Enable LDAP for NextCloud?
+    # Set this to false if you wish to remove LDAP from NextCloud.
+    enabled: true
+
+    # Name of the LDAP group that the users must be part of in order
+    # to log in into NextCloud. Does not affect the "admin" user.
+    group: "nextcloud"
+
+  # Where should user's data be stored?
+  data:
+    
+    # Set this to true to use the path below.
+    # Otherwise NextCloud will use a "nextcloud/data" subfolder in
+    # your Homelab data folder specified by data_dir variable.
+    override: false
+
+    # Path on host where NextCloud should store user files.
+    # Maybe this can be a USB mounted drive?
+    # It is not advised to change this later.
+    path: '/nextcloud'

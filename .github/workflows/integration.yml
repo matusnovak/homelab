@@ -65,6 +65,8 @@ jobs:
             role: 'filebrowser'
           - name: 'DevDocs'
             role: 'devdocs'
+          - name: 'NextCloud'
+            role: 'nextcloud'
     name: 'App: ${{ matrix.name }}'
     runs-on: ubuntu-latest
     timeout-minutes: 5

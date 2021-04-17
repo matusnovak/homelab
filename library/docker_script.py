@@ -43,7 +43,10 @@ def execute(params: dict) -> dict:
         if stdout == '' or stdout == '\n':
             return dict(failed=True, msg='No output from script')
 
-        return json.loads(stdout)
+        try:
+            return json.loads(stdout)
+        except:
+            return dict(failed=True, msg='Unable to parse output', output=stdout)
 
     except ContainerError as e:
         return dict(failed=True, msg=str(e))

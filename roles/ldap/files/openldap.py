@@ -34,7 +34,7 @@ def command_group(con, args: dict):
 
     dn = f'cn={name},{base}'
     attrs = [
-        ('objectClass', b'groupOfUniqueNames'),
+        ('objectClass', [b'top', b'groupOfUniqueNames']),
         ('uniqueMember', get_members()),
     ]
 
@@ -70,7 +70,43 @@ def command_ou(con, args: dict):
 
     dn = f'ou={name},{base}'
     attrs = [
-        ('objectClass', b'organizationalUnit')
+        ('objectClass', [b'top', b'organizationalUnit'])
+    ]
+
+    con.add_s(dn, attrs)
+
+    res = get_unit()
+    assert res is not None
+
+    return dict(msg='Success', changed=True, **res)
+
+
+def posix_group(con, args: dict):
+    name = args['name']
+    base = args['base']
+
+    def get_unit():
+        res = con.search_s(
+            base,
+            ldap.SCOPE_SUBTREE,
+            f'(&(objectClass=posixGroup)(cn={name}))',
+            []
+        )
+        if len(res) == 0:
+            return None
+
+        assert len(res) == 1
+        return dict(dn=res[0][0], cn=name, gid=res[0][1]['gidNumber'][0].decode("utf-8"))
+
+    res = get_unit()
+
+    if res is not None:
+        return dict(msg='Success', changed=False, **res)
+
+    dn = f'cn={name},{base}'
+    attrs = [
+        ('gidNumber', b'500'),
+        ('objectClass', b'posixGroup')
     ]
 
     con.add_s(dn, attrs)
@@ -88,7 +124,8 @@ def main():
     commands = {
         'healthcheck': command_healthcheck,
         'organizationa_unit': command_ou,
-        'group': command_group
+        'group': command_group,
+        'posix_group': posix_group
     }
 
     con = ldap.initialize(args['address'])

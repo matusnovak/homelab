@@ -123,3 +123,13 @@ DevDocs combines multiple API documentations in a fast, organized, and searchabl
 * **Authentication:** None
 * **Resource usage:** Low CPU and low RAM
 
+## App: NextCloud
+
+Nextcloud is a suite of client-server software for creating and using file hosting services.
+
+* **Official page:** <https://nextcloud.com/>
+* **Role name:** `nextcloud`
+* **Config file:** `group_vars/homelab/nextcloud.yml`
+* **Web location:** `https://nextcloud.example.com/`
+* **Authentication:** Internal or LDAP-integrated
+* **Resource usage:** Low CPU and low RAM

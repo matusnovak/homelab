@@ -11,3 +11,5 @@ images:
   mongo: 'docker.io/library/mongo:latest'
   filebrowser: 'docker.io/filebrowser/filebrowser:latest'
   devdocs: 'docker.io/devdocs/devdocs:latest'
+  nextcloud: 'docker.io/library/nextcloud:apache'
+  nextcloud_redis: 'docker.io/library/redis:latest'

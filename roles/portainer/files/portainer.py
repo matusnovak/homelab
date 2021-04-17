@@ -56,9 +56,11 @@ def is_ldap_enabled(settings: dict) -> bool:
     return settings['LDAPSettings']['SearchSettings'][0]['Filter'] != ''
 
 
-def check_ldap_match(ldap: dict, args: dict) -> bool:
+def check_ldap_match(settings: dict, args: dict) -> bool:
+    ldap = settings['LDAPSettings']
     return (
-        ldap['URL'] == args['ldap']['host']
+        settings['AuthenticationMethod'] == 2
+        and ldap['URL'] == args['ldap']['host'] + ':' + str(args['ldap']['port'])
         and ldap['AnonymousMode'] == False
         and ldap['ReaderDN'] == args['ldap']['user']
         and ldap['TLSConfig']['TLS'] == False
@@ -79,7 +81,7 @@ def enable_ldap(jwt: str, args: dict, settings: dict):
     }
 
     ldap = settings['LDAPSettings']
-    ldap['URL'] = args['ldap']['host']
+    ldap['URL'] = args['ldap']['host'] + ':' + str(args['ldap']['port'])
     ldap['AnonymousMode'] = False
     ldap['Password'] = args['ldap']['password']
     ldap['ReaderDN'] = args['ldap']['user']
@@ -102,7 +104,8 @@ def enable_ldap(jwt: str, args: dict, settings: dict):
         'UserNameAttribute': args['ldap']['user_attribute']
     }]
 
-    settings['AutoCreateUsers'] = True
+    ldap['AutoCreateUsers'] = True
+    settings['AuthenticationMethod'] = 2
 
     # Save settings
     res = requests.put(f'{base_url}/api/settings',
@@ -133,7 +136,8 @@ def disable_ldap(jwt: str, args: dict, settings: dict):
         'UserNameAttribute': ''
     }]
 
-    settings['AutoCreateUsers'] = True
+    ldap['AutoCreateUsers'] = True
+    settings['AuthenticationMethod'] = 1
 
     # Save settings
     res = requests.put(f'{base_url}/api/settings',
@@ -163,7 +167,7 @@ def update_settings(jwt: str, args: dict) -> bool:
 
         # Check if the expected LDAP config matches with what is in Portainer
         if ldap_enabled:
-            match = check_ldap_match(settings['LDAPSettings'], args)
+            match = check_ldap_match(settings, args)
 
         # No match or not yet enabled
         if not match:

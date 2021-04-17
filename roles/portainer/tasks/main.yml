@@ -110,7 +110,7 @@
           "address": "ldap://{{ container_ldap.alias }}:389",
           "user": "cn=admin,{{ ldap.domain }}",
           "password": "{{ passwords.ldap_admin }}",
-          "base": "{{ ldap.domain }}",
+          "base": "{{ ldap_groups.dn }}",
           "name": "{{ portainer.ldap.group }}",
           "members": [
             {
@@ -141,7 +141,7 @@
           "username": "admin",
           "password": "{{ passwords.portainer_admin }}"{% if portainer.ldap.enabled %},
           "ldap": {
-            "host": "{{ container_ldap.alias }}:389",
+            "host": "{{ container_ldap.alias }}",
             "port": 389,
             "user": "cn=admin,{{ ldap.domain }}",
             "password": "{{ passwords.ldap_admin }}",

@@ -16,7 +16,8 @@ passwords:
   # This password will be used for the "postgres" user that has the
   # highest privileges. Will be used to create databases and to populate data.
   # The apps will use their own users.
-  # This can not be changed later!
+  # This password can not be changed later in here, you must do that 
+  # through the psql command yourself and then update it here.
   postgres_admin: "Password1!"
 
   # This password will be used for communication between Portainer
@@ -25,17 +26,31 @@ passwords:
 
   # This password will be used for the "admin" user in Portainer.
   # This user is created when Portainer is run for the first time.
-  # This can not be changed later! You will have to do that manually.
+  # This password can not be changed later in here, you must do that 
+  # through the app yourself and then update it here.
   portainer_admin: "Password1!"
 
   # This password is for the root user named "cn=admin,dc=example,dc=com" in LDAP.
-  # This can not be changed later! You will have to do that manually.
+  # This password can not be changed later in here, you must do that 
+  # through the app yourself and then update it here.
   ldap_admin: "Password1!"
   
   # This password is for Mongo database.
-  # This can not be changed later! You will have to do that manually.
+  # This password can not be changed later in here, you must do that 
+  # through the app yourself and then update it here.
   mongo_root: "Password1!"
 
   # This password is for File Browser
-  # This can not be changed later! You will have to do that manually.
+  # This password can not be changed later in here, you must do that 
+  # through the app yourself and then update it here.
   filebrowser_admin: "Password1!"
+  
+  # This password is for NextCloud
+  # This password can not be changed later in here, you must do that 
+  # through the app yourself and then update it here.
+  nextcloud_admin: "Password1!"
+  
+  # Password to be used by NextCloud when connecting to database.
+  # A database with a nextcloud user will be created using this password.
+  # Changing this must be done manually via psql and you will have to update NextCloud config files.
+  nextcloud_database: "Password1!"

@@ -98,3 +98,22 @@
           "name": "{{ ldap.users_unit }}"
         }
   register: "ldap_users"
+
+- name: Create LDAP posix group
+  docker_script:
+    docker:
+      host: "{{ docker.host }}"
+    network: "{{ docker_network.name }}"
+    image: "{{ scriptrunner.id }}"
+    script: "/tmp/openldap.py"
+    args:
+      - "posix_group"
+      - |
+        {
+          "address": "ldap://{{ container_ldap.alias }}:389",
+          "user": "cn=admin,{{ ldap.domain }}",
+          "password": "{{ passwords.ldap_admin }}",
+          "base": "{{ ldap_groups.dn }}",
+          "name": "user"
+        }
+  register: "ldap_posix_group"

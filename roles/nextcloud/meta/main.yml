@@ -1,0 +1,7 @@
+---
+dependencies:
+  - role: "traefik"
+  - role: "postgres"
+  - role: "ldap"
+    when: "nextcloud.ldap.enabled"
+

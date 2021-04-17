@@ -35,3 +35,9 @@
     # DevDocs combines multiple API documentations in a fast, organized, and searchable interface. 
     # Config file: None
     # - devdocs
+
+    # [NextCloud]
+    # Nextcloud is a suite of client-server software for creating and using file hosting services.
+    # Config file: group_vars/homelab/nextcloud.yml
+    # - nextcloud
+
