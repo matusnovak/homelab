@@ -48,6 +48,7 @@ def create_definition(params: dict):
         'image': params['container']['image'],
         'command': params['container']['command'],
         'user': params['container']['user'],
+        'restart': params['container']['restart'],
         'name': create_container_name(params['project'], params['container']['name']),
         'hostname': params['container']['hostname'],
         'networks': {
@@ -141,7 +142,11 @@ def create_container(docker: DockerClient, definition: dict):
 
     host_config = {
         'port_bindings': definition['ports'],
-        'binds': definition['volumes']
+        'binds': definition['volumes'],
+        'restart_policy': {
+            'Name': definition['restart'],
+            'MaximumRetryCount': 0,
+        },
     }
 
     for _, volume in definition['volumes'].items():
@@ -328,6 +333,11 @@ def main():
                     'type': 'str',
                     'required': False,
                     'default': None
+                },
+                'restart': {
+                    'type': 'str',
+                    'required': False,
+                    'default': 'unless-stopped'
                 },
                 'name': {
                     'type': 'str',
