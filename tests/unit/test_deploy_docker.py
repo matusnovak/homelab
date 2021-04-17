@@ -31,6 +31,7 @@ def test_create_definition():
                 'traefik'
             ],
             'hostname': None,
+            'restart': 'unless-stopped',
             'name': 'traefik',
             'networks': [
                 {
@@ -157,6 +158,7 @@ def test_deploy():
             'command': None,
             'hostname': None,
             'user': None,
+            'restart': 'unless-stopped',
             'name': 'traefik',
             'networks': [{
                 'name': 'bridge',
