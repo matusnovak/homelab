@@ -57,3 +57,30 @@ passwords:
   
   # This is used for communication between NextCloud and OnlyOffice
   nextcloud_office_jwt: "Password1!"
+
+  # Registration shared secret for Matrix - Synapse
+  # Must be a strong random string with length of 50 characters
+  # Don't use the one from this sample! Generate your own!
+  matrix_registration_secret: "5vpdd8kFjX3wntKBgNzHzecj34QqeytAavdwxduAXwwu2quMhE"
+
+  # Macaroon shared secret for Matrix - Synapse
+  # Must be a strong random string with length of 50 characters
+  # Don't use the one from this sample! Generate your own!
+  matrix_macaroon_secret: "csRC6eFY5JT5BbKLsLsupFtb79nzwFrKeHEHcN5ULyHE8ZDbTv"
+
+  # Form secret for Matrix - Synapse
+  # Must be a strong random string with length of 50 characters
+  # Don't use the one from this sample! Generate your own!
+  matrix_form_secret: "cJstDuMJJnXsQP2yQFXLNTjmtDLRceZ8e8MdHuX7gmWzRfahp2"
+
+  # Shared secret for Matrix - Coturn
+  # Must be a strong random string with around a length of 50 characters
+  # Don't use the one from this sample! Generate your own!
+  matrix_coturn_secret: "GhtjYEhKsyw3g3ggRYKvDMyhJWPtvWUXgZsBKfV9pcLDZn7wf6"
+  
+  # Password for the Synapse database in Postgres
+  # This is for user role "synapse"
+  matrix_database: "Password1!"
+
+  # Password for the Synapse - Redis communication
+  matrix_redis: "Password1!"

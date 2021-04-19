@@ -1,0 +1,11 @@
+use-auth-secret
+static-auth-secret={{ passwords.matrix_coturn_secret }}
+realm=matrix.{{ domain_name }}
+listening-port={{ matrix.coturn.listening_port }}
+min-port={{ matrix.coturn.port_min }}
+max-port={{ matrix.coturn.port_max }}
+verbose
+no-tcp-relay
+allow-loopback-peers
+cli-password=password
+external-ip={{ matrix.coturn.external_ip }}

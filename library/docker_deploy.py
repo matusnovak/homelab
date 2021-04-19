@@ -43,6 +43,23 @@ def make_hash(definition: dict):
     return str(hashlib.md5(json.dumps(definition, sort_keys=True).encode('utf-8')).hexdigest())
 
 
+def create_port_range(port: str) -> List[str]:
+    tokens = port.split('-')
+    if len(tokens) == 1:
+        return [port]
+
+    assert len(tokens) == 2
+
+    begin = int(tokens[0])
+    end = int(tokens[1])
+
+    ports = []
+    for i in range(begin, end + 1):
+        ports.append(str(i))
+
+    return ports
+
+
 def create_definition(params: dict):
     definition = {
         'image': params['container']['image'],
@@ -77,8 +94,13 @@ def create_definition(params: dict):
         if not port['guest'] or not port['host']:
             continue
 
-        key = '{}/{}'.format(port['guest'], port['protocol'])
-        definition['ports'][key] = port['host']
+        guest_ports = create_port_range(port['guest'])
+        host_ports = create_port_range(port['host'])
+        assert len(guest_ports) == len(host_ports)
+
+        for i in range(0, len(guest_ports)):
+            key = '{}/{}'.format(guest_ports[i], port['protocol'])
+            definition['ports'][key] = host_ports[i]
 
     for label in params['container']['labels']:
         if not label['key'] or not label['value']:

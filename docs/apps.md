@@ -145,3 +145,13 @@ OnlyOffice offers a secure online office suite highly compatible with MS Office 
 * **Authentication:** Uses NextCloud for authentication
 * **Resource usage:** Medium CPU and High RAM (depends on number of users)
 
+## App: Matrix
+
+Matrix is an open standard and communication protocol for real-time communication. Comes with Element Web client, Turn server for VoIP, and LDAP integration.
+
+* **Official page:** <https://matrix.org/>, <https://element.io/>
+* **Role name:** `matrix`
+* **Config file:** `group_vars/homelab/matrix.yml`
+* **Web location:** `https://nextcloud.example.com/`
+* **Authentication:** Internal or LDAP-integrated
+* **Resource usage:** Low CPU and Medium RAM (depends on number of users)

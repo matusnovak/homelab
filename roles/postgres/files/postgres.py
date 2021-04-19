@@ -35,7 +35,11 @@ def command_create(connection, args: dict):
             results = cursor.fetchall()
 
             if len(results) == 0:
-                query = f'CREATE DATABASE {database_name};'
+                extra = ''
+                if 'extra' in args['create']['database']:
+                    extra = args['create']['database']['extra']
+
+                query = f'CREATE DATABASE {database_name} {extra};'
                 cursor.execute(query)
                 changed = True
 

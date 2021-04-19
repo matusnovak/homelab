@@ -1,0 +1,49 @@
+---
+matrix:
+  # Allow user registration?
+  # You probably don't want this set to true if you are using LDAP
+  registration: false
+
+  # LDAP configuration
+  ldap:
+    # Use LDAP for user authentication?
+    enabled: true
+
+    # Name of the LDAP group that the users must be assigned to
+    group: "matrix"
+
+  # Turn server
+  # This is used for voice and video calls
+  coturn:
+    enabled: true
+    
+    # Port to use for listening for incomming connections.
+    # This port will be exposed to the host!
+    listening_port: 3478
+
+    # Port range to use for traffic
+    port_min: 49160
+    port_max: 49200
+
+    # This must be your external IP address at which your matrix
+    # server is available.
+    # Prefer to use the flash form of "<local IP>/<external IP>"
+    # Example: "192.168.0.2/80.90.100.110"
+    external_ip: "192.168.0.2"
+  
+  # Url preview for links
+  url_preview:
+
+    # Enable the preview?
+    enabled: true
+
+    # Max link preview size
+    max_size: "10M"
+
+  # Performance metrics
+  metrics:
+    enabled: true
+
+  # Whether or not to report anonymized homeserver usage statistics.
+  report_stats:
+    enabled: false

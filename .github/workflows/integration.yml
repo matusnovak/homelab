@@ -67,6 +67,8 @@ jobs:
             role: 'devdocs'
           - name: 'NextCloud'
             role: 'nextcloud'
+          - name: 'Matrix'
+            role: 'matrix'
     name: 'App: ${{ matrix.name }}'
     runs-on: ubuntu-latest
     timeout-minutes: 15

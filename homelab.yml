@@ -42,3 +42,7 @@
     # Config file: group_vars/homelab/nextcloud.yml
     # - nextcloud
 
+    # [Matrix]
+    # Matrix is an open standard and communication protocol for real-time communication.
+    # Config file: group_vars/homelab/matrix.yml
+    # - matrix

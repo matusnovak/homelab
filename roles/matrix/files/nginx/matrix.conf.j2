@@ -1,0 +1,17 @@
+server {
+  listen         80 default_server;
+  server_name    matrix.{{ domain_name }};
+
+  # Traefik -> nginx -> synapse
+  location /_matrix {
+    proxy_pass http://matrix_synapse:8008;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    client_max_body_size 128m;
+  }
+
+  location /.well-known/matrix/ {
+    root /var/www/;
+    default_type application/json;
+    add_header Access-Control-Allow-Origin  *;
+  }
+}

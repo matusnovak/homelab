@@ -33,7 +33,7 @@
     owner: root
     group: root
 
-- name: Set Traefik protocol
+- name: Set facts
   set_fact:
     traefik_protocol: >-
       {%- if traefik.https.enabled -%}
@@ -41,26 +41,23 @@
       {%- else -%}
       http
       {%- endif -%}
-
-- name: Set Traefik entrypoints
-  set_fact:
+    traefik_port: >-
+      {%- if traefik.https.enabled -%}
+      {{ traefik.https.port }}
+      {%- else -%}
+      {{ traefik.http.port }}
+      {%- endif -%}
     traefik_entrypoints: >-
       {%- if traefik.https.enabled -%}
       web-secure
       {%- else -%}
       web
       {%- endif -%}
-
-- name: Set Traefik certs resolver
-  set_fact:
     traefik_certresolver: >-
       {%- if traefik.https.enabled and traefik.acme.enabled -%}
       letsencrypt
       {%- else -%}
       {%- endif -%}
-
-- name: Set Traefik entrypoint
-  set_fact:
     traefik_entrypoint: >-
       {%- if traefik.https.enabled -%}
       https://localhost:{{ traefik.https.port }}
