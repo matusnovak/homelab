@@ -14,3 +14,8 @@ images:
   nextcloud: 'docker.io/library/nextcloud:apache'
   nextcloud_redis: 'docker.io/library/redis:latest'
   nextcloud_office: 'docker.io/onlyoffice/documentserver:latest'
+  matrix_nginx: 'docker.io/library/nginx:latest'
+  matrix_synapse: 'docker.io/matrixdotorg/synapse:latest'
+  matrix_redis: 'docker.io/library/redis:latest'
+  matrix_riot: 'docker.io/vectorim/riot-web:latest'
+  matrix_coturn: 'docker.io/instrumentisto/coturn:latest'
