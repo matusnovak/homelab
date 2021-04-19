@@ -31,6 +31,7 @@ def test_create_definition():
                 'traefik'
             ],
             'hostname': None,
+            'healthcheck': None,
             'restart': 'unless-stopped',
             'name': 'traefik',
             'networks': [
@@ -158,6 +159,7 @@ def test_deploy():
             'command': None,
             'hostname': None,
             'user': None,
+            'healthcheck': None,
             'restart': 'unless-stopped',
             'name': 'traefik',
             'networks': [{

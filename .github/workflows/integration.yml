@@ -48,6 +48,24 @@ jobs:
           for f in ./group_vars/homelab/*.yml.sample; do mv -- "$f" "${f%.yml.sample}.yml"; done
           ansible-playbook integration.yml -v
 
+      - name: Dump logs
+        if: ${{ always() }}
+        run: |
+          mkdir -p /tmp/docker/{logs,inspect}
+          containers=$(docker ps | awk '{if(NR>1) print $NF}')
+          for container in $containers
+          do
+            docker logs $container > /tmp/docker/logs/$container.log
+            docker inspect $container > /tmp/docker/inspect/$container.log
+          done
+
+      - name: Store logs as artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.name }} Logs
+          path: /tmp/docker/
+
   apps:
     strategy:
       fail-fast: false
@@ -88,3 +106,21 @@ jobs:
         run: |
           for f in ./group_vars/homelab/*.yml.sample; do mv -- "$f" "${f%.yml.sample}.yml"; done
           ansible-playbook integration.yml -v
+
+      - name: Dump logs
+        if: ${{ always() }}
+        run: |
+          mkdir -p /tmp/docker/{logs,inspect}
+          containers=$(docker ps | awk '{if(NR>1) print $NF}')
+          for container in $containers
+          do
+            docker logs $container > /tmp/docker/logs/$container.log
+            docker inspect $container > /tmp/docker/inspect/$container.log
+          done
+
+      - name: Store logs as artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.name }} Logs
+          path: /tmp/docker/

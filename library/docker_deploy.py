@@ -64,6 +64,7 @@ def create_definition(params: dict):
     definition = {
         'image': params['container']['image'],
         'command': params['container']['command'],
+        'healthcheck': params['container']['healthcheck'],
         'user': params['container']['user'],
         'restart': params['container']['restart'],
         'name': create_container_name(params['project'], params['container']['name']),
@@ -185,6 +186,7 @@ def create_container(docker: DockerClient, definition: dict):
         'command': definition['command'],
         'name': definition['name'],
         'hostname': definition['hostname'],
+        'healthcheck': definition['healthcheck'],
         'labels': definition['labels'],
         'environment': definition['environment'],
         'volumes': volumes,
@@ -348,6 +350,11 @@ def main():
                 },
                 'command': {
                     'type': 'list',
+                    'required': False,
+                    'default': None
+                },
+                'healthcheck': {
+                    'type': 'dict',
                     'required': False,
                     'default': None
                 },

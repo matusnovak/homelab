@@ -152,6 +152,6 @@ Matrix is an open standard and communication protocol for real-time communicatio
 * **Official page:** <https://matrix.org/>, <https://element.io/>
 * **Role name:** `matrix`
 * **Config file:** `group_vars/homelab/matrix.yml`
-* **Web location:** `https://nextcloud.example.com/`
+* **Web location:** `https://riot.example.com/`
 * **Authentication:** Internal or LDAP-integrated
 * **Resource usage:** Low CPU and Medium RAM (depends on number of users)

@@ -18,12 +18,15 @@
     container:
       image: "{{ images.haste }}"
       name: "haste"
+      healthcheck:
+        test:
+          - "NONE"
       networks:
         - name: "{{ docker_network.name }}"
           alias: "haste"
       volumes:
         - host: "{{ data_dir }}/data/haste/data"
-          guest: "/srv/haste/data"
+          guest: "/data"
           read_only: false
       labels:
         - key: "traefik.enable"
@@ -38,6 +41,11 @@
           value: "{{ traefik_certresolver }}"
         - key: "traefik.http.routers.haste.tls"
           value: "{{ 'true' if traefik.https.enabled else 'false' }}"
+      environment:
+        - key: "STORAGE_TYPE"
+          value: "file"
+        - key: "STORAGE_FILEPATH"
+          value: "/data"
   register: container_haste
 
 - name: Healthcheck for Haste 
