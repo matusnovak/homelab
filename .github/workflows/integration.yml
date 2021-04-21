@@ -55,8 +55,8 @@ jobs:
           containers=$(docker ps -a | awk '{if(NR>1) print $NF}')
           for container in $containers
           do
-            docker logs $container > /tmp/docker/logs/$container.log
-            docker inspect $container > /tmp/docker/inspect/$container.log
+            docker logs $container > /tmp/docker/logs/$container.log || true
+            docker inspect $container > /tmp/docker/inspect/$container.log || true
           done
 
       - name: Store logs as artifacts
@@ -114,8 +114,8 @@ jobs:
           containers=$(docker ps -a | awk '{if(NR>1) print $NF}')
           for container in $containers
           do
-            docker logs $container > /tmp/docker/logs/$container.log
-            docker inspect $container > /tmp/docker/inspect/$container.log
+            docker logs $container > /tmp/docker/logs/$container.log || true
+            docker inspect $container > /tmp/docker/inspect/$container.log || true
           done
 
       - name: Store logs as artifacts
