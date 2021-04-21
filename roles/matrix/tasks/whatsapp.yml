@@ -1,0 +1,46 @@
+---
+- name: Create WhatsApp bridge folder
+  become: yes
+  file:
+    path: "{{ data_dir }}/data/matrix/bridges/whatsapp"
+    state: directory
+    mode: 0755
+    owner: "1337"
+    group: "1337"
+    recurse: no
+
+- name: Create WhatsApp bridge config
+  become: yes
+  template:
+    src: "roles/matrix/files/bridges/whatsapp/{{item}}.j2"
+    dest: "{{ data_dir }}/data/matrix/bridges/whatsapp/{{item}}"
+    owner: "1337"
+    group: "1337"
+  loop:
+    - "config.yaml"
+  register: "matrix_whatsapp_config"
+
+- name: Deploy WhatsApp bridge
+  docker_deploy:
+    host: "{{ docker.host }}"
+    project: "{{ project_name }}"
+    container:
+      image: "{{ images.matrix_whatsapp }}"
+      name: "matrix_whatsapp"
+      networks:
+        - name: "{{ docker_network.name }}"
+          alias: "whatsappbridge"
+      volumes:
+        - host: "{{ data_dir }}/data/matrix/bridges/whatsapp"
+          guest: "/data"
+          read_only: false
+          mode: "z"
+  register: container_matrix_whatsapp
+
+- name: Restart WhatsApp bridge if config changes
+  docker_restart:
+    host: "{{ docker.host }}"
+    project: "{{ project_name }}"
+    containers:
+      - "matrix_whatsapp"
+  when: container_matrix_whatsapp.changed == false and matrix_whatsapp_config.changed

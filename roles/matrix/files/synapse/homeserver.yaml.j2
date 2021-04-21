@@ -1508,9 +1508,10 @@ room_prejoin_state:
 
 # A list of application service config files to use
 #
-#app_service_config_files:
-#  - app_service_1.yaml
-#  - app_service_2.yaml
+app_service_config_files:
+{% if matrix.bridges.whatsapp.enabled %}
+  - "/bridges/whatsapp/registration.yaml"
+{% endif %}
 
 # Uncomment to enable tracking of application service IP addresses. Implicitly
 # enables MAU tracking for application service users.

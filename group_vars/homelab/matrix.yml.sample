@@ -4,6 +4,10 @@ matrix:
   # You probably don't want this set to true if you are using LDAP
   registration: false
 
+  # Web interface for users to access your Matrix server
+  element:
+    enabled: true
+
   # LDAP configuration
   ldap:
     # Use LDAP for user authentication?
@@ -47,3 +51,17 @@ matrix:
   # Whether or not to report anonymized homeserver usage statistics.
   report_stats:
     enabled: false
+
+  # WhatsApp bridge
+  whatsapp:
+    # Enabled?
+    enabled: true
+
+    # Name of the user to use and administrate the bridges.
+    # If you are using LDAP, this will be the "cn" attribute.
+    admin: "example"
+
+    # Name of the user that can use the bridge with puppeting.
+    # Set to empty string if all users on this server can use it.
+    # Set it to null if you want only admin to use this bridge.
+    user: ""

@@ -19,3 +19,4 @@ images:
   matrix_redis: 'docker.io/library/redis:latest'
   matrix_riot: 'docker.io/vectorim/riot-web:latest'
   matrix_coturn: 'docker.io/instrumentisto/coturn:latest'
+  matrix_whatsapp: 'dock.mau.dev/tulir/mautrix-whatsapp:latest'

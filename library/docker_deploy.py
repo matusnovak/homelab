@@ -127,6 +127,9 @@ def create_definition(params: dict):
             'mode': 'ro' if volume['read_only'] else 'rw'
         }
 
+        if 'mode' in volume:
+            definition['volumes'][key]['mode'] += ',' + volume['mode']
+
     definition['labels'][DOCKER_CONFIG_HASH_LABEL] = make_hash(definition)
 
     return definition

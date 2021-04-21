@@ -1,0 +1,106 @@
+homeserver:
+  address: http://matrix_synapse:8008
+  domain: matrix.{{ domain_name }}
+  asmux: false
+appservice:
+  address: http://whatsappbridge:29319
+  hostname: 0.0.0.0
+  port: 29319
+  database:
+    type: sqlite3
+    uri: mautrix-whatsapp.db
+    max_open_conns: 20
+    max_idle_conns: 2
+  provisioning:
+    prefix: /_matrix/provision/v1
+    shared_secret: disable
+  id: whatsapp
+  bot:
+    username: whatsappbot
+    displayname: WhatsApp bridge bot
+    avatar: mxc://maunium.net/NeXNQarUbrlYBiPCpprYsRqr
+  as_token:
+  hs_token:
+metrics:
+  enabled: false
+  listen: 127.0.0.1:8001
+whatsapp:
+  os_name: Mautrix-WhatsApp bridge
+  browser_name: mx-wa
+bridge:
+{% raw %}
+  username_template: whatsapp_{{.}}
+  displayname_template: '{{if .Notify}}{{.Notify}}{{else}}{{.Jid}}{{end}} (WA)'
+{% endraw %}
+  community_template: ""
+  connection_timeout: 20
+  fetch_message_on_timeout: false
+  delivery_receipts: false
+  login_qr_regen_count: 2
+  max_connection_attempts: 3
+  connection_retry_delay: -1
+  report_connection_retry: true
+  aggressive_reconnect: false
+  chat_list_wait: 30
+  portal_sync_wait: 600
+  user_message_buffer: 1024
+  portal_message_buffer: 128
+  call_notices:
+    start: true
+    end: true
+  initial_chat_sync_count: 10
+  initial_history_fill_count: 20
+  initial_history_disable_notifications: false
+  recovery_chat_sync_count: -1
+  recovery_history_backfill: true
+  chat_meta_sync: true
+  user_avatar_sync: true
+  bridge_matrix_leave: true
+  sync_max_chat_age: 259200
+  sync_with_custom_puppets: true
+  sync_direct_chat_list: false
+  default_bridge_receipts: true
+  default_bridge_presence: true
+  login_shared_secret: ""
+  invite_own_puppet_for_backfilling: true
+  private_chat_portal_meta: false
+  bridge_notices: true
+  resend_bridge_info: false
+  whatsapp_thumbnail: false
+  allow_user_invite: false
+  command_prefix: '!wa'
+  encryption:
+    allow: false
+    default: false
+    key_sharing:
+      allow: false
+      require_cross_signing: false
+      require_verification: true
+  permissions:
+    '*': relaybot
+    '@{{ matrix.whatsapp.admin }}:matrix.{{ domain_name }}': admin
+    'matrix.{{ domain_name }}': user
+  relaybot:
+    enabled: false
+    management: '!foo:example.com'
+    invites: []
+    message_formats:
+{% raw %}
+      m.audio: <b>{{ .Sender.Displayname }}</b> sent an audio file
+      m.emote: '* <b>{{ .Sender.Displayname }}</b> {{ .Message }}'
+      m.file: <b>{{ .Sender.Displayname }}</b> sent a file
+      m.image: <b>{{ .Sender.Displayname }}</b> sent an image
+      m.location: <b>{{ .Sender.Displayname }}</b> sent a location
+      m.notice: '<b>{{ .Sender.Displayname }}</b>: {{ .Message }}'
+      m.text: '<b>{{ .Sender.Displayname }}</b>: {{ .Message }}'
+      m.video: <b>{{ .Sender.Displayname }}</b> sent a video
+logging:
+  directory: ./logs
+  file_name_format: '{{.Date}}-{{.Index}}.log'
+  file_date_format: "2006-01-02"
+  file_mode: 384
+  timestamp_format: Jan _2, 2006 15:04:05
+  print_level: debug
+  print_json: false
+  file_json: false
+{% endraw %}

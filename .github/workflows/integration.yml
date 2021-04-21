@@ -52,7 +52,7 @@ jobs:
         if: ${{ always() }}
         run: |
           mkdir -p /tmp/docker/{logs,inspect}
-          containers=$(docker ps | awk '{if(NR>1) print $NF}')
+          containers=$(docker ps -a | awk '{if(NR>1) print $NF}')
           for container in $containers
           do
             docker logs $container > /tmp/docker/logs/$container.log
@@ -63,7 +63,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.name }} Logs
+          name: ${{ matrix.name }} (dependency) Logs
           path: /tmp/docker/
 
   apps:
@@ -111,7 +111,7 @@ jobs:
         if: ${{ always() }}
         run: |
           mkdir -p /tmp/docker/{logs,inspect}
-          containers=$(docker ps | awk '{if(NR>1) print $NF}')
+          containers=$(docker ps -a | awk '{if(NR>1) print $NF}')
           for container in $containers
           do
             docker logs $container > /tmp/docker/logs/$container.log

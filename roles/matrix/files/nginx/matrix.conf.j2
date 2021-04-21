@@ -4,6 +4,7 @@ server {
 
   # Traefik -> nginx -> synapse
   location /_matrix {
+    resolver 127.0.0.11 valid=10s ipv6=off;
     proxy_pass http://matrix_synapse:8008;
     proxy_set_header X-Forwarded-For $remote_addr;
     client_max_body_size 128m;
