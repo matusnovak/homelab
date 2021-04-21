@@ -65,6 +65,12 @@ matrix:
 
     # Should your homeserver users be allowed to access this bridge?
     allow_users: true
+
+  # Discord bridge
+  # You can access it by starting a chat with "@_discordpuppet_bot:matrix.example.com" 
+  discord:
+    # Enabled?
+    enabled: false
   
   # Hangouts bridge
   # You can access it by setting "admin" variable to your username
