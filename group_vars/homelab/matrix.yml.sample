@@ -53,6 +53,8 @@ matrix:
     enabled: false
 
   # WhatsApp bridge
+  # You can access it by setting "admin" variable to your username
+  # and starting a chat with "@whatsappbot:matrix.example.com" 
   whatsapp:
     # Enabled?
     enabled: true

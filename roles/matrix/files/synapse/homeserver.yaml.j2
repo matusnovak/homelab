@@ -1509,7 +1509,7 @@ room_prejoin_state:
 # A list of application service config files to use
 #
 app_service_config_files:
-{% if matrix.bridges.whatsapp.enabled %}
+{% if matrix.whatsapp.enabled %}
   - "/bridges/whatsapp/registration.yaml"
 {% endif %}
 
