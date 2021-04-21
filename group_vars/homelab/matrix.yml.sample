@@ -57,13 +57,53 @@ matrix:
   # and starting a chat with "@whatsappbot:matrix.example.com" 
   whatsapp:
     # Enabled?
-    enabled: true
+    enabled: false
 
     # Name of the user to use and administrate the bridges.
     # If you are using LDAP, this will be the "cn" attribute.
     admin: "example"
 
-    # Name of the user that can use the bridge with puppeting.
-    # Set to empty string if all users on this server can use it.
-    # Set it to null if you want only admin to use this bridge.
-    user: ""
+    # Should your homeserver users be allowed to access this bridge?
+    allow_users: true
+  
+  # Hangouts bridge
+  # You can access it by setting "admin" variable to your username
+  # and starting a chat with "@hangoutsbot:matrix.example.com" 
+  hangouts:
+    # Enabled?
+    enabled: false
+
+    # Name of the user to use and administrate the bridges.
+    # If you are using LDAP, this will be the "cn" attribute.
+    admin: "example"
+
+    # Should your homeserver users be allowed to access this bridge?
+    allow_users: true
+
+  # Facebook bridge
+  # You can access it by setting "admin" variable to your username
+  # and starting a chat with "@facebookbot:matrix.example.com" 
+  facebook:
+    # Enabled?
+    enabled: false
+
+    # Name of the user to use and administrate the bridges.
+    # If you are using LDAP, this will be the "cn" attribute.
+    admin: "example"
+
+    # Should your homeserver users be allowed to access this bridge?
+    allow_users: true
+
+  # Signal bridge
+  # You can access it by setting "admin" variable to your username
+  # and starting a chat with "@signalbot:matrix.example.com" 
+  signal:
+    # Enabled?
+    enabled: false
+
+    # Name of the user to use and administrate the bridges.
+    # If you are using LDAP, this will be the "cn" attribute.
+    admin: "example"
+
+    # Should your homeserver users be allowed to access this bridge?
+    allow_users: true

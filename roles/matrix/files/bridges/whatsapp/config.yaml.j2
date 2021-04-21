@@ -79,7 +79,9 @@ bridge:
   permissions:
     '*': relaybot
     '@{{ matrix.whatsapp.admin }}:matrix.{{ domain_name }}': admin
+{% if matrix.whatsapp.allow_users %}
     'matrix.{{ domain_name }}': user
+{% endif %}
   relaybot:
     enabled: false
     management: '!foo:example.com'

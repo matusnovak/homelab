@@ -1,0 +1,74 @@
+---
+- name: Create Hangouts bridge folder
+  become: yes
+  file:
+    path: "{{ data_dir }}/data/matrix/bridges/hangouts"
+    state: directory
+    mode: 0755
+    owner: "1337"
+    group: "1337"
+    recurse: no
+
+- name: Create Hangouts bridge database
+  docker_script:
+    docker:
+      host: "{{ docker.host }}"
+    network: "{{ docker_network.name }}"
+    image: "{{ scriptrunner.id }}"
+    script: "/tmp/postgres.py"
+    args:
+      - "create"
+      - |
+        {
+          "host": "{{ container_postgres.alias }}",
+          "user": "postgres",
+          "password": "{{ passwords.postgres_admin }}",
+          "database": "postgres",
+          "port": 5432,
+          "create": {
+            "database": {
+              "name": "matrix_hangouts",
+              "extra": "ENCODING 'UTF8' LC_COLLATE='C' LC_CTYPE='C' template=template0"
+            },
+            "user": {
+              "name": "matrix_hangouts",
+              "password": "{{ passwords.matrix_hangouts_database }}",
+              "database": "matrix_hangouts"
+            }
+          }
+        }
+
+- name: Check Hangouts bridge config
+  become: yes
+  stat:
+    path: "{{ data_dir }}/data/matrix/bridges/hangouts/config.yaml"
+  register: "matrix_hangouts_config_file"
+
+- name: Create Hangouts bridge config
+  become: yes
+  template:
+    src: "roles/matrix/files/bridges/hangouts/{{item}}.j2"
+    dest: "{{ data_dir }}/data/matrix/bridges/hangouts/{{item}}"
+    owner: "1337"
+    group: "1337"
+  loop:
+    - "config.yaml"
+  register: "matrix_hangouts_config"
+  when: not matrix_hangouts_config_file.stat.exists
+
+- name: Deploy Hangouts bridge
+  docker_deploy:
+    host: "{{ docker.host }}"
+    project: "{{ project_name }}"
+    container:
+      image: "{{ images.matrix_hangouts }}"
+      name: "matrix_hangouts"
+      networks:
+        - name: "{{ docker_network.name }}"
+          alias: "hangoutsbridge"
+      volumes:
+        - host: "{{ data_dir }}/data/matrix/bridges/hangouts"
+          guest: "/data"
+          read_only: false
+          mode: "z"
+  register: container_matrix_hangouts

@@ -1512,6 +1512,18 @@ app_service_config_files:
 {% if matrix.whatsapp.enabled %}
   - "/bridges/whatsapp/registration.yaml"
 {% endif %}
+{% if matrix.hangouts.enabled %}
+  - "/bridges/hangouts/registration.yaml"
+{% endif %}
+{% if matrix.discord.enabled %}
+  - "/bridges/discord/discord-registration.yaml"
+{% endif %}
+{% if matrix.facebook.enabled %}
+  - "/bridges/facebook/registration.yaml"
+{% endif %}
+{% if matrix.signal.enabled %}
+  - "/bridges/signal/registration.yaml"
+{% endif %}
 
 # Uncomment to enable tracking of application service IP addresses. Implicitly
 # enables MAU tracking for application service users.

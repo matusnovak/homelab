@@ -3,6 +3,22 @@
   import_tasks: whatsapp.yml
   when: "matrix.whatsapp.enabled"
 
+- name: Deploy Hangouts bridge
+  import_tasks: hangouts.yml
+  when: "matrix.hangouts.enabled"
+
+- name: Deploy Discord bridge
+  import_tasks: discord.yml
+  when: "matrix.discord.enabled"
+
+- name: Deploy Facebook bridge
+  import_tasks: facebook.yml
+  when: "matrix.facebook.enabled"
+
+- name: Deploy Signal bridge
+  import_tasks: signal.yml
+  when: "matrix.signal.enabled"
+
 - name: Deploy Synapse
   import_tasks: synapse.yml
 

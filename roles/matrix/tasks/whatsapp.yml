@@ -9,6 +9,12 @@
     group: "1337"
     recurse: no
 
+- name: Check WhatsApp bridge config
+  become: yes
+  stat:
+    path: "{{ data_dir }}/data/matrix/bridges/whatsapp/config.yaml"
+  register: "matrix_whatsapp_config_file"
+
 - name: Create WhatsApp bridge config
   become: yes
   template:
@@ -19,6 +25,7 @@
   loop:
     - "config.yaml"
   register: "matrix_whatsapp_config"
+  when: not matrix_whatsapp_config_file.stat.exists
 
 - name: Deploy WhatsApp bridge
   docker_deploy:
@@ -36,11 +43,3 @@
           read_only: false
           mode: "z"
   register: container_matrix_whatsapp
-
-- name: Restart WhatsApp bridge if config changes
-  docker_restart:
-    host: "{{ docker.host }}"
-    project: "{{ project_name }}"
-    containers:
-      - "matrix_whatsapp"
-  when: container_matrix_whatsapp.changed == false and matrix_whatsapp_config.changed

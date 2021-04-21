@@ -84,3 +84,23 @@ passwords:
 
   # Password for the Synapse - Redis communication
   matrix_redis: "Password1!"
+  
+  # Password for the Matrix Hangouts bridge database in Postgres
+  # This is for user role "matrix_hangouts"
+  matrix_hangouts_database: "Password1!"
+  
+  # Password for the Matrix Discord bridge database in Postgres
+  # This is for user role "matrix_discord"
+  matrix_discord_database: "Password1!"
+  
+  # Password for the Matrix Facebook bridge database in Postgres
+  # This is for user role "matrix_facebook"
+  matrix_facebook_database: "Password1!"
+  
+  # Password for the Matrix Telegram bridge database in Postgres
+  # This is for user role "matrix_telegram"
+  matrix_telegram_database: "Password1!"
+
+  # Password for the Matrix Signal bridge database in Postgres
+  # This is for user role "matrix_signal"
+  matrix_signal_database: "Password1!"

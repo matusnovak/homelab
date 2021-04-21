@@ -1,0 +1,74 @@
+---
+- name: Create Facebook bridge folder
+  become: yes
+  file:
+    path: "{{ data_dir }}/data/matrix/bridges/facebook"
+    state: directory
+    mode: 0755
+    owner: "1337"
+    group: "1337"
+    recurse: no
+
+- name: Create Facebook bridge database
+  docker_script:
+    docker:
+      host: "{{ docker.host }}"
+    network: "{{ docker_network.name }}"
+    image: "{{ scriptrunner.id }}"
+    script: "/tmp/postgres.py"
+    args:
+      - "create"
+      - |
+        {
+          "host": "{{ container_postgres.alias }}",
+          "user": "postgres",
+          "password": "{{ passwords.postgres_admin }}",
+          "database": "postgres",
+          "port": 5432,
+          "create": {
+            "database": {
+              "name": "matrix_facebook",
+              "extra": "ENCODING 'UTF8' LC_COLLATE='C' LC_CTYPE='C' template=template0"
+            },
+            "user": {
+              "name": "matrix_facebook",
+              "password": "{{ passwords.matrix_facebook_database }}",
+              "database": "matrix_facebook"
+            }
+          }
+        }
+
+- name: Check Facebook bridge config
+  become: yes
+  stat:
+    path: "{{ data_dir }}/data/matrix/bridges/facebook/config.yaml"
+  register: "matrix_facebook_config_file"
+
+- name: Create Facebook bridge config
+  become: yes
+  template:
+    src: "roles/matrix/files/bridges/facebook/{{item}}.j2"
+    dest: "{{ data_dir }}/data/matrix/bridges/facebook/{{item}}"
+    owner: "1337"
+    group: "1337"
+  loop:
+    - "config.yaml"
+  register: "matrix_facebook_config"
+  when: not matrix_facebook_config_file.stat.exists
+
+- name: Deploy Facebook bridge
+  docker_deploy:
+    host: "{{ docker.host }}"
+    project: "{{ project_name }}"
+    container:
+      image: "{{ images.matrix_facebook }}"
+      name: "matrix_facebook"
+      networks:
+        - name: "{{ docker_network.name }}"
+          alias: "facebookbridge"
+      volumes:
+        - host: "{{ data_dir }}/data/matrix/bridges/facebook"
+          guest: "/data"
+          read_only: false
+          mode: "z"
+  register: container_matrix_facebook
