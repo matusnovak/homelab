@@ -96,10 +96,6 @@ passwords:
   # Password for the Matrix Facebook bridge database in Postgres
   # This is for user role "matrix_facebook"
   matrix_facebook_database: "Password1!"
-  
-  # Password for the Matrix Telegram bridge database in Postgres
-  # This is for user role "matrix_telegram"
-  matrix_telegram_database: "Password1!"
 
   # Password for the Matrix Signal bridge database in Postgres
   # This is for user role "matrix_signal"
