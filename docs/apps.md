@@ -155,3 +155,15 @@ Matrix is an open standard and communication protocol for real-time communicatio
 * **Web location:** `https://riot.example.com/`
 * **Authentication:** Internal or LDAP-integrated
 * **Resource usage:** Low CPU and Medium RAM (depends on number of users)
+
+## App: Jellyfin
+
+Jellyfin is a suite of multimedia applications designed to organize, manage, and share digital media files to networked devices.
+
+* **Official page:** <https://jellyfin.org/>
+* **Role name:** `jellyfin`
+* **Config file:** `group_vars/homelab/jellyfin.yml`
+* **Web location:** `https://jellyfin.example.com/`
+* **Authentication:** Internal or LDAP-integrated
+* **Resource usage:** Medium CPU and Medium RAM (depends on number of users & video transcode)
+

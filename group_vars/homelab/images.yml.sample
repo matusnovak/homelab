@@ -24,3 +24,4 @@ images:
   matrix_discord: 'docker.io/sorunome/mx-puppet-discord:latest'
   matrix_facebook: 'dock.mau.dev/tulir/mautrix-facebook:latest'
   matrix_signal: 'dock.mau.dev/tulir/mautrix-signal:latest'
+  jellyfin: 'docker.io/linuxserver/jellyfin:latest'

@@ -1,0 +1,6 @@
+---
+dependencies:
+  - role: "traefik"
+  - role: "postgres"
+  - role: "ldap"
+    when: "jellyfin.ldap.enabled"

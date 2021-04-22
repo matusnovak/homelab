@@ -46,3 +46,9 @@
     # Matrix is an open standard and communication protocol for real-time communication.
     # Config file: group_vars/homelab/matrix.yml
     # - matrix
+
+    # [Jellyfin]
+    # Jellyfin is a suite of multimedia applications designed to organize, manage,
+    # and share digital media files to networked devices.
+    # Config file: group_vars/homelab/jellyfin.yml
+    # - jellyfin

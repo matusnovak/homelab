@@ -100,3 +100,12 @@ passwords:
   # Password for the Matrix Signal bridge database in Postgres
   # This is for user role "matrix_signal"
   matrix_signal_database: "Password1!"
+  
+  # Password to be used by Jellyfin when connecting to database.
+  # A database with a jellyfin user will be created using this password.
+  # Changing this must be done manually via psql and you will have to update Jellyfin config files.
+  jellyfin_database: "Password1!"
+
+  # Password for the admin user in Jellyfin
+  # The admin password user will be created automatically
+  jellyfin_admin: "Password1!"

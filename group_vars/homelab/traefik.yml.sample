@@ -73,4 +73,4 @@ traefik:
 
     # If you have a dashboard, that uses iframes to view your applications,
     # you will need to enable this.
-    allow_frame: true
+    allow_frame: false

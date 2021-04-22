@@ -1,0 +1,185 @@
+---
+- name: Create folder structure
+  become: yes
+  file:
+    path: "{{ data_dir }}/data/portainer/{{item}}"
+    state: directory
+    mode: 0755
+    owner: "0"
+    group: "0"
+    recurse: no
+  loop:
+    - "config"
+    - "cache"
+    - "transcode"
+
+- name: Create database
+  docker_script:
+    docker:
+      host: "{{ docker.host }}"
+    network: "{{ docker_network.name }}"
+    image: "{{ scriptrunner.id }}"
+    script: "/tmp/postgres.py"
+    args:
+      - "create"
+      - |
+        {
+          "host": "{{ container_postgres.alias }}",
+          "user": "postgres",
+          "password": "{{ passwords.postgres_admin }}",
+          "database": "postgres",
+          "port": 5432,
+          "create": {
+            "database": {
+              "name": "jellyfin"
+            },
+            "user": {
+              "name": "jellyfin",
+              "password": "{{ passwords.jellyfin_database }}",
+              "database": "jellyfin"
+            }
+          }
+        }
+
+- name: Create LDAP group
+  docker_script:
+    docker:
+      host: "{{ docker.host }}"
+    network: "{{ docker_network.name }}"
+    image: "{{ scriptrunner.id }}"
+    script: "/tmp/openldap.py"
+    args:
+      - "group"
+      - |
+        {
+          "address": "ldap://{{ container_ldap.alias }}:389",
+          "user": "cn=admin,{{ ldap.domain }}",
+          "password": "{{ passwords.ldap_admin }}",
+          "base": "{{ ldap_groups.dn }}",
+          "name": "{{ jellyfin.ldap.group }}",
+          "members": [
+            {
+              "name": "cn=admin,{{ ldap.domain }}"
+            }
+          ]
+        }
+  register: "ldap_groups_jellyfin"
+  when: "jellyfin.ldap.enabled"
+
+- name: Deploy
+  docker_deploy:
+    host: "{{ docker.host }}"
+    project: "{{ project_name }}"
+    container:
+      image: "{{ images.jellyfin }}"
+      name: "jellyfin"
+      networks:
+        - name: "{{ docker_network.name }}"
+          alias: "jellyfin"
+      volumes:
+        - host: "{{ data_dir }}/data/jellyfin/config"
+          guest: "/config"
+          read_only: false
+        - host: "{{ data_dir }}/data/jellyfin/cache"
+          guest: "/cache"
+          read_only: false
+        - host: "{{ data_dir }}/data/jellyfin/transcode"
+          guest: "/transcode"
+          read_only: false
+        - host: "{{ jellyfin.media }}"
+          guest: "/media"
+          read_only: "{{ jellyfin.read_only }}"
+      environment:
+        - key: "PUID"
+          value: "{{ jellyfin.uid }}"
+        - key: "PGID"
+          value: "{{ jellyfin.gid }}"
+        - key: "UMASK_SET"
+          value: "{{ jellyfin.umask }}"
+      labels:
+        - key: "traefik.enable"
+          value: "true"
+        - key: "traefik.http.services.jellyfin.loadbalancer.server.port"
+          value: "8096"
+        - key: "traefik.http.routers.jellyfin.rule"
+          value: "Host(`jellyfin.{{ domain_name }}`)"
+        - key: "traefik.http.routers.jellyfin.entrypoints"
+          value: "{{ traefik_entrypoints }}"
+        - key: "traefik.http.routers.jellyfin.tls.certresolver"
+          value: "{{ traefik_certresolver }}"
+        - key: "traefik.http.routers.jellyfin.tls"
+          value: "{{ 'true' if traefik.https.enabled else 'false' }}"
+  register: container_jellyfin
+
+- name: Healthcheck
+  http_wait:
+    url: "{{traefik_entrypoint}}/web/index.html"
+    status_code: "200"
+    retries: 5
+    delay: 10
+    headers:
+      - "Host: jellyfin.{{ domain_name }}"
+
+- name: Copy script
+  copy:
+    src: "roles/jellyfin/files/jellyfin.py"
+    dest: "/tmp/jellyfin.py"
+
+- name: Set script data
+  set_fact:
+    script_data: |
+      {
+        "url": "http://{{ container_jellyfin.alias }}:8096",
+        "username": "admin",
+        "password": "{{ passwords.jellyfin_admin }}"{% if jellyfin.ldap.enabled %},
+        "ldap": {
+          "host": "{{ container_ldap.alias }}",
+          "port": 389,
+          "user": "cn=admin,{{ ldap.domain }}",
+          "password": "{{ passwords.ldap_admin }}",
+          "base": "{{ ldap_users.dn }}",
+          "filter": "(memberOf={{ ldap_groups_jellyfin.dn }})",
+          "user_attribute": "uid"
+        }{% endif %}
+      }
+
+- name: Run init script
+  docker_script:
+    docker:
+      host: "{{ docker.host }}"
+    network: "{{ docker_network.name }}"
+    image: "{{ scriptrunner.id }}"
+    script: "/tmp/jellyfin.py"
+    args:
+      - "init"
+      - "{{ script_data | to_json }}"
+  register: jellyfin_init_script
+
+- name: Restart if init changes
+  docker_restart:
+    host: "{{ docker.host }}"
+    project: "{{ project_name }}"
+    containers:
+      - "jellyfin"
+  when: jellyfin_init_script.changed
+
+- name: Healthcheck for restart
+  http_wait:
+    url: "{{traefik_entrypoint}}/web/index.html"
+    status_code: "200"
+    retries: 5
+    delay: 10
+    headers:
+      - "Host: jellyfin.{{ domain_name }}"
+  when: jellyfin_init_script.changed
+
+- name: Run ldap setup script
+  docker_script:
+    docker:
+      host: "{{ docker.host }}"
+    network: "{{ docker_network.name }}"
+    image: "{{ scriptrunner.id }}"
+    script: "/tmp/jellyfin.py"
+    args:
+      - "ldap"
+      - "{{ script_data | to_json }}"
