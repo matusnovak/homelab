@@ -33,4 +33,4 @@
 - name: Find shared network load balancer
   set_fact:
     docker_network_load_balancer: "{{ docker_network.Containers['lb-' + docker_network_name]['IPv4Address'].split('/')[0] }}"
-  when: "docker_network_lb_name in docker_network.Containers"
+  when: "docker_network.Containers is not null and docker_network_lb_name in docker_network.Containers"
