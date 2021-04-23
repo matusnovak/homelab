@@ -17,7 +17,7 @@
     - data
 
 - name: Deploy service
-  docker_swarm_service:
+  swarm_service:
     project_name: "{{ project_name }}"
     definition:
       postgres:

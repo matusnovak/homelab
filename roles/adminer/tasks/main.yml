@@ -3,3 +3,29 @@
   fail:
     msg: "Adminer needs the traefik role"
   when: "'traefik' not in role_names"
+
+- name: Deploy service
+  swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      adminer:
+        image: "{{ adminer_image }}"
+        deploy:
+          replicas: 1
+          labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.adminer.rule=Host(`adminer.{{ domain_name }}`)"
+            - "traefik.http.services.adminer.loadbalancer.server.port=8080"
+            - "traefik.http.routers.adminer.entrypoints={{ traefik_entrypoints }}"
+            - "traefik.http.routers.adminer.tls={{ traefik_tls }}"
+            - "traefik.http.routers.adminer.tls.certresolver={{ traefik_certresolver }}"
+        networks:
+          - "{{ docker_network_name }}"
+        environment:
+          ADMINER_DESIGN: "nette"
+          ADMINER_DEFAULT_SERVER: "postgres"
+  register: result
+
+- name: Set facts
+  set_fact:
+    adminer_service: "{{ result.services.adminer }}"
