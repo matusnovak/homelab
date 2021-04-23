@@ -8,7 +8,7 @@ entryPoints:
 {% endif %}
 
 log:
-  level: DEBUG
+  level: {{ traefik_log_level }}
 
 {% if traefik_dashboard_enabled %}
 api:
