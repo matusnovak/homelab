@@ -1,0 +1,24 @@
+---
+# Docker image name
+filebrowser_image: "docker.io/filebrowser/filebrowser:latest"
+
+# This password is for the admin that is created on first startup.
+# This password can not be changed later in here, you must do that 
+# through the app yourself and then update it here.
+filebrowser_admin_passwords: "Password1!"
+
+# The folder that the FileBrowser will be able to access as "/files" internally.
+filebrowser_path: "/home"
+
+# The user ID to use for accessing files.
+# The FileBrowser will act on behalf of this user on your host path.
+filebrowser_uid: "1000"
+
+# The user group ID to use for accessing files.
+# The FileBrowser will act on behalf of this group on your host path.
+# If you are using Samba share and you would like for FileBrowser
+# to access it, you probably will have to use group ID of 118.
+filebrowser_gid: "1000"
+
+# Should the mounted path be read only?
+filebrowser_read_only: false

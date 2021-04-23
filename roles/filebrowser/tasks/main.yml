@@ -1,0 +1,88 @@
+---
+- name: Check if traefik role is included
+  fail:
+    msg: "Adminer needs the traefik role"
+  when: "'traefik' not in role_names"
+
+- name: Create FileBrowser folder structure
+  become: yes
+  file:
+    path: "{{ data_dir }}/filebrowser/{{item}}"
+    state: directory
+    owner: "{{ filebrowser_uid }}"
+    group: "{{ filebrowser_gid }}"
+    recurse: yes
+  loop:
+    - "data"
+    - "config"
+
+- name: Create FileBrowser config files
+  become: yes
+  template:
+    src: "roles/filebrowser/files/{{item}}.j2"
+    dest: "{{ data_dir }}/filebrowser/config/{{item}}"
+  loop:
+    - "filebrowser.json"
+  register: filebrowser_config
+
+- name: Remove existing service if config changes
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    remove:
+      - "filebrowser"
+  when: filebrowser_config.changed
+
+- name: Deploy service
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      filebrowser:
+        image: "{{ filebrowser_image }}"
+        user: "{{ filebrowser_uid }}:{{ filebrowser_gid }}"
+        healthcheck:
+          test:
+            - "NONE"
+        deploy:
+          replicas: 1
+          labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.filebrowser.rule=Host(`files.{{ domain_name }}`)"
+            - "traefik.http.services.filebrowser.loadbalancer.server.port=80"
+            - "traefik.http.routers.filebrowser.entrypoints={{ traefik_entrypoints }}"
+            - "traefik.http.routers.filebrowser.tls={{ traefik_tls }}"
+            - "traefik.http.routers.filebrowser.tls.certresolver={{ traefik_certresolver }}"
+        volumes:
+          - "{{ filebrowser_path }}:/files"
+          - "{{ data_dir }}/filebrowser/config/filebrowser.json:/.filebrowser.json"
+          - "{{ data_dir }}/filebrowser/data:/database"
+        networks:
+          - "{{ docker_network_name }}"
+  register: result
+
+- name: Set facts
+  set_fact:
+    filebrowser_service: "{{ result.services.filebrowser }}"
+
+- name: Healthcheck
+  http_wait:
+    url: "{{ traefik_address }}/"
+    status_code: "200"
+    retries: 6
+    delay: 5
+    headers:
+      - "Host: files.{{ domain_name }}"
+
+- name: Setup data
+  set_fact:
+    init_data: |
+      {
+        "url": "{{ traefik_address }}",
+        "host": "files.{{ domain_name }}",
+        "username": "admin",
+        "password": "{{ filebrowser_admin_passwords }}"
+      }
+
+- name: Initialize
+  script: "roles/filebrowser/scripts/main.py init {{ init_data | to_json | tojson }}"
+  args:
+    executable: python3
