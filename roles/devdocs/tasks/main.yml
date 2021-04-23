@@ -9,7 +9,7 @@
     project_name: "{{ project_name }}"
     definition:
       devdocs:
-        image: "{{ adminer_image }}"
+        image: "{{ devdocs_image }}"
         deploy:
           replicas: 1
           labels:
