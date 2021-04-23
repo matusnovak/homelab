@@ -27,7 +27,7 @@
 
 - name: Set facts
   set_fact:
-    docker_network: "{{ result.ansible_facts.docker_network }}"
+    docker_network: "{{ result.network }}"
 
 - name: Find shared network load balancer
   set_fact:
