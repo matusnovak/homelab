@@ -26,6 +26,13 @@
     - "config/services.yml"
   register: traefik_config
 
+- name: Remove existing service if config changes
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    remove:
+      - "traefik"
+  when: traefik_config.changed
+
 - name: Create acme.json file
   become: yes
   copy:
@@ -108,3 +115,10 @@
 - name: Set facts
   set_fact:
     traefik_service: "{{ result.services.traefik }}"
+
+- name: Healthcheck
+  http_wait:
+    url: "{{ traefik_address }}/"
+    status_code: 200, 304, 404
+    retries: 3
+    delay: 5

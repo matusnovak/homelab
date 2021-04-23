@@ -438,7 +438,8 @@ def main():
         },
         'definition': {
             'type': 'dict',
-            'required': False
+            'required': False,
+            'default': None
         },
         'remove': {
             'type': 'list',
@@ -455,7 +456,8 @@ def main():
     if len(module.params['remove']) > 0:
         module.exit_json(
             **remove(module.params['project_name'], module.params['remove']))
-    else:
+
+    if module.params['definition'] is not None:
         module.exit_json(
             **deploy(module.params['project_name'], module.params['definition']))
 
