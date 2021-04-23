@@ -12,8 +12,8 @@ jobs:
             role: 'traefik'
           - name: 'Adminer'
             role: 'adminer'
-          - name: 'DevDocs'
-            role: 'devdocs'
+          #- name: 'DevDocs'
+          #  role: 'devdocs'
           - name: 'Haste'
             role: 'haste'
     
