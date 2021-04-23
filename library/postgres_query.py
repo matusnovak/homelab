@@ -1,12 +1,12 @@
 from ansible.module_utils.basic import AnsibleModule
 from docker.errors import NotFound, ContainerError
 import docker
-import json
 from io import StringIO
 import csv
+import time
 
 
-def execute(params: dict) -> dict:
+def execute(params: dict, tries=3) -> dict:
     args = [
         'psql',
         '-U',
@@ -39,6 +39,11 @@ def execute(params: dict) -> dict:
         return dict(msg='Success', result=results)
 
     except ContainerError as e:
+        could_not_connect = 'could not connect to server' in str(e)
+        if could_not_connect and tries > 0:
+            time.sleep(1)
+            return execute(params, tries - 1)
+
         return dict(failed=True, msg=str(e))
     except NotFound as e:
         return dict(failed=True, msg=f'No such container: {container_id}')
