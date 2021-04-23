@@ -75,9 +75,10 @@ def deploy_service(client: DockerClient, project_name: str, name: str, definitio
     env = []
     if 'environment' in definition and isinstance(definition['environment'], dict):
         for key, value in definition['environment'].items():
-            env.append(
-                f'{key}={value}'
-            )
+            if isinstance(value, str) and value != '':
+                env.append(
+                    f'{key}={value}'
+                )
 
     def_restart_policy = definition.get('restart_policy', {})
 
@@ -144,10 +145,12 @@ def deploy_service(client: DockerClient, project_name: str, name: str, definitio
     if 'labels' in definition and isinstance(definition['labels'], list):
         for label in definition['labels']:
             if isinstance(label, tuple):
-                container_labels[label[0]] = label[1]
+                if label[1] != '':
+                    container_labels[label[0]] = label[1]
             elif isinstance(label, str):
                 tokens = label.split('=', maxsplit=2)
-                container_labels[tokens[0]] = tokens[1]
+                if label[1] != '':
+                    container_labels[tokens[0]] = tokens[1]
 
     labels = {
         DOCKER_NAMESPACE_LABEL: project_name,
@@ -257,6 +260,11 @@ def deploy_service(client: DockerClient, project_name: str, name: str, definitio
                 mode=int(config.get('mode', 444))
             ))
 
+    volumes = []
+    for volume in definition.get('volumes', []):
+        if isinstance(volume, str) and volume != '':
+            volumes.append(volume)
+
     full_name = f'{project_name}_{name}'
 
     args = {
@@ -274,7 +282,7 @@ def deploy_service(client: DockerClient, project_name: str, name: str, definitio
         'args': definition.get('args', None),
         'name': full_name,
         'labels': labels,
-        'mounts': definition.get('volumes', []),
+        'mounts': volumes,
         'env': env,
         'restart_policy': restart_policy,
         'mode': service_mode,

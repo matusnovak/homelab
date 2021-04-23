@@ -1,5 +1,5 @@
 from ansible.module_utils.basic import AnsibleModule
-from docker.client import DockerClient
+import docker
 from docker.errors import NotFound, ContainerError
 import json
 from io import StringIO
@@ -27,12 +27,10 @@ def execute(params: dict) -> dict:
             results.append(row)
         return results
 
-    docker = DockerClient(
-        base_url=params['docker']
-    )
+    client = docker.from_env()
 
     try:
-        container = docker.containers.get(params['container'])
+        container = client.containers.get(params['container'])
 
         name = params['database']
         extra = params['extra']
@@ -79,10 +77,6 @@ def execute(params: dict) -> dict:
 
 def main():
     module_args = {
-        'docker': {
-            'type': 'str',
-            'required': True
-        },
         'container': {
             'type': 'str',
             'required': True

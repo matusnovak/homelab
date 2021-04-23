@@ -36,8 +36,8 @@
   set_fact:
     postgres_service: "{{ result.services.postgres }}"
 
-#- name: Healthcheck
-#  postgres_query:
-#    container: "{{ postgres_service.tasks[0].id }}"
-#    password: "{{ postgres_password }}"
-#    query: "SELECT version();"
+- name: Healthcheck
+  postgres_query:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    query: "SELECT version();"

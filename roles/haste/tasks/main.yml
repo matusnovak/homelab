@@ -1,0 +1,77 @@
+---
+- name: Check if traefik role is included
+  fail:
+    msg: "Adminer needs the traefik role"
+  when: "'traefik' not in role_names"
+
+- name: Create database role
+  postgres_role:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    role: "{{ haste_database_role }}"
+    role_password: "{{ haste_database_password }}"
+  when: "haste_provider == 'postgres'"
+
+- name: Create database
+  postgres_database:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    database: "{{ haste_database_name }}"
+    role: "{{ haste_database_role }}"
+  when: "haste_provider == 'postgres'"
+
+- name: Create folder structure
+  become: yes
+  file:
+    path: "{{ data_dir }}/haste/files"
+    state: directory
+    mode: "755"
+    owner: "1000"
+    group: "1000"
+    recurse: false
+  when: "haste_provider == 'file'"
+
+- name: Deploy service
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      haste:
+        image: "{{ haste_image }}"
+        healthcheck:
+          test:
+            - "NONE"
+        deploy:
+          replicas: 1
+          labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.haste.rule=Host(`haste.{{ domain_name }}`)"
+            - "traefik.http.services.haste.loadbalancer.server.port=7777"
+            - "traefik.http.routers.haste.entrypoints={{ traefik_entrypoints }}"
+            - "traefik.http.routers.haste.tls={{ traefik_tls }}"
+            - "traefik.http.routers.haste.tls.certresolver={{ traefik_certresolver }}"
+        volumes:
+          - "{{ (haste_provider == 'file') | ternary(data_dir + '/haste/files:/files', '') }}"
+        networks:
+          - "{{ docker_network_name }}"
+        environment:
+          STORAGE_TYPE: "{{ haste_provider }}"
+          STORAGE_HOST: "{{ (haste_provider == 'postgres') | ternary('postgres', '') }}"
+          STORAGE_PORT: "{{ (haste_provider == 'postgres') | ternary(5432, '') }}"
+          STORAGE_DB: "{{ (haste_provider == 'postgres') | ternary(haste_database_name, '') }}"
+          STORAGE_PASSWORD: "{{ (haste_provider == 'postgres') | ternary(haste_database_password, '') }}"
+          STORAGE_USERNAME: "{{ (haste_provider == 'postgres') | ternary(haste_database_role, '') }}"
+          STORAGE_FILEPATH: "/files"
+  register: result
+
+- name: Set facts
+  set_fact:
+    haste_service: "{{ result.services.haste }}"
+
+- name: Healthcheck
+  http_wait:
+    url: "{{ traefik_address }}/"
+    status_code: "200"
+    retries: 3
+    delay: 10
+    headers:
+      - "Host: haste.{{ domain_name }}"

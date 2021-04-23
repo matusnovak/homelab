@@ -1,0 +1,18 @@
+---
+# Docker image name
+haste_image: "docker.io/dirtycajunrice/haste-server:latest"
+
+# Allowed values are: "file" or "postgres"
+haste_provider: "file"
+
+# Name of the database
+# Only used if the haste_provider is set to "postgres"
+haste_database_name: "haste"
+
+# Name of the role to use
+# Only used if the haste_provider is set to "postgres"
+haste_database_role: "haste"
+
+# Database password for the role that Haste will use.
+# Only used if the haste_provider is set to "postgres"
+haste_database_password: "Password1!"
