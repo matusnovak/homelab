@@ -201,11 +201,11 @@ def deploy_service(client: DockerClient, project_name: str, name: str, definitio
 
     secrets = []
     for secret in definition.get('secrets', []):
-        def get_secret(config_name: str) -> tuple:
-            found = client.configs.list(filters={
-                'name': config_name
+        def get_secret(secret_name: str) -> tuple:
+            found = client.secrets.list(filters={
+                'name': secret_name
             })
-            assert len(found) == 1, "no secret found"
+            assert len(found) == 1, "No secret named: {secret_name} found."
             return (found[0].id, found[0].name)
 
         if isinstance(secret, str):
@@ -225,7 +225,13 @@ def deploy_service(client: DockerClient, project_name: str, name: str, definitio
             found = client.configs.list(filters={
                 'name': config_name
             })
-            assert len(found) == 1, "no config found"
+
+            cl = []
+            for c in client.configs.list():
+                cl.append(c.name)
+
+            assert len(
+                found) == 1, f"No config named: {config_name} found. All configs: {cl}."
             return (found[0].id, found[0].name)
 
         if isinstance(config, str):
