@@ -25,7 +25,7 @@
 - when: config_state.changed | bool
   block:
     - name: Stop service
-      docker_swarm_service:
+      swarm_service:
         project_name: "{{ project_name }}"
         remove:
           - "traefik"
@@ -112,7 +112,7 @@
       }]}}
 
 - name: Deploy service
-  docker_swarm_service:
+  swarm_service:
     project_name: "{{ project_name }}"
     definition:
       traefik:
