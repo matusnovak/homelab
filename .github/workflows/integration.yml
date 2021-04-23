@@ -1,62 +1,29 @@
 name: integration
 on: [push, pull_request]
 jobs:
-  dependencies:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: 'Traefik'
-            role: 'traefik'
-          - name: 'Postgres'
-            role: 'postgres'
-    name: 'App: ${{ matrix.name }} (dependency)'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-
-      - name: Ansible
-        run: |
-          cp ./.github/sites/${{ matrix.role }}.yml.sample ./integration.yml
-          ansible-playbook integration.yml -vvv
-
-      - name: Dump logs
-        if: ${{ always() }}
-        run: |
-          mkdir -p /tmp/docker/{logs,inspect}
-          containers=$(docker ps -a | awk '{if(NR>1) print $NF}')
-          for container in $containers
-          do
-            docker logs $container > /tmp/docker/logs/$container.log || true
-            docker inspect $container > /tmp/docker/inspect/$container.log || true
-          done
-
-      - name: Store logs as artifacts
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: ${{ matrix.name }} (dependency) Logs
-          path: /tmp/docker/
-
   apps:
     strategy:
       fail-fast: false
       matrix:
         include:
+          - name: 'Postgre SQL'
+            role: 'postgres'
+          - name: 'Traefik'
+            role: 'traefik'
           - name: 'Adminer'
             role: 'adminer'
+    
     name: 'App: ${{ matrix.name }}'
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: [dependencies]
+    
     steps:
       - name: Checkout
         uses: actions/checkout@v1
 
       - name: Ansible
         run: |
+          sudo mkdir /homelab
           cp ./.github/sites/${{ matrix.role }}.yml.sample ./integration.yml
           ansible-playbook integration.yml -vvv
 
