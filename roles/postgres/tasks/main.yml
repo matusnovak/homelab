@@ -1,55 +1,43 @@
 ---
-- name: Create PostgreSQL folder structure
+- name: Check if base role is included
+  fail:
+    msg: "Postgre SQL needs the base role"
+  when: "'base' not in role_names"
+
+- name: Create folder structure
   become: yes
   file:
-    path: "{{ data_dir }}/data/postgres/{{item}}"
+    path: "{{ data_dir }}/postgres/{{ item }}"
     state: directory
-    mode: 0700
+    mode: "0700"
     owner: "999"
     group: "0"
     recurse: false
   loop:
-    - "data"
+    - data
 
-- name: Deploy PostgreSQL
-  docker_deploy:
-    host: "{{ docker.host }}"
-    project: "{{ project_name }}"
-    container:
-      image: "{{ images.postgres }}"
-      name: "postgres"
-      networks:
-        - name: "{{ docker_network.name }}"
-          alias: "postgres"
-      volumes:
-        - host: "{{ data_dir }}/data/postgres/data"
-          guest: "/var/lib/postgresql/data"
-          read_only: false
-      environment:
-        - key: "POSTGRES_PASSWORD"
-          value: "{{ passwords.postgres_admin }}"
-  register: container_postgres
+- name: Deploy service
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      postgres:
+        image: "{{ postgres_image }}"
+        deploy:
+          replicas: 1
+        networks:
+          - "{{ docker_network_name }}"
+        volumes:
+          - "{{ data_dir }}/postgres/data:/var/lib/postgresql/data"
+        environment:
+          POSTGRES_PASSWORD: "{{ postgres_password }}"
+  register: result
 
-- name: Copy script for PostgreSQL
-  copy:
-    src: "roles/postgres/files/postgres.py"
-    dest: "/tmp/postgres.py"
+- name: Set facts
+  set_fact:
+    postgres_service: "{{ result.services.postgres }}"
 
-- name: Healthcheck for PostgreSQL 
-  docker_script:
-    docker:
-      host: "{{ docker.host }}"
-    network: "{{ docker_network.name }}"
-    image: "{{ scriptrunner.id }}"
-    script: "/tmp/postgres.py"
-    args:
-      - "query"
-      - |
-        {
-          "host": "{{ container_postgres.alias }}",
-          "user": "postgres",
-          "password": "{{ passwords.postgres_admin }}",
-          "port": 5432,
-          "database": "postgres",
-          "query": "SELECT version();"
-        }
+#- name: Healthcheck
+#  postgres_query:
+#    container: "{{ postgres_service.tasks[0].id }}"
+#    password: "{{ postgres_password }}"
+#    query: "SELECT version();"

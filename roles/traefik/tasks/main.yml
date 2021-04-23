@@ -1,33 +1,67 @@
 ---
-- name: Create Traefik folder structure
+- name: Check if base role is included
+  fail:
+    msg: "Traefik needs the base role"
+  when: "'base' not in role_names"
+
+- name: Check config files
+  docker_config:
+    name: "{{ project_name }}_traefik_{{ item.name }}"
+    data: "{{ lookup('template', 'roles/traefik/files/' + item.path) | b64encode }}"
+    data_is_b64: true
+  check_mode: true
+  loop:
+    - path: "config/middlewares.yml.j2"
+      name: "middlewares"
+    - path: "config/routers.yml.j2"
+      name: "routers"
+    - path: "config/services.yml.j2"
+      name: "services"
+    - path: "traefik.yml.j2"
+      name: "traefik"
+  register: config_state
+  
+# Can't change configs if service is running :(
+- when: config_state.changed | bool
+  block:
+    - name: Stop service
+      docker_swarm_service:
+        project_name: "{{ project_name }}"
+        remove:
+          - "traefik"
+      register: stop_state
+
+    - name: Create config files
+      docker_config:
+        name: "{{ project_name }}_traefik_{{ item.name }}"
+        data: "{{ lookup('template', 'roles/traefik/files/' + item.path) | b64encode }}"
+        data_is_b64: true
+      loop:
+        - path: "config/middlewares.yml.j2"
+          name: "middlewares"
+        - path: "config/routers.yml.j2"
+          name: "routers"
+        - path: "config/services.yml.j2"
+          name: "services"
+        - path: "traefik.yml.j2"
+          name: "traefik"
+      when: stop_state.changed
+
+- name: Create folder
   become: yes
   file:
-    path: "{{ data_dir }}/data/traefik/{{item}}"
+    path: "{{ data_dir }}/traefik"
     state: directory
     mode: 0755
     owner: root
     group: root
-    recurse: yes
-  loop:
-    - "config"
+    recurse: no
 
-- name: Create traefik config files
-  become: yes
-  template:
-    src: "roles/traefik/files/{{item}}.j2"
-    dest: "{{ data_dir }}/data/traefik/{{item}}"
-  loop:
-    - "traefik.yml"
-    - "config/middlewares.yml"
-    - "config/routers.yml"
-    - "config/services.yml"
-  register: traefik_config
-
-- name: Create traefik acme.json file
+- name: Create acme.json file
   become: yes
   copy:
     content: "{}"
-    dest: "{{ data_dir }}/data/traefik/acme.json"
+    dest: "{{ data_dir }}/traefik/acme.json"
     force: no
     mode: 0600
     owner: root
@@ -35,103 +69,87 @@
 
 - name: Set facts
   set_fact:
-    traefik_protocol: >-
-      {%- if traefik.https.enabled -%}
-      https
-      {%- else -%}
-      http
-      {%- endif -%}
-    traefik_port: >-
-      {%- if traefik.https.enabled -%}
-      {{ traefik.https.port }}
-      {%- else -%}
-      {{ traefik.http.port }}
-      {%- endif -%}
-    traefik_entrypoints: >-
-      {%- if traefik.https.enabled -%}
-      web-secure
-      {%- else -%}
-      web
-      {%- endif -%}
-    traefik_certresolver: >-
-      {%- if traefik.https.enabled and traefik.acme.enabled -%}
-      letsencrypt
-      {%- else -%}
-      {%- endif -%}
-    traefik_entrypoint: >-
-      {%- if traefik.https.enabled -%}
-      https://localhost:{{ traefik.https.port }}
-      {%- else -%}
-      http://localhost:{{ traefik.http.port }}
-      {%- endif -%}
+    traefik_protocol: "{{ traefik_https_enabled | ternary('https', 'http') }}"
+    traefik_port: "{{ traefik_https_enabled | ternary(traefik_https_port, traefik_http_port) }}"
+    traefik_entrypoints: "{{ traefik_https_enabled | ternary('web-secure', 'web') }}"
+    traefik_certresolver: "letsencrypt"
+    traefik_tls: "{{ true | string | lower }}"
+    traefik_ports: []
 
-- name: Deploy Traefik
-  docker_deploy:
-    host: "{{ docker.host }}"
-    project: "{{ project_name }}"
-    container:
-      image: "{{ images.traefik }}"
-      name: "traefik"
-      networks:
-        - name: "{{ docker_network.name }}"
-          alias: "traefik"
-      ports:
-        - host: "{{ traefik.https.port }}"
-          guest: "443"
-          protocol: "tcp"
-        - host: "{{ traefik.http.port }}"
-          guest: "80"
-          protocol: "tcp"
-      volumes:
-        - host: "{{ traefik.docker.host }}" # TODO
-          guest: "{{ traefik.docker.host }}"
-          read_only: false
-        - host: "{{ data_dir }}/data/traefik/traefik.yml"
-          guest: "/etc/traefik/traefik.yml"
-          read_only: true
-        - host: "{{ data_dir }}/data/traefik/config"
-          guest: "/config"
-          read_only: true
-        - host: "{{ data_dir }}/data/traefik/acme.json"
-          guest: "/acme.json"
-          read_only: false
-      labels:
-        - key: "traefik.enable"
-          value: "{{ 'true' if traefik.dashboard.enabled else 'false' }}"
-        - key: "traefik.http.routers.traefik.rule"
-          value: "Host(`traefik.{{ domain_name }}`)"
-        - key: "traefik.http.routers.traefik.service"
-          value: "api@internal"
-        - key: "traefik.http.routers.traefik.entrypoints"
-          value: "{{ traefik_entrypoints }}"
-        - key: "traefik.http.routers.traefik.tls"
-          value: "{{ 'true' if traefik.http.enabled else 'false' }}"
-        - key: "traefik.http.routers.traefik.tls.certresolver"
-          value: "{{ traefik_certresolver }}"
-        - key: "traefik.http.routers.traefik.middlewares"
-          value: "{{ 'authelia@docker' if traefik.dashboard.authelia else '' }}"
-  register: container_traefik
+- name: Set traefik_address
+  set_fact:
+    traefik_address: "{{ traefik_protocol }}://localhost:{{ traefik_port }}"
+  when: traefik_port_mode == 'host'
 
-- name: Restart if config changes
-  docker_restart:
-    host: "{{ docker.host }}"
-    project: "{{ project_name }}"
-    containers:
-      - "traefik"
-  when: container_traefik.changed == false and traefik_config.changed
+- name: Set traefik_address
+  set_fact:
+    traefik_address: "{{ traefik_protocol }}://{{ docker_network_load_balancer }}:{{ traefik_port }}"
+  when: traefik_port_mode == 'ingress'
 
-- name: Wait for Traefik load balancer HTTP
-  http_wait:
-    url: "http://localhost:{{ traefik.http.port }}/"
-    status_code: 200, 304, 404
-    retries: 3
-    delay: 5
-  when: traefik.http.enabled
+- name: Set HTTP port
+  set_fact:
+    traefik_ports: >
+      {{ traefik_ports + [{
+        "target": "80",
+        "published": traefik_http_port,
+        "protocol": "tcp",
+        "mode": traefik_port_mode
+      }]}}
 
-- name: Wait for Traefik load balancer HTTPS
-  http_wait:
-    url: "https://localhost:{{ traefik.https.port }}/"
-    status_code: 200, 304, 404
-    retries: 3
-    delay: 5
-  when: traefik.https.enabled
+- name: Set HTTPS port
+  set_fact:
+    traefik_ports: >
+      {{ traefik_ports + [{
+        "target": "443",
+        "published": traefik_https_port,
+        "protocol": "tcp",
+        "mode": traefik_port_mode
+      }]}}
+
+- name: Deploy service
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      traefik:
+        image: "{{ traefik_image }}"
+        deploy:
+          replicas: 1
+          labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.traefik.rule=Host(`traefik.{{ domain_name }}`)"
+            - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+            - "traefik.http.routers.traefik.entrypoints={{ traefik_entrypoints }}"
+            - "traefik.http.routers.traefik.tls={{ traefik_tls }}"
+            - "traefik.http.routers.traefik.tls.certresolver={{ traefik_certresolver }}"
+        networks:
+          - "{{ docker_network_name }}"
+        ports: "{{ traefik_ports }}"
+        volumes:
+          - "{{ traefik_docker_socket }}:/var/run/docker.sock:ro"
+          - "{{ data_dir }}/traefik/acme.json:/acme.json"
+        configs:
+          - source: "{{ project_name }}_traefik_middlewares"
+            target: "/config/middlewares.yml"
+            uid: '0'
+            gid: '0'
+            mode: 0444
+          - source: "{{ project_name }}_traefik_routers"
+            target: "/config/routers.yml"
+            uid: '0'
+            gid: '0'
+            mode: 0444
+          - source: "{{ project_name }}_traefik_services"
+            target: "/config/services.yml"
+            uid: '0'
+            gid: '0'
+            mode: 0444
+          - source: "{{ project_name }}_traefik_traefik"
+            target: "/etc/traefik/traefik.yml"
+            uid: '0'
+            gid: '0'
+            mode: 0444
+  register: result
+
+- name: Set facts
+  set_fact:
+    traefik_service: "{{ result.services.traefik }}"

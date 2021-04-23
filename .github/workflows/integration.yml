@@ -1,20 +1,6 @@
 name: integration
 on: [push, pull_request]
 jobs:
-  unit_tests:
-    name: 'Unit Tests'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-
-      - name: Dependencies
-        run: python3 -m pip install pytest docker ansible
-
-      - name: Run Tests
-        run: python3 -m pytest './tests/unit/' -s
-
   dependencies:
     strategy:
       fail-fast: false
@@ -24,29 +10,17 @@ jobs:
             role: 'traefik'
           - name: 'Postgres'
             role: 'postgres'
-          - name: 'OpenLDAP'
-            role: 'ldap'
-          - name: 'MongoDB'
-            role: 'mongo'
     name: 'App: ${{ matrix.name }} (dependency)'
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [unit_tests]
     steps:
       - name: Checkout
         uses: actions/checkout@v1
 
-      - name: Generate playbook
-        run: |
-          echo "---" > integration.yml
-          echo "- hosts: homelab" >> integration.yml
-          echo "  roles:" >> integration.yml
-          echo "    - ${{ matrix.role }}" >> integration.yml
-
       - name: Ansible
         run: |
-          for f in ./group_vars/homelab/*.yml.sample; do mv -- "$f" "${f%.yml.sample}.yml"; done
-          ansible-playbook integration.yml -v
+          cp ./.github/sites/${{ matrix.role }}.yml.sample ./integration.yml
+          ansible-playbook integration.yml -vvv
 
       - name: Dump logs
         if: ${{ always() }}
@@ -71,24 +45,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: 'Haste'
-            role: 'haste'
-          - name: 'Portainer'
-            role: 'portainer'
-          - name: 'phpLDAPadmin'
-            role: 'phpldapadmin'
           - name: 'Adminer'
             role: 'adminer'
-          - name: 'FileBrowser'
-            role: 'filebrowser'
-          - name: 'DevDocs'
-            role: 'devdocs'
-          - name: 'NextCloud'
-            role: 'nextcloud'
-          - name: 'Matrix'
-            role: 'matrix'
-          - name: 'Jellyfin'
-            role: 'jellyfin'
     name: 'App: ${{ matrix.name }}'
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -97,17 +55,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
 
-      - name: Generate playbook
-        run: |
-          echo "---" > integration.yml
-          echo "- hosts: homelab" >> integration.yml
-          echo "  roles:" >> integration.yml
-          echo "    - ${{ matrix.role }}" >> integration.yml
-
       - name: Ansible
         run: |
-          for f in ./group_vars/homelab/*.yml.sample; do mv -- "$f" "${f%.yml.sample}.yml"; done
-          ansible-playbook integration.yml -v
+          cp ./.github/sites/${{ matrix.role }}.yml.sample ./integration.yml
+          ansible-playbook integration.yml -vvv
 
       - name: Dump logs
         if: ${{ always() }}

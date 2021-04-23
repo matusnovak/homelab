@@ -1,0 +1,21 @@
+---
+# Where should we put the data? This will be mounted by applications
+data_dir: "/homelab"
+
+# Name of the project. This will be used by Docker to create stack and services.
+project_name: "homelab"
+
+# Your domain of your choice. This will be used to access your applications.
+# You must either own this domain, or have local DNS entry to route traffic
+# to the correct server/host/vm.
+domain_name: "homelab.lan"
+
+# Must match the domain name. This is used by LDAP only.
+domain_component: "dc=homelab,dc=lan"
+
+# Name of the shared Docker network to create.
+docker_network_name: "{{ project_name }}_network"
+
+# If enabled, and the network is in the global scope,
+# non-service containers on worker nodes will be able to connect to the network.
+docker_network_attachable: True

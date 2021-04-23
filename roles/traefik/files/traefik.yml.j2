@@ -1,13 +1,16 @@
 entryPoints:
-{% if traefik.http.enabled %}
+{% if traefik_http_enabled %}
   web:
     address: ":80"
-{% endif %}{% if traefik.https.enabled %}
+{% endif %}{% if traefik_https_enabled %}
   web-secure:
     address: ":443"
 {% endif %}
 
-{% if traefik.dashboard.enabled %}
+log:
+  level: DEBUG
+
+{% if traefik_dashboard_enabled %}
 api:
   dashboard: true
   insecure: true
@@ -18,23 +21,24 @@ providers:
     directory: "/config"
     watch: true
   docker:
-    endpoint: "unix:/{{ traefik.docker.host }}"
-    network: "{{ docker_network.name }}"
+    endpoint: "unix:///var/run/docker.sock"
+    network: "{{ docker_network_name }}"
     watch: true
+    swarmMode: true
     exposedByDefault: false
-    constraints: Label(`com.docker.compose.project`,`{{ project_name }}`)
+    constraints: Label(`com.docker.stack.namespace`,`{{ project_name }}`)
 
-{% if traefik.acme.enabled %}
+{% if traefik_acme_enabled %}
 certificatesResolvers:
   letsencrypt:
     acme:
-      email: "{{ traefik.acme.email }}"
+      email: "{{ traefik_acme_email }}"
       storage: "/acme.json"
       httpChallenge:
         entryPoint: "web"
 {% endif %}
 
-{% if traefik.metrics.enabled %}
+{% if traefik_metrics_enabled %}
 metrics:
   prometheus:
     entryPoint: "traefik"

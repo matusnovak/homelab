@@ -1,13 +1,13 @@
 http:
   middlewares:
-    {% if traefik.middlewares.https_redirect -%}
+    {% if traefik_middlewares_https_redirect -%}
     httpsredirect:
       redirectScheme:
         scheme: https
         permanent: true
     {% endif %}
     
-    {% if traefik.middlewares.allow_frame -%}
+    {% if traefik_middlewares_allow_frame -%}
     allowframe:
       headers:
         contentSecurityPolicy: "upgrade-insecure-requests, frame-ancestors 'self' *.{{ domain_name }}"

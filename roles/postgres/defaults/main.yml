@@ -1,0 +1,8 @@
+---
+# Docker image name
+postgres_image: "docker.io/library/postgres:11"
+
+# Password for the role "postgres" that is created when
+# Postgre SQL first starts.
+postgres_password: "Password1!"
+

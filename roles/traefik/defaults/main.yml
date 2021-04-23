@@ -1,0 +1,62 @@
+---
+# Docker image name
+traefik_image: "docker.io/library/traefik:v2.1"
+
+# The Docker socket that traefik should connect to.
+# This is the path on the host!
+traefik_docker_socket: "/var/run/docker.sock"
+
+# Enable HTTP?
+traefik_http_enabled: true
+
+# Host's port at which HTTP will be available.
+# Does not affect port inside of Traefik's container.
+traefik_http_port: 80
+
+# Enable HTTPS?
+traefik_https_enabled: true
+
+# Host's port at which HTTPS will be available.
+# Does not affect port inside of Traefik's container.
+traefik_https_port: 443
+
+# Where should the ports be exposed to? Can be either "overlay" or "host"
+# host - Container ports are exposed directly to the host.
+#        Only on the host they are running on, accessible via localhost.
+# ingress - Container ports are exposed to the overlay network.
+#           On all hosts, accessible via overlay network IP address (load balancer address!).
+# See https://docs.docker.com/engine/swarm/ingress/
+traefik_port_mode: "host"
+
+# A web dashboard that users can access.
+# Will show the current middlewares and routes that
+# Traefik is using. Not used for configuration.
+traefik_dashboard_enabled: true
+
+# Should Traefik ask Let's Encrypt for a SSL certificate?
+# You must own your domain specified in "domain_name" variable.
+# You also must expose port 80 & 443 to the internet with portforwarding.
+# Let's Encrypt must be able to access your Traefik for certificate validation.
+traefik_acme_enabled: false
+
+# Email to use by Let's Encrypt to generate SSL certificates for.
+# Must be your own email. You don't need a Let's Encrypt account.
+traefik_acme_email: "email@example.com"
+
+# Enable Prometheus metrics?
+# Will be exposed at http://traefik/metrics accessible
+# only within the Docker network.
+# Will be also exposed at https://traefik.example.com/metrics 
+# accessible by anyone. You can limit outside access with Authelia.
+# Works just like the dashboard.
+traefik_metrics_enabled: true
+
+# Automatically redirect HTTP requests to HTTPS.
+# Applications can be only accessed by HTTPS if HTTPS is enabled.
+# Connecting to an application by HTTP and https_redirect=false will not work.
+# Does not affect Docker's internal network communication.
+traefik_middlewares_https_redirect: true
+
+# If you have a dashboard, that uses iframes to view your applications,
+# you will need to enable this.
+traefik_middlewares_allow_frame: false

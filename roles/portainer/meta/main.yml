@@ -1,6 +1,0 @@
----
-dependencies:
-  - role: "traefik"
-  - role: "ldap"
-    when: "portainer.ldap.enabled"
-

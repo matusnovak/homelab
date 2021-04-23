@@ -1,7 +1,7 @@
-{% if traefik.middlewares.https_redirect -%}
+{% if traefik_middlewares_https_redirect -%}
 http:
   routers:
-    {% if traefik.middlewares.https_redirect -%}
+    {% if traefik_middlewares_https_redirect -%}
     redirecttohttps:
       entryPoints:
         - "web"

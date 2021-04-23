@@ -1,39 +1,5 @@
 ---
-- name: Deploy Adminer
-  docker_deploy:
-    host: "{{ docker.host }}"
-    project: "{{ project_name }}"
-    container:
-      image: "{{ images.adminer }}"
-      name: "adminer"
-      networks:
-        - name: "{{ docker_network.name }}"
-          alias: "adminer"
-      environment:
-        - key: "ADMINER_DESIGN"
-          value: "nette"
-        - key: "ADMINER_DEFAULT_SERVER"
-          value: "postgres"
-      labels:
-        - key: "traefik.enable"
-          value: "true"
-        - key: "traefik.http.services.adminer.loadbalancer.server.port"
-          value: "8080"
-        - key: "traefik.http.routers.adminer.rule"
-          value: "Host(`adminer.{{ domain_name }}`)"
-        - key: "traefik.http.routers.adminer.entrypoints"
-          value: "{{ traefik_entrypoints }}"
-        - key: "traefik.http.routers.adminer.tls.certresolver"
-          value: "{{ traefik_certresolver }}"
-        - key: "traefik.http.routers.adminer.tls"
-          value: "{{ 'true' if traefik.https.enabled else 'false' }}"
-  register: container_adminer
-
-- name: Healthcheck for Adminer 
-  http_wait:
-    url: "{{traefik_entrypoint}}"
-    status_code: "200"
-    retries: 3
-    delay: 5
-    headers:
-      - "Host: adminer.{{ domain_name }}"
+- name: Check if traefik role is included
+  fail:
+    msg: "Adminer needs the traefik role"
+  when: "'traefik' not in role_names"

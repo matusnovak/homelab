@@ -1,32 +1,34 @@
 ---
-- name: 'Install python dependencies'
+- name: Check that the data dir exists
+  stat:
+    path: "{{ data_dir }}"
+  register: result
+
+- name: Fail if data dir does not exist
+  fail:
+    msg: The folder {{ data_dir }} must be created by you!
+  when: not result.stat.exists
+
+- name: Install python dependencies
   pip:
-    name: ['requests', 'docker']
-    state: 'latest'
+    name: ["requests", "docker"]
+    state: latest
 
-- name: 'Copy Dockerfile for script runner image'
-  copy:
-    src: 'roles/base/files/scriptrunner'
-    dest: '/tmp'
+- name: Check for Docker Swarm
+  docker_swarm_info:
+  register: docker_swarm_info
 
-- name: 'Create image for running scripts'
-  docker_build:
-    docker:
-      host: '{{ docker.host }}'
-    path: '/tmp/scriptrunner'
-    name: '{{ project_name }}_scriptrunner'
-  register: 'scriptrunner'
-
-- name: 'Create shared docker network'
+- name: Create shared network
   docker_network:
-    host: '{{ docker.host }}'
-    project: '{{ project_name }}'
-    network:
-      name: 'default'
-      attachable: true
-  register: 'docker_network'
+    name: "{{ docker_network_name }}"
+    driver: overlay
+    attachable: "{{ docker_network_attachable }}"
+  register: result
 
-- name: Collect only facts returned by facter
-  ansible.builtin.debug:
-    msg: 'Docker host: {{ docker.host }} network: {{ docker_network.subnet }}'
+- name: Set facts
+  set_fact:
+    docker_network: "{{ result.ansible_facts.docker_network }}"
 
+- name: Find shared network load balancer
+  set_fact:
+    docker_network_load_balancer: "{{ docker_network.Containers['lb-' + docker_network_name]['IPv4Address'].split('/')[0] }}"
