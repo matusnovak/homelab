@@ -21,10 +21,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
 
-      - name: Ansible
+      - name: Init Docker Swarm
+        run: docker swarm init
+
+      - name: Setup files
         run: |
           sudo mkdir /homelab
           cp ./.github/sites/${{ matrix.role }}.yml.sample ./integration.yml
+
+      - name: Ansible
+        run: |
           ansible-playbook integration.yml -vvv
 
       - name: Dump logs
