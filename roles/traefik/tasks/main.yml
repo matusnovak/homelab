@@ -19,7 +19,7 @@
 - name: Create folder
   become: yes
   file:
-    path: "{{ data_dir }}/traefik"
+    path: "{{ data_dir }}/traefik/config"
     state: directory
     mode: 0755
     owner: root
