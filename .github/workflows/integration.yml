@@ -45,6 +45,11 @@ jobs:
             docker logs $container > /tmp/docker/logs/$container.log || true
             docker inspect $container > /tmp/docker/inspect/$container.log || true
           done
+          services=$(docker services ls -q | awk '{if(NR>1) print $NF}')
+          for service in $services
+          do
+            docker service ps $service --no-trunc > /tmp/docker/service/$service.log || true
+          done
 
       - name: Store logs as artifacts
         if: ${{ always() }}
