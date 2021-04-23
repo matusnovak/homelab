@@ -4,6 +4,16 @@
     msg: "Traefik needs the base role"
   when: "'base' not in role_names"
 
+- name: Create folder
+  become: yes
+  file:
+    path: "{{ data_dir }}/traefik/config"
+    state: directory
+    mode: 0755
+    owner: root
+    group: root
+    recurse: no
+
 - name: Create config files
   become: yes
   template:
@@ -15,16 +25,6 @@
     - "config/routers.yml"
     - "config/services.yml"
   register: traefik_config
-
-- name: Create folder
-  become: yes
-  file:
-    path: "{{ data_dir }}/traefik/config"
-    state: directory
-    mode: 0755
-    owner: root
-    group: root
-    recurse: no
 
 - name: Create acme.json file
   become: yes
