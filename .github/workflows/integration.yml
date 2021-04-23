@@ -12,6 +12,8 @@ jobs:
             role: 'traefik'
           - name: 'Adminer'
             role: 'adminer'
+          - name: 'DevDocs'
+            role: 'devdocs'
     
     name: 'App: ${{ matrix.name }}'
     runs-on: ubuntu-latest
