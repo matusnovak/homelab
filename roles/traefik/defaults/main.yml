@@ -7,7 +7,7 @@ traefik_image: "docker.io/library/traefik:v2.1"
 traefik_docker_socket: "/var/run/docker.sock"
 
 # Log level
-traefik_log_level: "INFO"
+traefik_log_level: "DEBUG"
 
 # Enable HTTP?
 traefik_http_enabled: true

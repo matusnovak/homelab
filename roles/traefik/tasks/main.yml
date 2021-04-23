@@ -4,48 +4,17 @@
     msg: "Traefik needs the base role"
   when: "'base' not in role_names"
 
-- name: Check config files
-  docker_config:
-    name: "{{ project_name }}_traefik_{{ item.name }}"
-    data: "{{ lookup('template', 'roles/traefik/files/' + item.path) | b64encode }}"
-    data_is_b64: true
-  check_mode: true
+- name: Create config files
+  become: yes
+  template:
+    src: "roles/traefik/files/{{item}}.j2"
+    dest: "{{ data_dir }}/traefik/{{item}}"
   loop:
-    - path: "config/middlewares.yml.j2"
-      name: "middlewares"
-    - path: "config/routers.yml.j2"
-      name: "routers"
-    - path: "config/services.yml.j2"
-      name: "services"
-    - path: "traefik.yml.j2"
-      name: "traefik"
-  register: config_state
-  
-# Can't change configs if service is running :(
-- when: config_state.changed | bool
-  block:
-    - name: Stop service
-      swarm_service:
-        project_name: "{{ project_name }}"
-        remove:
-          - "traefik"
-      register: stop_state
-
-    - name: Create config files
-      docker_config:
-        name: "{{ project_name }}_traefik_{{ item.name }}"
-        data: "{{ lookup('template', 'roles/traefik/files/' + item.path) | b64encode }}"
-        data_is_b64: true
-      loop:
-        - path: "config/middlewares.yml.j2"
-          name: "middlewares"
-        - path: "config/routers.yml.j2"
-          name: "routers"
-        - path: "config/services.yml.j2"
-          name: "services"
-        - path: "traefik.yml.j2"
-          name: "traefik"
-      when: stop_state.changed
+    - "traefik.yml"
+    - "config/middlewares.yml"
+    - "config/routers.yml"
+    - "config/services.yml"
+  register: traefik_config
 
 - name: Create folder
   become: yes
@@ -72,7 +41,7 @@
     traefik_protocol: "{{ traefik_https_enabled | ternary('https', 'http') }}"
     traefik_port: "{{ traefik_https_enabled | ternary(traefik_https_port, traefik_http_port) }}"
     traefik_entrypoints: "{{ traefik_https_enabled | ternary('web-secure', 'web') }}"
-    traefik_certresolver: "letsencrypt"
+    traefik_certresolver: "{{ traefik_acme_enabled | ternary('letsencrypt', '') }}"
     traefik_tls: "{{ true | string | lower }}"
     traefik_ports: []
 
@@ -112,7 +81,7 @@
       }]}}
 
 - name: Deploy service
-  swarm_service:
+  docker_swarm_service:
     project_name: "{{ project_name }}"
     definition:
       traefik:
@@ -132,27 +101,8 @@
         volumes:
           - "{{ traefik_docker_socket }}:/var/run/docker.sock:ro"
           - "{{ data_dir }}/traefik/acme.json:/acme.json"
-        configs:
-          - source: "{{ project_name }}_traefik_middlewares"
-            target: "/config/middlewares.yml"
-            uid: '0'
-            gid: '0'
-            mode: 0444
-          - source: "{{ project_name }}_traefik_routers"
-            target: "/config/routers.yml"
-            uid: '0'
-            gid: '0'
-            mode: 0444
-          - source: "{{ project_name }}_traefik_services"
-            target: "/config/services.yml"
-            uid: '0'
-            gid: '0'
-            mode: 0444
-          - source: "{{ project_name }}_traefik_traefik"
-            target: "/etc/traefik/traefik.yml"
-            uid: '0'
-            gid: '0'
-            mode: 0444
+          - "{{ data_dir }}/traefik/traefik.yml:/etc/traefik/traefik.yml:ro"
+          - "{{ data_dir }}/traefik/config:/config:ro"
   register: result
 
 - name: Set facts

@@ -157,10 +157,12 @@ def deploy_service(client: DockerClient, project_name: str, name: str, definitio
     if 'labels' in def_deploy and isinstance(def_deploy['labels'], list):
         for label in def_deploy['labels']:
             if isinstance(label, tuple):
-                labels[label[0]] = label[1]
+                if label[1] != '':
+                    labels[label[0]] = label[1]
             elif isinstance(label, str):
                 tokens = label.split('=', maxsplit=2)
-                labels[tokens[0]] = tokens[1]
+                if label[1] != '':
+                    labels[tokens[0]] = tokens[1]
 
     ports = {}
 

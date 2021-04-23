@@ -5,7 +5,7 @@
   when: "'traefik' not in role_names"
 
 - name: Deploy service
-  swarm_service:
+  docker_swarm_service:
     project_name: "{{ project_name }}"
     definition:
       adminer:
