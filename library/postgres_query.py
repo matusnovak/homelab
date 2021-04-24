@@ -40,7 +40,8 @@ def execute(params: dict, tries=3) -> dict:
 
     except ContainerError as e:
         could_not_connect = 'could not connect to server' in str(e)
-        if could_not_connect and tries > 0:
+        starting_up = 'the database system is starting up' in str(e)
+        if (could_not_connect or starting_up) and tries > 0:
             time.sleep(1)
             return execute(params, tries - 1)
 
