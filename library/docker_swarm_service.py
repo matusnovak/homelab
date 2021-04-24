@@ -108,12 +108,19 @@ def deploy_service(client: DockerClient, project_name: str, name: str, definitio
 
     def_healthcheck = definition.get('healthcheck', {})
 
+    def get_sec_to_nsec(s: str):
+        if s.endswith('s'):
+            return int(s[:-1]) * 1000 * 1000 * 1000
+        else:
+            return int(s)
+
     healthcheck = Healthcheck(
         test=def_healthcheck.get('test', []),
-        interval=int(def_healthcheck.get('interval', 0)),
-        timeout=int(def_healthcheck.get('timeout', 0)),
+        interval=get_sec_to_nsec(str(def_healthcheck.get('interval', 0))),
+        timeout=get_sec_to_nsec(str(def_healthcheck.get('timeout', 0))),
         retries=int(def_healthcheck.get('retries', 0)),
-        start_period=int(def_healthcheck.get('start_period', 0))
+        start_period=get_sec_to_nsec(
+            str(def_healthcheck.get('start_period', 0)))
     )
 
     def_resources = definition.get('resources', {})
