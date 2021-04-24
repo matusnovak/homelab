@@ -6,7 +6,7 @@ import csv
 import time
 
 
-def execute(params: dict, tries=3) -> dict:
+def execute(params: dict, tries: int = 5) -> dict:
     args = [
         'psql',
         '-U',
@@ -42,10 +42,10 @@ def execute(params: dict, tries=3) -> dict:
         could_not_connect = 'could not connect to server' in str(e)
         starting_up = 'the database system is starting up' in str(e)
         if (could_not_connect or starting_up) and tries > 0:
-            time.sleep(1)
+            time.sleep(2)
             return execute(params, tries - 1)
 
-        return dict(failed=True, msg=str(e))
+        return dict(failed=True, msg=str(e), tries=tries)
     except NotFound as e:
         return dict(failed=True, msg=f'No such container: {container_id}')
 

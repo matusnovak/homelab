@@ -3,7 +3,7 @@ import docker
 from docker.errors import NotFound, ContainerError
 
 
-def execute(params: dict) -> dict:
+def execute(params: dict, tries: int = 5) -> dict:
     client = docker.from_env()
 
     def query(filter: str):
@@ -92,7 +92,11 @@ def execute(params: dict) -> dict:
         return dict(changed=True, msg='Entry created')
 
     except ContainerError as e:
-        return dict(failed=True, msg=str(e))
+        cant_contact = 'Can\'t contact LDAP server' in str(e)
+        if cant_contact and tries > 0:
+            return execute(params, tries - 1)
+
+        return dict(failed=True, msg=str(e), tries=tries)
     except NotFound as e:
         return dict(failed=True, msg='No such container')
 
