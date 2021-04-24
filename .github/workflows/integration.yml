@@ -52,13 +52,13 @@ jobs:
           containers=$(docker ps -a | awk '{if(NR>1) print $NF}')
           for container in $containers
           do
-            docker logs $container > /tmp/docker/logs/$container.log || true
-            docker inspect $container > /tmp/docker/inspect/$container.log || true
+            docker logs $container 2>&1 > /tmp/docker/logs/$container.log || true
+            docker inspect $container 2>&1 > /tmp/docker/inspect/$container.log || true
           done
           services=$(docker service ls -q | awk '{if(NR>1) print $NF}')
           for service in $services
           do
-            docker service ps $service --no-trunc > /tmp/docker/service/$service.log || true
+            docker service ps $service --no-trunc 2>&1 > /tmp/docker/service/$service.log || true
           done
 
       - name: Store logs as artifacts
