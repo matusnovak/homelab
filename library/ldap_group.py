@@ -1,6 +1,7 @@
 from ansible.module_utils.basic import AnsibleModule
 import docker
 from docker.errors import NotFound, ContainerError
+import time
 
 
 def execute(params: dict, tries: int = 5) -> dict:
@@ -69,7 +70,7 @@ def execute(params: dict, tries: int = 5) -> dict:
         code, output = container.exec_run(cmd)
 
         if code != 0:
-            return dict(failed=True, msg=output.decode('utf-8'))
+            raise ContainerError(output.decode('utf-8'))
 
         if get_count(output.decode('utf-8')) != 0:
             return dict(changed=False, msg='Already exists')
@@ -96,6 +97,7 @@ def execute(params: dict, tries: int = 5) -> dict:
     except ContainerError as e:
         cant_contact = 'Can\'t contact LDAP server' in str(e)
         if cant_contact and tries > 0:
+            time.sleep(2)
             return execute(params, tries - 1)
 
         return dict(failed=True, msg=str(e), tries=tries)

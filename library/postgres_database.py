@@ -44,7 +44,7 @@ def execute(params: dict, tries: int = 5) -> dict:
         })
 
         if code != 0:
-            return dict(failed=True, msg=output.decode("utf-8"))
+            raise ContainerError(output.decode('utf-8'))
 
         rows = decode(output)
 
