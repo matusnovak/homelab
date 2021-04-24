@@ -3,5 +3,6 @@
   roles:
     - base
     - ldap
+    - postgres
     - traefik
-    - haste
+    - authelia

@@ -12,3 +12,13 @@ http:
       headers:
         contentSecurityPolicy: "upgrade-insecure-requests, frame-ancestors 'self' *.{{ domain_name }}"
     {% endif %}
+    
+    {% if traefik_authelia_enabled -%}
+    authelia:
+      forwardAuth:
+        address: "http://authelia:9091/api/verify?rd={{ traefik_protocol }}://auth.{{ domain_name }}/"
+        trustForwardHeader: true
+        authResponseHeaders:
+          - "Remote-User"
+          - "Remote-Groups"
+    {% endif %}

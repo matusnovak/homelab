@@ -69,7 +69,7 @@ def get_config_hash_value(service):
     return None
 
 
-def deploy_service(client: DockerClient, project_name: str, name: str, definition: dict) -> Tuple[bool, dict]:
+def deploy_service(client: DockerClient, project_name: str, name: str, definition: dict, timeout: int) -> Tuple[bool, dict]:
     defaults = get_defaults()
 
     env = []
@@ -324,7 +324,6 @@ def deploy_service(client: DockerClient, project_name: str, name: str, definitio
         service.update(**args)
 
     # wait
-    timeout = 30
     tasks = []
 
     while timeout > 0:
@@ -351,7 +350,7 @@ def deploy_service(client: DockerClient, project_name: str, name: str, definitio
         break
 
     if timeout <= 0 or len(tasks) == 0:
-        msg = f'Timeout while waiting for service: {name} to have at least one task running'
+        msg = f'Timeout while waiting for service: {full_name} to have at least one task running'
         return (changed, dict(failed=True, msg=msg))
 
     tasks_meta = []
@@ -375,13 +374,13 @@ def deploy_service(client: DockerClient, project_name: str, name: str, definitio
     return (changed, meta)
 
 
-def deploy(project_name: str, definition: dict) -> dict:
+def deploy(project_name: str, definition: dict, timeout: int) -> dict:
     changed = False
     results = {}
     client = docker.from_env()
 
     for name, value in definition.items():
-        ch, result = deploy_service(client, project_name, name, value)
+        ch, result = deploy_service(client, project_name, name, value, timeout)
         changed |= ch
         results[name] = result
 
@@ -391,7 +390,7 @@ def deploy(project_name: str, definition: dict) -> dict:
     return dict(changed=changed, msg='Success', services=results)
 
 
-def remove_service(client: DockerClient, project_name: str, name: str) -> bool:
+def remove_service(client: DockerClient, project_name: str, name: str, timeout: int) -> bool:
     try:
         full_name = f'{project_name}_{name}'
         service = client.services.get(full_name)
@@ -399,12 +398,11 @@ def remove_service(client: DockerClient, project_name: str, name: str) -> bool:
         service.remove()
 
         # Wait for tasks to finish
-        timeout = 30
         while timeout > 0:
-            timeout -= 0
+            timeout -= 1
 
             containers = client.containers.list(filters={
-                'name': full_name
+                'name': full_name + '.'
             })
 
             if len(containers) == 0:
@@ -416,26 +414,26 @@ def remove_service(client: DockerClient, project_name: str, name: str) -> bool:
             time.sleep(1)
 
         if timeout <= 0:
-            return (True, False, 'Timeout while waiting for service containers to be removed')
+            return (True, False, f'Timeout while waiting for service: {full_name} containers to be removed')
 
-        return (False, True, 'Success')
+        return (False, True, 'Service removed')
 
     except NotFound:
-        return (False, False, 'Success')
+        return (False, False, 'Service not found')
 
 
-def remove(project_name: str, names: list) -> dict:
+def remove(project_name: str, names: list, timeout: int) -> dict:
     changed = False
     client = docker.from_env()
 
     for name in names:
-        failed, ch, msg = remove_service(client, project_name, name)
+        failed, ch, msg = remove_service(client, project_name, name, timeout)
         if failed:
             return dict(failed=True, msg=msg)
         else:
             changed |= ch
 
-    return dict(changed=changed, msg='Success')
+    return dict(changed=changed, msg='Services removed')
 
 
 def main():
@@ -443,6 +441,11 @@ def main():
         'project_name': {
             'type': 'str',
             'required': True
+        },
+        'timeout': {
+            'type': int,
+            'required': False,
+            'default': 30
         },
         'definition': {
             'type': 'dict',
@@ -463,11 +466,11 @@ def main():
 
     if len(module.params['remove']) > 0:
         module.exit_json(
-            **remove(module.params['project_name'], module.params['remove']))
+            **remove(module.params['project_name'], module.params['remove'], module.params['timeout']))
 
     if module.params['definition'] is not None:
         module.exit_json(
-            **deploy(module.params['project_name'], module.params['definition']))
+            **deploy(module.params['project_name'], module.params['definition'], module.params['timeout']))
 
 
 if __name__ == '__main__':

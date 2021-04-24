@@ -1,0 +1,102 @@
+---
+- name: Check if traefik role is included
+  fail:
+    msg: "Authelia needs the traefik role"
+  when: "'traefik' not in role_names"
+
+- name: Check if ldap role is included
+  fail:
+    msg: "Authelia needs the ldap role"
+  when: "'ldap' not in role_names"
+
+- name: Check if postgres role is included
+  fail:
+    msg: "Authelia needs the postgres role"
+  when: "'postgres' not in role_names"
+
+- name: Create folder structure
+  become: yes
+  file:
+    path: "{{ data_dir }}/authelia"
+    state: directory
+    mode: "700"
+    owner: "0"
+    group: "0"
+    recurse: false
+
+- name: Create config files
+  become: yes
+  template:
+    src: "roles/authelia/files/{{item}}.j2"
+    dest: "{{ data_dir }}/authelia/{{item}}"
+  loop:
+    - "configuration.yml"
+  register: authelia_config
+
+- name: Remove existing service if config changes
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    remove:
+      - "authelia"
+  when: authelia_config.changed
+
+- name: Create database role
+  postgres_role:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    role: "{{ authelia_postgres_role }}"
+    role_password: "{{ authelia_postgres_password }}"
+
+- name: Create database
+  postgres_database:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    database: "{{ authelia_postgres_database }}"
+    role: "{{ authelia_postgres_role }}"
+
+- name: Deploy redis
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      authelia_redis:
+        image: "{{ authelia_redis_image }}"
+        command: "redis-server --requirepass {{ authelia_redis_password }}"
+        deploy:
+          replicas: 1
+        networks:
+          - "{{ docker_network_name }}"
+
+- name: Deploy service
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    timeout: 60
+    definition:
+      authelia:
+        image: "{{ authelia_image }}"
+        deploy:
+          replicas: 1
+          labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.authelia.rule=Host(`auth.{{ domain_name }}`)"
+            - "traefik.http.services.authelia.loadbalancer.server.port=9091"
+            - "traefik.http.routers.authelia.entrypoints={{ traefik_entrypoints }}"
+            - "traefik.http.routers.authelia.tls={{ traefik_tls }}"
+            - "traefik.http.routers.authelia.tls.certresolver={{ traefik_certresolver }}"
+        networks:
+          - "{{ docker_network_name }}"
+        volumes:
+          - "{{ data_dir }}/authelia:/config"
+  register: result
+
+- name: Set facts
+  set_fact:
+    authelia_service: "{{ result.services.authelia }}"
+
+- name: Healthcheck
+  http_wait:
+    url: "{{ traefik_address }}/"
+    status_code: "200"
+    retries: 3
+    delay: 10
+    headers:
+      - "Host: auth.{{ domain_name }}"

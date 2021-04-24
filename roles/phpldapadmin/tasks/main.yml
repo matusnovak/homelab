@@ -1,4 +1,14 @@
 ---
+- name: Check if traefik role is included
+  fail:
+    msg: "phpLDAPadmin needs the traefik role"
+  when: "'traefik' not in role_names"
+
+- name: Check if ldap role is included
+  fail:
+    msg: "phpLDAPadmin needs the ldap role"
+  when: "'ldap' not in role_names"
+
 - name: Deploy service
   docker_swarm_service:
     project_name: "{{ project_name }}"

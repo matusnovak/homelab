@@ -1,0 +1,69 @@
+host: 0.0.0.0
+port: 9091
+
+jwt_secret: "{{ authelia_jwt_secret }}"
+
+log_level: debug
+
+session:
+  name: authelia_session
+  secret: "{{ authelia_jwt_secret }}"
+  expiration: 3600
+  inactivity: 300
+  domain: "{{ domain_name }}"
+
+  redis:
+    host: authelia_redis
+    port: 6379
+    password: "{{ authelia_redis_password }}"
+
+storage:
+  postgres:
+    host: "{{ postgres_service.name }}"
+    port: 5432
+    database: "{{ authelia_postgres_database }}"
+    username: "{{ authelia_postgres_role }}"
+    password: "{{ authelia_postgres_password }}"
+    sslmode: disable
+
+regulation:
+  max_retries: 3
+  find_time: 120
+  ban_time: 300
+
+notifier:
+  disable_startup_check: false
+
+  filesystem:
+    filename: /config/notification.txt
+
+access_control:
+  default_policy: deny
+
+  rules:
+{% if traefik_authelia_enabled %}
+    - domain: traefik.{{ domain_name }}
+      subject: 'group:{{ traefik_ldap_group }}'
+      policy: one_factor
+{% endif %}
+
+authentication_backend:
+  disable_reset_password: false
+
+  ldap:
+    url: ldap://{{ openldap_service.name }}
+    start_tls: false
+    implementation: "custom"
+    tls:
+      skip_verify: false
+    base_dn: {{ domain_component }}
+    username_attribute: uid
+    additional_users_dn: ou={{ ldap_users_name }}
+    users_filter: (&({username_attribute}={input})(objectClass=person))
+    additional_groups_dn: ou={{ ldap_groups_name }}
+    groups_filter: (&(uniqueMember={dn})(objectclass=groupOfUniqueNames))
+    group_name_attribute: cn
+    mail_attribute: uid
+    display_name_attribute: cn
+    user: cn=admin,{{ domain_component }}
+    password: {{ ldap_admin_password }}

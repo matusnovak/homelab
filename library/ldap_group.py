@@ -23,6 +23,35 @@ def execute(params: dict) -> dict:
 
         return ' '.join(args)
 
+    def modify(values: list):
+        echo = '\"'
+        for key, value in values:
+            if len(echo) != 1:
+                echo += '\n'
+            echo += f'{key}: {value}'
+        echo += "\""
+
+        args = [
+            '/bin/bash',
+            '-c',
+            '\'',
+            'echo',
+            echo,
+            '|',
+            'ldapmodify',
+            '-x',
+            '-H',
+            'ldap://localhost',
+            '-D',
+            params['user'],
+            '-c',
+            '-w',
+            params['password'],
+            '\''
+        ]
+
+        return ' '.join(args)
+
     def get_count(output: str) -> int:
         for line in output.split('\n'):
             if line.startswith('# numEntries:'):
@@ -43,9 +72,26 @@ def execute(params: dict) -> dict:
             return dict(failed=True, msg=output.decode('utf-8'))
 
         if get_count(output.decode('utf-8')) != 0:
-            return dict(changed=False, msg='Success')
+            return dict(changed=False, msg='Already exists')
 
-        return dict(changed=True, msg='Success')
+        values = [
+            ('dn', dn),
+            ('changetype', 'add'),
+            ('objectClass', 'top'),
+            ('objectClass', 'groupOfUniqueNames'),
+            ('cn', cn)
+        ]
+
+        for member in params['members']:
+            values.append(('uniqueMember', member))
+
+        cmd = modify(values)
+        code, output = container.exec_run(cmd)
+
+        if code != 0:
+            return dict(failed=True, msg=output.decode('utf-8'))
+
+        return dict(changed=True, msg='Entry created')
 
     except ContainerError as e:
         return dict(failed=True, msg=str(e))
@@ -75,6 +121,11 @@ def main():
         'cn': {
             'type': 'str',
             'required': True
+        },
+        'members': {
+            'type': 'list',
+            'required': False,
+            'default': []
         }
     }
 

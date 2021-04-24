@@ -36,6 +36,16 @@ traefik_port_mode: "host"
 # Traefik is using. Not used for configuration.
 traefik_dashboard_enabled: true
 
+# Secure the dashboard with Authelia.
+# The dashboard is not secured on its own, does not contain any login mechanism.
+# Authelia provides a forward auth that can be used to secure the dashboard.
+# This will require anyone who tries to access the dashboard to log in into Authelia.
+# Uses LDAP users and the user must belong to a group.
+traefik_authelia_enabled: true
+
+# Name of the LDAP group that users must belong to in order to log in.
+traefik_ldap_group: "traefik"
+
 # Should Traefik ask Let's Encrypt for a SSL certificate?
 # You must own your domain specified in "domain_name" variable.
 # You also must expose port 80 & 443 to the internet with portforwarding.

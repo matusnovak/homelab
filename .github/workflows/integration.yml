@@ -6,6 +6,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - name: 'Authelia'
+            role: 'authelia'
           - name: 'Adminer'
             role: 'adminer'
           #- name: 'DevDocs'

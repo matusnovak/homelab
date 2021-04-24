@@ -1,0 +1,23 @@
+---
+# Docker images for authelia
+authelia_image: "docker.io/authelia/authelia:latest"
+authelia_redis_image: "docker.io/library/redis:latest"
+
+# JWT secret, any random string
+authelia_jwt_secret: "secret"
+
+# Redis password for Authelia
+# Can be any random string
+authelia_redis_password: "authelia"
+
+# Name for the database
+# This database will be created if it does not exist
+authelia_postgres_database: "authelia"
+
+# Name for the database role
+# This database role will be created if it does not exist
+authelia_postgres_role: "authelia"
+
+# Password for the database role
+# This database role will be created if it does not exist
+authelia_postgres_password: "Password1!"

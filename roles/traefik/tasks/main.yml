@@ -14,6 +14,15 @@
     group: root
     recurse: no
 
+- name: Set facts
+  set_fact:
+    traefik_protocol: "{{ traefik_https_enabled | ternary('https', 'http') }}"
+    traefik_port: "{{ traefik_https_enabled | ternary(traefik_https_port, traefik_http_port) }}"
+    traefik_entrypoints: "{{ traefik_https_enabled | ternary('web-secure', 'web') }}"
+    traefik_certresolver: "{{ traefik_acme_enabled | ternary('letsencrypt', '') }}"
+    traefik_tls: "{{ true | string | lower }}"
+    traefik_ports: []
+
 - name: Create config files
   become: yes
   template:
@@ -33,6 +42,17 @@
       - "traefik"
   when: traefik_config.changed
 
+- name: Create LDAP group
+  ldap_group:
+    container: "{{ openldap_service.tasks[0].id }}"
+    user: "{{ ldap_admin_user }}"
+    password: "{{ ldap_admin_password }}"
+    base: "{{ ldap_groups_dn }}"
+    cn: "{{ traefik_ldap_group }}"
+    members:
+      - "{{ ldap_admin_user }}"
+  when: traefik_authelia_enabled
+
 - name: Create acme.json file
   become: yes
   copy:
@@ -42,15 +62,6 @@
     mode: 0600
     owner: root
     group: root
-
-- name: Set facts
-  set_fact:
-    traefik_protocol: "{{ traefik_https_enabled | ternary('https', 'http') }}"
-    traefik_port: "{{ traefik_https_enabled | ternary(traefik_https_port, traefik_http_port) }}"
-    traefik_entrypoints: "{{ traefik_https_enabled | ternary('web-secure', 'web') }}"
-    traefik_certresolver: "{{ traefik_acme_enabled | ternary('letsencrypt', '') }}"
-    traefik_tls: "{{ true | string | lower }}"
-    traefik_ports: []
 
 - name: Set traefik_address
   set_fact:
@@ -102,6 +113,7 @@
             - "traefik.http.routers.traefik.entrypoints={{ traefik_entrypoints }}"
             - "traefik.http.routers.traefik.tls={{ traefik_tls }}"
             - "traefik.http.routers.traefik.tls.certresolver={{ traefik_certresolver }}"
+            - "traefik.http.routers.traefik.middlewares={{ traefik_authelia_enabled | ternary('authelia@file', '') }}"
         networks:
           - "{{ docker_network_name }}"
         ports: "{{ traefik_ports }}"
