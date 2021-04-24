@@ -1,0 +1,29 @@
+---
+- name: Deploy service
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      phpldapadmin:
+        image: "{{ phpldapadmin_image }}"
+        deploy:
+          replicas: 1
+          labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.phpldapadmin.rule=Host(`ldap.{{ domain_name }}`)"
+            - "traefik.http.services.phpldapadmin.loadbalancer.server.port=80"
+            - "traefik.http.routers.phpldapadmin.entrypoints={{ traefik_entrypoints }}"
+            - "traefik.http.routers.phpldapadmin.tls={{ traefik_tls }}"
+            - "traefik.http.routers.phpldapadmin.tls.certresolver={{ traefik_certresolver }}"
+        networks:
+          - "{{ docker_network_name }}"
+        volumes:
+          - "{{ data_dir }}/ldap/data:/var/lib/ldap"
+          - "{{ data_dir }}/ldap/config:/etc/ldap/slapd.d"
+        environment:
+          PHPLDAPADMIN_LDAP_HOSTS: "{{ openldap_service.name }}"
+          PHPLDAPADMIN_HTTPS: "{{ 'false' | string | lower }}"
+  register: result
+
+- name: Set facts
+  set_fact:
+    phpldapadmin_service: "{{ result.services.phpldapadmin }}"

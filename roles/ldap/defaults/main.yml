@@ -1,0 +1,24 @@
+---
+# Docker image name
+ldap_image: "docker.io/osixia/openldap:latest"
+
+# Name of the organization for LDAP.
+# This does not affect things, it's for information only.
+# Can not be changed later!
+ldap_organisation: "Homelab"
+
+# Password for the admin user.
+# The full user name is: "cn=admin,dc=homelab,dc=lan" (must match your domain_component var)
+# You can log in using that user and this password.
+ldap_admin_password: "Password1!"
+
+# Name of the organization unit that will contain all users.
+# Changing this is allowed but not recommended.
+ldap_users_name: "users"
+
+# Name of the organization unit that will contain all application groups.
+# Changing this will result in existing LDAP users to not be 
+# able to log in into your applications. You will have to add them to this
+# newly renamed group. Your users must belong to an application group
+# in order to log in into that particular application that used LDAP.
+ldap_groups_name: "groups"

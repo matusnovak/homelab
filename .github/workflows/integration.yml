@@ -6,10 +6,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: 'Postgre SQL'
-            role: 'postgres'
-          - name: 'Traefik'
-            role: 'traefik'
           - name: 'Adminer'
             role: 'adminer'
           #- name: 'DevDocs'
@@ -18,6 +14,14 @@ jobs:
             role: 'filebrowser'
           - name: 'Haste'
             role: 'haste'
+          - name: 'OpenLDAP'
+            role: 'ldap'
+          - name: 'phpLDAPadmin'
+            role: 'phpldapadmin'
+          - name: 'Postgre SQL'
+            role: 'postgres'
+          - name: 'Traefik'
+            role: 'traefik'
     
     name: 'App: ${{ matrix.name }}'
     runs-on: ubuntu-latest

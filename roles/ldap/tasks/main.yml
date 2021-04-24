@@ -1,0 +1,64 @@
+---
+- name: Create folder structure
+  become: yes
+  file:
+    path: "{{ data_dir }}/ldap/{{ item }}"
+    state: directory
+    mode: 0700
+    owner: "911"
+    group: "911"
+    recurse: false
+  loop:
+    - "data"
+    - "config"
+
+- name: Deploy service
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      openldap:
+        image: "{{ ldap_image }}"
+        deploy:
+          replicas: 1
+        networks:
+          - "{{ docker_network_name }}"
+        volumes:
+          - "{{ data_dir }}/ldap/data:/var/lib/ldap"
+          - "{{ data_dir }}/ldap/config:/etc/ldap/slapd.d"
+        environment:
+          LDAP_ORGANISATION: "{{ ldap_organisation }}"
+          LDAP_BASE_DN: "{{ domain_component }}"
+          LDAP_DOMAIN: "{{ domain_name }}"
+          LDAP_ADMIN_PASSWORD: "{{ ldap_admin_password }}"
+  register: result
+
+- name: Set facts
+  set_fact:
+    openldap_service: "{{ result.services.openldap }}"
+    ldap_admin_user: "cn=admin,{{ domain_component }}"
+    ldap_groups_dn: "ou={{ ldap_groups_name }},{{ domain_component }}"
+    ldap_users_dn: "ou={{ ldap_users_name }},{{ domain_component }}"
+
+- name: Create groups unit
+  ldap_unit:
+    container: "{{ openldap_service.tasks[0].id }}"
+    user: "{{ ldap_admin_user }}"
+    password: "{{ ldap_admin_password }}"
+    base: "{{ domain_component }}"
+    ou: "{{ ldap_groups_name }}"
+
+- name: Create users unit
+  ldap_unit:
+    container: "{{ openldap_service.tasks[0].id }}"
+    user: "{{ ldap_admin_user }}"
+    password: "{{ ldap_admin_password }}"
+    base: "{{ domain_component }}"
+    ou: "{{ ldap_users_name }}"
+
+- name: Create posix group
+  ldap_posix_group:
+    container: "{{ openldap_service.tasks[0].id }}"
+    user: "{{ ldap_admin_user }}"
+    password: "{{ ldap_admin_password }}"
+    base: "{{ ldap_groups_dn }}"
+    cn: "user"

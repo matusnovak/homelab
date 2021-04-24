@@ -10,7 +10,9 @@ project_name: "homelab"
 # to the correct server/host/vm.
 domain_name: "homelab.lan"
 
-# Must match the domain name. This is used by LDAP only.
+# Domain component of LDAP. This should match your
+# domain_name variable. Must start with "dc=".
+# Can not be changed later!
 domain_component: "dc=homelab,dc=lan"
 
 # Name of the shared Docker network to create.
