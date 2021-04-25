@@ -459,7 +459,21 @@ def restart_service(client: DockerClient, project_name: str, name: str, timeout:
         wait_for_tasks(client, full_name, timeout, 0)
 
         # Scale up back
-        service.scale(num_of_replicas)
+        # We have to try multiple times because of a bug in Docker that has been
+        # there for past 5 years and no one is fixing it.
+        service = client.services.get(full_name)
+        tries = 3
+        while tries > 0:
+            tries -= 1
+            try:
+                service.scale(num_of_replicas)
+                break
+            except Exception as e:
+                if tries == 0 or 'update out of sequence' not in str(e):
+                    raise e
+                time.sleep(1)
+
+        # Double check that all replicas have started
         wait_for_tasks(client, full_name, timeout, num_of_replicas)
 
         return (False, True, 'Service restarted')
