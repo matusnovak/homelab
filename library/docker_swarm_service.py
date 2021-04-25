@@ -397,6 +397,27 @@ def deploy(project_name: str, definition: dict, timeout: int) -> dict:
     return dict(changed=changed, msg='Success', services=results)
 
 
+def wait_for_tasks(client: DockerClient, full_name: str, timeout: int, expected: int):
+    while timeout > 0:
+        timeout -= 1
+
+        containers = client.containers.list(filters={
+            'name': full_name + '.'
+        })
+
+        if len(containers) == expected:
+            return
+
+        for container in containers:
+            print(f'container is alive: {container.id}')
+
+        time.sleep(1)
+
+    if timeout <= 0:
+        raise Exception(
+            f'Timeout while waiting for number of replicas of service: {full_name} to be {expected}')
+
+
 def remove_service(client: DockerClient, project_name: str, name: str, timeout: int) -> bool:
     try:
         full_name = f'{project_name}_{name}'
@@ -404,24 +425,7 @@ def remove_service(client: DockerClient, project_name: str, name: str, timeout: 
 
         service.remove()
 
-        # Wait for tasks to finish
-        while timeout > 0:
-            timeout -= 1
-
-            containers = client.containers.list(filters={
-                'name': full_name + '.'
-            })
-
-            if len(containers) == 0:
-                break
-
-            for container in containers:
-                print(f'container is alive: {container.id}')
-
-            time.sleep(1)
-
-        if timeout <= 0:
-            return (True, False, f'Timeout while waiting for service: {full_name} containers to be removed')
+        wait_for_tasks(client, full_name, timeout, 0)
 
         return (False, True, 'Service removed')
 
@@ -441,6 +445,41 @@ def remove(project_name: str, names: list, timeout: int) -> dict:
             changed |= ch
 
     return dict(changed=changed, msg='Services removed')
+
+
+def restart_service(client: DockerClient, project_name: str, name: str, timeout: int) -> bool:
+    try:
+        full_name = f'{project_name}_{name}'
+        service = client.services.get(full_name)
+
+        num_of_replicas = service.attrs['Spec']['Mode']['Replicated']['Replicas']
+
+        # Scale down first
+        service.scale(0)
+        wait_for_tasks(client, full_name, timeout, 0)
+
+        # Scale up back
+        service.scale(num_of_replicas)
+        wait_for_tasks(client, full_name, timeout, num_of_replicas)
+
+        return (False, True, 'Service restarted')
+
+    except NotFound:
+        return (False, False, 'Service not found')
+
+
+def restart(project_name: str, names: list, timeout: int) -> dict:
+    changed = False
+    client = docker.from_env()
+
+    for name in names:
+        failed, ch, msg = restart_service(client, project_name, name, timeout)
+        if failed:
+            return dict(failed=True, msg=msg)
+        else:
+            changed |= ch
+
+    return dict(changed=changed, msg='Services restarted')
 
 
 def main():
@@ -463,6 +502,11 @@ def main():
             'type': 'list',
             'required': False,
             'default': []
+        },
+        'restart': {
+            'type': 'list',
+            'required': False,
+            'default': []
         }
     }
 
@@ -474,6 +518,10 @@ def main():
     if len(module.params['remove']) > 0:
         module.exit_json(
             **remove(module.params['project_name'], module.params['remove'], module.params['timeout']))
+
+    if len(module.params['restart']) > 0:
+        module.exit_json(
+            **restart(module.params['project_name'], module.params['restart'], module.params['timeout']))
 
     if module.params['definition'] is not None:
         module.exit_json(

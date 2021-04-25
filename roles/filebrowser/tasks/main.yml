@@ -86,3 +86,5 @@
   script: "roles/filebrowser/scripts/main.py init {{ init_data | to_json | tojson }}"
   args:
     executable: python3
+  register: filebrowser_init_script
+  changed_when: "'Changed!' in filebrowser_init_script.stdout"

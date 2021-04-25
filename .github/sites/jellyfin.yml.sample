@@ -1,0 +1,9 @@
+---
+- hosts: homelab
+  roles:
+    - base
+    - ldap
+    - postgres
+    - traefik
+    - authelia
+    - jellyfin

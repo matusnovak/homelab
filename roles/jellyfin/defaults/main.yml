@@ -1,0 +1,44 @@
+---
+# Docker image name
+jellyfin_image: "docker.io/linuxserver/jellyfin:latest"
+
+# Password for the admin user
+jellyfin_admin_passwords: "Password1!"
+
+# The user ID to use for accessing media.
+# The Jellyfin will act on behalf of this user on your host path.
+jellyfin_uid: 0
+
+# The user group ID to use for accessing media.
+# The Jellyfin will act on behalf of this group on your host path.
+# If you are using Samba share and you would like for Jellyfin
+# to access it, you probably will have to use group ID of 118.
+jellyfin_gid: 0
+
+# The umask that Jellyfin should apply when creating files.
+jellyfin_umask: "022"
+
+# List of paths that should be mounted by Jellyfin.
+# You can use these to enable Jellyfin to access your media.
+# <host_path>:<jellyfin_path>
+jellyfin_volumes:
+  - "/media:/media"
+
+# Name for the database
+# This database will be created if it does not exist
+jellyfin_postgres_database: "jellyfin"
+
+# Name for the database role
+# This database role will be created if it does not exist
+jellyfin_postgres_role: "jellyfin"
+
+# Password for the database role
+# This database role will be created if it does not exist
+jellyfin_postgres_password: "Password1!"
+
+# Enable LDAP inetgration?
+# Native authentication in Jellyfin will work alongside LDAP.
+jellyfin_ldap_enabled: true
+
+# Name of the LDAP group that users must belong to in order to log in.
+jellyfin_ldap_group: "jellyfin"

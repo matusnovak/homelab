@@ -16,6 +16,8 @@ jobs:
             role: 'filebrowser'
           - name: 'Haste'
             role: 'haste'
+          - name: 'Jellyfin'
+            role: 'jellyfin'
           - name: 'OpenLDAP'
             role: 'ldap'
           - name: 'phpLDAPadmin'

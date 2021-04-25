@@ -1,0 +1,151 @@
+---
+- name: Check if postgres role is included
+  fail:
+    msg: "Jellyfin needs the postgres role"
+  when: "'postgres' not in role_names"
+
+- name: Check if traefik role is included
+  fail:
+    msg: "Jellyfin needs the traefik role"
+  when: "'traefik' not in role_names"
+
+- name: Check if LDAP role is included
+  fail:
+    msg: "Jellyfin needs the ldap role"
+  when: "'ldap' not in role_names"
+
+- name: Create folder structure
+  become: yes
+  file:
+    path: "{{ data_dir }}/jellyfin/{{item}}"
+    state: directory
+    mode: 0755
+    owner: "911"
+    group: "911"
+    recurse: no
+  loop:
+    - "config"
+    - "cache"
+    - "transcode"
+
+- name: Create database role
+  postgres_role:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    role: "{{ jellyfin_postgres_role }}"
+    role_password: "{{ jellyfin_postgres_password }}"
+
+- name: Create database
+  postgres_database:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    database: "{{ jellyfin_postgres_database }}"
+    role: "{{ jellyfin_postgres_role }}"
+
+- name: Create LDAP group
+  ldap_group:
+    container: "{{ openldap_service.tasks[0].id }}"
+    user: "{{ ldap_admin_user }}"
+    password: "{{ ldap_admin_password }}"
+    base: "{{ ldap_groups_dn }}"
+    cn: "{{ jellyfin_ldap_group }}"
+    members:
+      - "{{ ldap_admin_user }}"
+  when: jellyfin_ldap_enabled
+
+- name: Set volumes
+  set_fact:
+    jellyfin_volumes: >
+      {{ jellyfin_volumes + [
+        "{{ data_dir }}/jellyfin/config:/config",
+        "{{ data_dir }}/jellyfin/cache:/cache",
+        "{{ data_dir }}/jellyfin/transcode:/transcode"
+      ]}}
+
+- name: Deploy service
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      jellyfin:
+        image: "{{ jellyfin_image }}"
+        deploy:
+          replicas: 1
+          labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.{{ domain_name }}`)"
+            - "traefik.http.services.jellyfin.loadbalancer.server.port=8096"
+            - "traefik.http.routers.jellyfin.entrypoints={{ traefik_entrypoints }}"
+            - "traefik.http.routers.jellyfin.tls={{ traefik_tls }}"
+            - "traefik.http.routers.jellyfin.tls.certresolver={{ traefik_certresolver }}"
+        volumes: "{{ jellyfin_volumes }}"
+        networks:
+          - "{{ docker_network_name }}"
+        environment:
+          PUID: "{{ jellyfin_uid }}"
+          PGID: "{{ jellyfin_gid }}"
+          UMASK_SET: "{{ jellyfin_umask }}"
+  register: result
+
+- name: Set facts
+  set_fact:
+    jellyfin_service: "{{ result.services.jellyfin }}"
+
+- name: Healthcheck
+  http_wait:
+    url: "{{ traefik_address }}/"
+    status_code: "200"
+    retries: 3
+    delay: 10
+    headers:
+      - "Host: jellyfin.{{ domain_name }}"
+
+- name: Setup data
+  set_fact:
+    init_data: |
+      {
+        "url": "{{ traefik_address }}",
+        "host": "jellyfin.{{ domain_name }}",
+        "username": "admin",
+        "password": "{{ jellyfin_admin_passwords }}"{% if jellyfin_ldap_enabled %},
+        "ldap": {
+          "host": "{{ openldap_service.name }}",
+          "port": 389,
+          "user": "{{ ldap_admin_user }}",
+          "password": "{{ ldap_admin_password }}",
+          "base": "{{ ldap_users_dn }}",
+          "filter": "(memberOf=cn={{ jellyfin_ldap_group }},{{ ldap_groups_dn }})",
+          "user_attribute": "uid"
+        }{% endif %}
+      }
+
+- name: Initialize
+  script: "roles/jellyfin/scripts/main.py init {{ init_data | to_json | tojson }}"
+  args:
+    executable: python3
+  register: jellyfin_init_script
+  changed_when: "'Changed!' in jellyfin_init_script.stdout"
+
+- name: Restart if init changes
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    restart:
+      - "{{ jellyfin_service.name }}"
+  when: jellyfin_init_script.changed and jellyfin_ldap_enabled
+
+- name: Healthcheck
+  http_wait:
+    url: "{{ traefik_address }}/"
+    status_code: "200"
+    retries: 3
+    delay: 10
+    headers:
+      - "Host: jellyfin.{{ domain_name }}"
+  when: jellyfin_init_script.changed and jellyfin_ldap_enabled
+
+- name: Initialize LDAP
+  script: "roles/jellyfin/scripts/main.py ldap {{ init_data | to_json | tojson }}"
+  args:
+    executable: python3
+  register: jellyfin_init_script
+  changed_when: "'Changed!' in jellyfin_init_script.stdout"
+  when: jellyfin_ldap_enabled
