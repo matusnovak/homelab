@@ -5,5 +5,4 @@
     - ldap
     - postgres
     - traefik
-    - authelia
     - jellyfin
