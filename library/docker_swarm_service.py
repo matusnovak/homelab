@@ -91,9 +91,11 @@ def deploy_service(client: DockerClient, project_name: str, name: str, definitio
 
     def_deploy = definition.get('deploy', {})
 
+    is_global = def_deploy.get('mode', 'replicated') == 'global'
+
     service_mode = ServiceMode(
         mode=def_deploy.get('mode', 'replicated'),
-        replicas=definition.get('replicas', 1)
+        replicas=definition.get('replicas', None if is_global else 1)
     )
 
     update_config = UpdateConfig(

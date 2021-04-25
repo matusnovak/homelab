@@ -1,0 +1,24 @@
+---
+# Docker image names
+portainer_image: "docker.io/portainer/portainer:latest"
+portainer_agent_image: "docker.io/portainer/agent:latest"
+
+# Password for the admin user that will be created when Portainer first starts.
+portainer_admin_passwords: "Password1!"
+
+# Portainer Agents will share a common network. This will be also used
+# by the Potainer (manager). Should this network be attachable?
+portainer_network_attachable: true
+
+# A secret token for communication with Portainer agents.
+# Can be any random string.
+portainer_agent_secret: "secret"
+
+# Enable LDAP integration with Portainer?
+# You will have to manually allow users (after they log in) to view portainer data.
+# Your users must be given some permissions.
+# Your users will also have to belong to the LDAP group.
+portainer_ldap_enabled: true
+
+# Name of the LDAP group that your users must be part of in order to log in.
+portainer_ldap_group: "portainer"

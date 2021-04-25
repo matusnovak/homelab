@@ -1,0 +1,7 @@
+---
+- hosts: homelab
+  roles:
+    - base
+    - ldap
+    - traefik
+    - portainer

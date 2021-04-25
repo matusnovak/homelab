@@ -1,0 +1,121 @@
+---
+- name: Create Portainer folder structure
+  become: yes
+  file:
+    path: "{{ data_dir }}/portainer/data"
+    state: directory
+    mode: 0755
+    owner: "1000"
+    group: "1000"
+    recurse: no
+
+- name: Create LDAP group
+  ldap_group:
+    container: "{{ openldap_service.tasks[0].id }}"
+    user: "{{ ldap_admin_user }}"
+    password: "{{ ldap_admin_password }}"
+    base: "{{ ldap_groups_dn }}"
+    cn: "{{ portainer_ldap_group }}"
+    members:
+      - "{{ ldap_admin_user }}"
+  when: portainer_ldap_enabled
+
+- name: Create portainer network
+  docker_network:
+    name: "{{ project_name }}_portainer"
+    driver: overlay
+    attachable: "{{ portainer_network_attachable }}"
+  register: result
+
+- name: Deploy agent service
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      portainer_agent:
+        image: "{{ portainer_agent_image }}"
+        deploy:
+          mode: "global"
+        networks:
+          - "{{ project_name }}_portainer"
+          - "{{ docker_network_name }}"
+        volumes:
+          - "/var/run/docker.sock:/var/run/docker.sock" # TODO
+          - "/var/lib/docker/volumes:/var/lib/docker/volumes" # TODO
+        environment:
+          AGENT_CLUSTER_ADDR: "portainer_agent"
+          AGENT_PORT: "9001"
+          AGENT_SECRET: "{{ portainer_agent_secret }}"
+  register: result
+
+- name: Set facts
+  set_fact:
+    portainer_agent_service: "{{ result.services.portainer_agent }}"
+
+- name: Deploy portainer service
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      portainer:
+        image: "{{ portainer_image }}"
+        command: "/portainer"
+        args:
+          - "-H"
+          - "tcp://portainer_agent:9001"
+          - "--tlsskipverify"
+        deploy:
+          mode: "replicated"
+          replicas: 1
+          labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.portainer.rule=Host(`portainer.{{ domain_name }}`)"
+            - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+            - "traefik.http.routers.portainer.entrypoints={{ traefik_entrypoints }}"
+            - "traefik.http.routers.portainer.tls={{ traefik_tls }}"
+            - "traefik.http.routers.portainer.tls.certresolver={{ traefik_certresolver }}"
+        networks:
+          - "{{ project_name }}_portainer"
+          - "{{ docker_network_name }}"
+        volumes:
+          - "{{ data_dir }}/portainer/data:/data"
+        environment:
+          AGENT_SECRET: "{{ portainer_agent_secret }}"
+  register: result
+
+- name: Set facts
+  set_fact:
+    portainer_service: "{{ result.services.portainer }}"
+
+- name: Healthcheck
+  http_wait:
+    url: "{{ traefik_address }}/"
+    status_code: "200"
+    retries: 3
+    delay: 10
+    headers:
+      - "Host: portainer.{{ domain_name }}"
+
+- name: Setup data
+  set_fact:
+    init_data: |
+      {
+        "url": "{{ traefik_address }}",
+        "host": "portainer.{{ domain_name }}",
+        "username": "admin",
+        "password": "{{ portainer_admin_passwords }}"{% if portainer_ldap_enabled %},
+          "ldap": {
+            "host": "{{ openldap_service.name }}",
+            "port": 389,
+            "user": "{{ ldap_admin_user }}",
+            "password": "{{ ldap_admin_password }}",
+            "base": "{{ ldap_users_dn }}",
+            "filter": "(memberOf=cn={{ portainer_ldap_group }},{{ ldap_groups_dn }})",
+            "user_attribute": "uid"
+          }{% endif %}
+      }
+
+- name: Initialize
+  script: "roles/portainer/scripts/main.py init {{ init_data | to_json | tojson }}"
+  args:
+    executable: python3
+  register: portainer_init_script
+  changed_when: "'Changed!' in portainer_init_script.stdout"

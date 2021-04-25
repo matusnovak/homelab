@@ -22,6 +22,8 @@ jobs:
             role: 'ldap'
           - name: 'phpLDAPadmin'
             role: 'phpldapadmin'
+          - name: 'Portainer'
+            role: 'portainer'
           - name: 'Postgre SQL'
             role: 'postgres'
           - name: 'Traefik'
