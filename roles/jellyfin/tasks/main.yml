@@ -1,9 +1,4 @@
 ---
-- name: Check if postgres role is included
-  fail:
-    msg: "Jellyfin needs the postgres role"
-  when: "'postgres' not in role_names"
-
 - name: Check if traefik role is included
   fail:
     msg: "Jellyfin needs the traefik role"
@@ -12,7 +7,7 @@
 - name: Check if LDAP role is included
   fail:
     msg: "Jellyfin needs the ldap role"
-  when: "'ldap' not in role_names"
+  when: "jellyfin_ldap_enabled and 'ldap' not in role_names"
 
 - name: Create folder structure
   become: yes
@@ -27,20 +22,6 @@
     - "config"
     - "cache"
     - "transcode"
-
-- name: Create database role
-  postgres_role:
-    container: "{{ postgres_service.tasks[0].id }}"
-    password: "{{ postgres_password }}"
-    role: "{{ jellyfin_postgres_role }}"
-    role_password: "{{ jellyfin_postgres_password }}"
-
-- name: Create database
-  postgres_database:
-    container: "{{ postgres_service.tasks[0].id }}"
-    password: "{{ postgres_password }}"
-    database: "{{ jellyfin_postgres_database }}"
-    role: "{{ jellyfin_postgres_role }}"
 
 - name: Create LDAP group
   ldap_group:

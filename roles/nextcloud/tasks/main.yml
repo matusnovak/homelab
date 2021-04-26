@@ -1,0 +1,240 @@
+---
+- name: Check if postgres role is included
+  fail:
+    msg: "NextCloud needs the postgres role"
+  when: "'postgres' not in role_names"
+
+- name: Check if traefik role is included
+  fail:
+    msg: "NextCloud needs the traefik role"
+  when: "'traefik' not in role_names"
+
+- name: Check if LDAP role is included
+  fail:
+    msg: "NextCloud needs the ldap role"
+  when: "nextcloud_ldap_enabled and 'ldap' not in role_names"
+
+- name: Create NextCloud folder structure
+  become: yes
+  file:
+    path: "{{ data_dir }}/nextcloud/{{item}}"
+    state: directory
+    mode: 0755
+    owner: "33"
+    group: "0"
+    recurse: no
+  loop:
+    - "html"
+    - "apps"
+    - "config"
+    - "theme"
+
+- name: Create NextCloud data folder
+  become: yes
+  file:
+    path: "{{ data_dir }}/nextcloud/data"
+    state: directory
+    mode: 0770
+    owner: "33"
+    group: "33"
+    recurse: no
+  when: "nextcloud_data_path == ''"
+
+- name: Create NextCloud data folder
+  become: yes
+  file:
+    path: "{{ nextcloud_data_path }}"
+    state: directory
+    mode: 0770
+    owner: "33"
+    group: "33"
+    recurse: no
+  when: "nextcloud_data_path != ''"
+
+- name: Create LDAP group
+  ldap_group:
+    container: "{{ openldap_service.tasks[0].id }}"
+    user: "{{ ldap_admin_user }}"
+    password: "{{ ldap_admin_password }}"
+    base: "{{ ldap_groups_dn }}"
+    cn: "{{ nextcloud_ldap_group }}"
+    members:
+      - "{{ ldap_admin_user }}"
+  when: nextcloud_ldap_enabled
+
+- name: Create database role
+  postgres_role:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    role: "{{ nextcloud_postgres_role }}"
+    role_password: "{{ nextcloud_postgres_password }}"
+
+- name: Create database
+  postgres_database:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    database: "{{ nextcloud_postgres_database }}"
+    role: "{{ nextcloud_postgres_role }}"
+
+- name: Deploy Redis
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      nextcloud_redis:
+        image: "{{ nextcloud_redis_image }}"
+        command: "redis-server --requirepass {{ nextcloud_redis_password }}"
+        deploy:
+          replicas: 1
+        networks:
+          - "{{ docker_network_name }}"
+
+- name: Deploy NextCloud
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      nextcloud:
+        image: "{{ nextcloud_image }}"
+        deploy:
+          replicas: 1
+          labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.nextcloud.rule=Host(`nextcloud.{{ domain_name }}`)"
+            - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
+            - "traefik.http.routers.nextcloud.entrypoints={{ traefik_entrypoints }}"
+            - "traefik.http.routers.nextcloud.tls={{ traefik_tls }}"
+            - "traefik.http.routers.nextcloud.tls.certresolver={{ traefik_certresolver }}"
+        networks:
+          - "{{ docker_network_name }}"
+        volumes:
+          - "{{ data_dir }}/nextcloud/html:/var/www/html"
+          - "{{ data_dir }}/nextcloud/apps:/var/www/html/custom_apps"
+          - "{{ data_dir }}/nextcloud/config:/var/www/html/config"
+          - "{{ data_dir }}/nextcloud/theme:/var/www/html/themes/custom"
+          - "{{ nextcloud_data_path == '' | ternary(data_dir + '/nextcloud/data', nextcloud_data_path) }}:/var/www/html/data"
+        environment:
+          POSTGRES_DB: "{{ nextcloud_postgres_database }}"
+          POSTGRES_USER: "{{ nextcloud_postgres_role }}"
+          POSTGRES_PASSWORD: "{{ nextcloud_postgres_password }}"
+          POSTGRES_HOST: "{{ postgres_service.name }}"
+          NEXTCLOUD_ADMIN_USER: "admin"
+          NEXTCLOUD_ADMIN_PASSWORD: "{{ nextcloud_admin_password }}"
+          REDIS_HOST: "nextcloud_redis"
+          REDIS_HOST_PORT: "6379"
+          REDIS_HOST_PASSWORD: "{{ nextcloud_redis_password }}"
+          NEXTCLOUD_HOSTNAME: "nextcloud.{{ domain_name }}"
+          NEXTCLOUD_TRUSTED_DOMAINS: "nextcloud.{{ domain_name }} nextcloud localhost"
+          OVERWRITEPROTOCOL: "http"
+          OVERWRITEHOST: "nextcloud.{{ domain_name }}"
+  register: "result"
+
+- name: Set facts
+  set_fact:
+    nextcloud_service: "{{ result.services.nextcloud }}"
+
+- name: Healthcheck
+  http_wait:
+    url: "{{ traefik_address }}/login"
+    status_code: "200"
+    retries: 5
+    delay: 10
+    headers:
+      - "Host: nextcloud.{{ domain_name }}"
+
+- name: Set allow remote servers for NextCloud
+  docker_exec:
+    container: "{{ nextcloud_service.tasks[0].id }}"
+    user: "33"
+    args:
+      - "/var/www/html/occ"
+      - "config:system:set"
+      - "allow_local_remote_servers"
+      - "--value"
+      - "true"
+      - "--type"
+      - "bool"
+
+- name: Create OnlyOffice folder structure
+  become: yes
+  file:
+    path: "{{ data_dir }}/nextcloud/onlyoffice/{{item}}"
+    state: directory
+    mode: 0755
+    recurse: no
+  loop:
+    - "data"
+    - "log"
+  when: "nextcloud_onlyoffice_enabled"
+
+- name: Deploy OnlyOffice
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    timeout: "120"
+    definition:
+      nextcloud_onlyoffice:
+        image: "{{ nextcloud_onlyoffice_image }}"
+        deploy:
+          replicas: 1
+          labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.office.rule=Host(`office.{{ domain_name }}`)"
+            - "traefik.http.services.office.loadbalancer.server.port=80"
+            - "traefik.http.routers.office.entrypoints={{ traefik_entrypoints }}"
+            - "traefik.http.routers.office.tls={{ traefik_tls }}"
+            - "traefik.http.routers.office.tls.certresolver={{ traefik_certresolver }}"
+        networks:
+          - "{{ docker_network_name }}"
+        volumes:
+          - "{{ data_dir }}/nextcloud/onlyoffice/data:/var/www/onlyoffice/Data"
+          - "{{ data_dir }}/nextcloud/onlyoffice/log:/var/log/onlyoffice"
+        environment:
+          JWT_ENABLED: "true"
+          JWT_SECRET: "{{ nextcloud_onlyoffice_secret }}"
+  register: "result"
+  when: "nextcloud_onlyoffice_enabled"
+
+- name: Set facts
+  set_fact:
+    nextcloud_onlyoffice_service: "{{ result.services.nextcloud_onlyoffice }}"
+  when: "nextcloud_onlyoffice_enabled"
+
+- name: Healthcheck
+  http_wait:
+    url: "{{ traefik_address }}/welcome/"
+    status_code: "200"
+    retries: 5
+    delay: 30
+    headers:
+      - "Host: office.{{ domain_name }}"
+  when: "nextcloud_onlyoffice_enabled"
+
+- name: Setup data
+  set_fact:
+    init_data: |
+      {
+        "url": "{{ traefik_address }}",
+        "host": "nextcloud.{{ domain_name }}",
+        "username": "admin",
+        "password": "{{ nextcloud_admin_password }}"{% if nextcloud_ldap_enabled %},
+          "ldap": {
+            "host": "{{ openldap_service.name }}",
+            "port": 389,
+            "user": "{{ ldap_admin_user }}",
+            "password": "{{ ldap_admin_password }}",
+            "base": "{{ ldap_users_dn }}",
+            "filter": "(memberOf=cn={{ nextcloud_ldap_group }},{{ ldap_groups_dn }})",
+            "user_attribute": "uid"
+          }{% endif %}{% if nextcloud_onlyoffice_enabled %},
+          "onlyoffice": {
+            "address": "{{ traefik_protocol }}://office.{{ domain_name }}/",
+            "internal": "http://{{ nextcloud_onlyoffice_service.name }}/",
+            "storage": "http://{{ nextcloud_service.name }}/",
+            "password": "{{ nextcloud_onlyoffice_secret }}"
+          }{% endif %}
+      }
+
+- name: Initialize
+  script: "roles/nextcloud/scripts/main.py init {{ init_data | to_json | tojson }}"
+  args:
+    executable: python3
+  register: nextcloud_init_script
+  changed_when: "'Changed!' in nextcloud_init_script.stdout"

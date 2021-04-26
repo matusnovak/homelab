@@ -1,4 +1,14 @@
 ---
+- name: Check if traefik role is included
+  fail:
+    msg: "Portainer needs the traefik role"
+  when: "'traefik' not in role_names"
+
+- name: Check if LDAP role is included
+  fail:
+    msg: "Portainer needs the ldap role"
+  when: "portainer_ldap_enabled and 'ldap' not in role_names"
+
 - name: Create Portainer folder structure
   become: yes
   file:

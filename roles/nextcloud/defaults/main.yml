@@ -1,0 +1,47 @@
+---
+# Docker image names
+nextcloud_image: "docker.io/library/nextcloud:apache"
+nextcloud_redis_image: "docker.io/library/redis:latest"
+nextcloud_onlyoffice_image: "docker.io/onlyoffice/documentserver:latest"
+
+# Password for the user "admin" that will be created on first startup.
+nextcloud_admin_password: "Password1!"
+
+# Can be any random string.
+# Only used between NextCloud and Redis communication.
+nextcloud_redis_password: "secret"
+
+# Name of the database to create and use
+nextcloud_postgres_database: "nextcloud"
+
+# Name of the role for the database
+nextcloud_postgres_role: "nextcloud"
+
+# Password for the role that will be created
+nextcloud_postgres_password: "Password1!"
+    
+# Enable LDAP inetgration for NextCloud?
+# Does not affect the "admin" user.
+# Set this to false if you wish to remove LDAP from NextCloud.
+nextcloud_ldap_enabled: true
+
+# Name of the LDAP group that the users must be part of in order
+# to log in into NextCloud. Does not affect the "admin" user.
+nextcloud_ldap_group: "nextcloud"
+
+# Path on host where NextCloud should store user files.
+# Maybe this can be a USB mounted drive?
+# It is not advised to change this later.
+# 
+# Set to empty string '' if you want Ansible to create data folder in:
+#   {{ data_dir }}/nextcloud/data
+# Otherwise set to some absobule path, such as: "/nextcloud"
+nextcloud_data_path: ''
+  
+# NextCloud has an optional support for Only Office via a plugin.
+# Enable Only Office integration?
+nextcloud_onlyoffice_enabled: true
+
+# Can be any random string.
+# Only used between NextCloud and OnlyOffice communication.
+nextcloud_onlyoffice_secret: "secret"

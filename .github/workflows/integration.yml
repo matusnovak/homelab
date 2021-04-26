@@ -20,6 +20,8 @@ jobs:
             role: 'jellyfin'
           - name: 'OpenLDAP'
             role: 'ldap'
+          - name: 'NextCloud'
+            role: 'nextcloud'
           - name: 'phpLDAPadmin'
             role: 'phpldapadmin'
           - name: 'Portainer'
