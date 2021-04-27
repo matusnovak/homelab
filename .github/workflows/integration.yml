@@ -18,6 +18,8 @@ jobs:
             role: 'haste'
           - name: 'Jellyfin'
             role: 'jellyfin'
+          - name: 'Kanboard'
+            role: 'kanboard'
           - name: 'OpenLDAP'
             role: 'ldap'
           - name: 'Matrix'

@@ -1,0 +1,19 @@
+---
+# Docker image name
+kanboard_image: "docker.io/kanboard/kanboard:latest"
+
+# Postgre SQL database name, will be created automatically.
+kanboard_postgres_database: "kanboard"
+
+# Name of the role for the database
+kanboard_postgres_role: "kanboard"
+
+# Password for the database role
+kanboard_postgres_password: "Password1!"
+
+# Enable LDAP integration?
+kanboard_ldap_enabled: true
+
+# Name of the LDAP group your users need to belong to.
+# This group will be created if it does not exist.
+kanboard_ldap_group: "kanboard"

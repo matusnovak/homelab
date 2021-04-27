@@ -1,0 +1,31 @@
+<?php
+
+defined('ENABLE_URL_REWRITE') or define('ENABLE_URL_REWRITE', true);
+defined('LOG_DRIVER') or define('LOG_DRIVER', 'system');
+
+// We choose to use Postgresql instead of Sqlite
+define('DB_DRIVER', 'postgres');
+
+// Mysql parameters
+define('DB_USERNAME', '{{ kanboard_postgres_role }}');
+define('DB_PASSWORD', '{{ kanboard_postgres_password }}');
+define('DB_HOSTNAME', '{{ postgres_service.name }}');
+define('DB_NAME', '{{ kanboard_postgres_database }}');
+
+{% if kanboard_ldap_enabled %}
+define('LDAP_AUTH', true);
+define('LDAP_SERVER', '{{ openldap_service.name }}');
+define('LDAP_PORT', 389);
+define('LDAP_SSL_VERIFY', false);
+define('LDAP_START_TLS', false);
+define('LDAP_USERNAME_CASE_SENSITIVE', true);
+define('LDAP_BIND_TYPE', 'proxy');
+define('LDAP_USERNAME', '{{ ldap_admin_user }}');
+define('LDAP_PASSWORD', '{{ ldap_admin_password }}');
+define('LDAP_USER_BASE_DN', '{{ ldap_users_dn }}');
+define('LDAP_USER_FILTER', '(&(uid=%s)(memberOf=cn={{ kanboard_ldap_group }},{{ ldap_groups_dn }}))');
+define('LDAP_USER_ATTRIBUTE_USERNAME', 'uid');
+define('LDAP_USER_ATTRIBUTE_FULLNAME', 'cn');
+define('LDAP_USER_ATTRIBUTE_EMAIL', 'uid');
+define('LDAP_USER_CREATION', true);
+{% endif %}
