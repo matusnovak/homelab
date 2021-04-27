@@ -20,6 +20,8 @@ jobs:
             role: 'jellyfin'
           - name: 'OpenLDAP'
             role: 'ldap'
+          - name: 'Matrix'
+            role: 'matrix'
           - name: 'NextCloud'
             role: 'nextcloud'
           - name: 'phpLDAPadmin'
@@ -30,7 +32,7 @@ jobs:
             role: 'postgres'
           - name: 'Traefik'
             role: 'traefik'
-    
+
     name: 'App: ${{ matrix.name }}'
     runs-on: ubuntu-latest
     timeout-minutes: 15

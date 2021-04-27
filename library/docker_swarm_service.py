@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, List
 from ansible.module_utils.basic import AnsibleModule
 from docker.client import DockerClient
 from docker.errors import NotFound, ContainerError
@@ -69,6 +69,30 @@ def get_config_hash_value(service):
     return None
 
 
+def get_sec_to_nsec(s: str):
+    if s.endswith('s'):
+        return int(s[:-1]) * 1000 * 1000 * 1000
+    else:
+        return int(s)
+
+
+def create_port_range(port: str) -> List[str]:
+    tokens = port.split('-')
+    if len(tokens) == 1:
+        return [port]
+
+    assert len(tokens) == 2
+
+    begin = int(tokens[0])
+    end = int(tokens[1])
+
+    ports = []
+    for i in range(begin, end + 1):
+        ports.append(str(i))
+
+    return ports
+
+
 def deploy_service(client: DockerClient, project_name: str, name: str, definition: dict, timeout: int) -> Tuple[bool, dict]:
     defaults = get_defaults()
 
@@ -83,9 +107,9 @@ def deploy_service(client: DockerClient, project_name: str, name: str, definitio
     def_restart_policy = definition.get('restart_policy', {})
 
     restart_policy = RestartPolicy(
-        condition=def_restart_policy.get('condition', 'none'),
-        delay=def_restart_policy.get('delay', 0),
-        max_attempts=def_restart_policy.get('max_attempts', 0),
+        condition=def_restart_policy.get('condition', 'on-failure'),
+        delay=get_sec_to_nsec(def_restart_policy.get('delay', '10s')),
+        max_attempts=def_restart_policy.get('max_attempts', 10),
         window=def_restart_policy.get('window', 0)
     )
 
@@ -109,12 +133,6 @@ def deploy_service(client: DockerClient, project_name: str, name: str, definitio
     )
 
     def_healthcheck = definition.get('healthcheck', {})
-
-    def get_sec_to_nsec(s: str):
-        if s.endswith('s'):
-            return int(s[:-1]) * 1000 * 1000 * 1000
-        else:
-            return int(s)
 
     healthcheck = Healthcheck(
         test=def_healthcheck.get('test', []),
@@ -184,20 +202,46 @@ def deploy_service(client: DockerClient, project_name: str, name: str, definitio
                 host_port, guest_port = port.split(':', maxsplit=2)
                 guest_port, protocol = guest_port.split('/', maxsplit=2)
 
-                ports[host_port] = (
-                    int(guest_port),
-                    protocol if protocol is not None else 'tcp',
-                    'ingress'
-                )
+                if '-' in host_port:
+                    host_ports = create_port_range(host_port)
+                    guest_ports = create_port_range(host_port)
+                    assert len(host_ports) == len(
+                        guest_ports), "Port range must match"
+
+                    for i in range(0, len(host_ports)):
+                        ports[int(host_ports[i])] = (
+                            int(guest_ports[i]),
+                            protocol if protocol is not None else 'tcp',
+                            'ingress'
+                        )
+                else:
+                    ports[int(host_port)] = (
+                        int(guest_port),
+                        protocol if protocol is not None else 'tcp',
+                        'ingress'
+                    )
             elif isinstance(port, dict):
                 host_port = port['published']
                 guest_port = port['target']
 
-                ports[host_port] = (
-                    int(guest_port),
-                    port.get('protocol', 'tcp'),
-                    port.get('mode', 'ingress')
-                )
+                if isinstance(host_port, str) and '-' in host_port:
+                    host_ports = create_port_range(host_port)
+                    guest_ports = create_port_range(host_port)
+                    assert len(host_ports) == len(
+                        guest_ports), "Port range must match"
+
+                    for i in range(0, len(host_ports)):
+                        ports[int(host_ports[i])] = (
+                            int(guest_ports[i]),
+                            port.get('protocol', 'tcp'),
+                            port.get('mode', 'ingress')
+                        )
+                else:
+                    ports[int(host_port)] = (
+                        int(guest_port),
+                        port.get('protocol', 'tcp'),
+                        port.get('mode', 'ingress')
+                    )
 
     endpoint_spec = EndpointSpec(
         mode='vip',
@@ -205,11 +249,20 @@ def deploy_service(client: DockerClient, project_name: str, name: str, definitio
     )
 
     networks = []
-    for network in definition.get('networks', []):
-        if isinstance(network, str):
+    if 'networks' in definition and isinstance(definition['networks'], list):
+        for network in definition.get('networks', []):
+            if isinstance(network, str):
+                networks.append(NetworkAttachmentConfig(
+                    target=network,
+                    aliases=[name],
+                    options={}
+                ))
+
+    if 'networks' in definition and isinstance(definition['networks'], dict):
+        for network, data in definition.get('networks', {}).items():
             networks.append(NetworkAttachmentConfig(
                 target=network,
-                aliases=[name],
+                aliases=data.get('aliases', [name]),
                 options={}
             ))
 

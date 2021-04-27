@@ -1,0 +1,233 @@
+---
+# Docker image names
+matrix_synapse_image: "docker.io/matrixdotorg/synapse:latest"
+matrix_redis_image: "docker.io/library/redis:latest"
+matrix_riot_image: "docker.io/vectorim/riot-web:latest"
+matrix_nginx_image: "docker.io/library/nginx:latest"
+matrix_coturn_image: "docker.io/instrumentisto/coturn:latest"
+matrix_hangouts_image: 'dock.mau.dev/tulir/mautrix-hangouts:latest'
+matrix_whatsapp_image: 'dock.mau.dev/tulir/mautrix-whatsapp:latest'
+matrix_discord_image: 'docker.io/sorunome/mx-puppet-discord:latest'
+matrix_facebook_image: 'dock.mau.dev/tulir/mautrix-facebook:latest'
+matrix_signal_image: 'dock.mau.dev/tulir/mautrix-signal:latest'
+matrix_maubot_image: 'dock.mau.dev/maubot/maubot:latest'
+
+# Registration shared secret for Matrix - Synapse
+# Must be a strong random string with length of 50 characters
+# Don't use the one from this sample! Generate your own!
+matrix_registration_secret: "5vpdd8kFjX3wntKBgNzHzecj34QqeytAavdwxduAXwwu2quMhE"
+
+# Macaroon shared secret for Matrix - Synapse
+# Must be a strong random string with length of 50 characters
+# Don't use the one from this sample! Generate your own!
+matrix_macaroon_secret: "csRC6eFY5JT5BbKLsLsupFtb79nzwFrKeHEHcN5ULyHE8ZDbTv"
+
+# Form secret for Matrix - Synapse
+# Must be a strong random string with length of 50 characters
+# Don't use the one from this sample! Generate your own!
+matrix_form_secret: "cJstDuMJJnXsQP2yQFXLNTjmtDLRceZ8e8MdHuX7gmWzRfahp2"
+
+# Name of the database to create and use by Synapse
+matrix_postgres_database: "synapse"
+
+# Name of the role for the database to create
+matrix_postgres_role: "synapse"
+
+# Password for the database role
+matrix_postgres_password: "Password1!"
+
+# Can be any string
+# Only used between Synapse and Redis
+matrix_redis_password: "secret"
+
+# Allow user registration?
+# You probably don't want this set to true if you are using LDAP.
+# Users will not be created into LDAP, this is only for Synapse's internal user management.
+matrix_registration_enabled: false
+
+# Web interface for users to access your Matrix server.
+# a.k.a. Element
+matrix_riot_enabled: true
+
+# Enable LDAP integration?
+# Your users will have to be created in LDAP in order to log in.
+matrix_ldap_enabled: true
+
+# Name of the LDAP group that your users must be assigned to.
+matrix_ldap_group: "matrix"
+
+# Enable Turn server?
+# This is used for voice and video calls
+matrix_coturn_enabled: true
+
+# Can be any string
+# Only used between Synapse and Redis
+matrix_coturn_secret: "secret"
+
+# Can be any string
+# Only used internally via CLI
+# You will probably never use this
+matrix_coturn_cli_password: "secret"
+
+# Port to use for listening for incomming connections.
+# This port will be exposed to the host!
+matrix_coturn_listening_port: 3478
+
+# Port range to use for traffic
+matrix_coturn_port_min: 49160
+matrix_coturn_port_max: 49200
+
+# Where should the ports be exposed to? Can be either "ingress" or "host"
+# host - Container ports are exposed directly to the host.
+#        Only on the host they are running on, accessible via localhost.
+# ingress - Container ports are exposed to the overlay network.
+#           On all hosts, accessible via overlay network IP address (load balancer address!).
+# See https://docs.docker.com/engine/swarm/ingress/
+matrix_coturn_port_mode: "host"
+
+# This must be your external IP address at which your matrix
+# server is available.
+# Prefer to use the flash form of "<local IP>/<external IP>"
+# Example: "192.168.0.2/80.90.100.110"
+matrix_coturn_external_ip: "192.168.0.2"
+
+# Url preview for links
+matrix_url_preview_enabled: true
+
+# Max link preview size
+matrix_url_preview_max_size: "10M"
+
+# Which IPs are not allowed for URL preview?
+matrix_url_preview_blacklist:
+  - '127.0.0.0/8'
+  - '10.0.0.0/8'
+  - '172.16.0.0/12'
+  - '192.168.0.0/16'
+  - '100.64.0.0/10'
+  - '192.0.0.0/24'
+  - '169.254.0.0/16'
+  - '192.88.99.0/24'
+  - '198.18.0.0/15'
+  - '192.0.2.0/24'
+  - '198.51.100.0/24'
+  - '203.0.113.0/24'
+  - '224.0.0.0/4'
+  - '::1/128'
+  - 'fe80::/10'
+  - 'fc00::/7'
+  - '2001:db8::/32'
+  - 'ff00::/8'
+  - 'fec0::/10'
+
+# Performance metrics
+matrix_metrics_enabled: true
+
+# Whether or not to report anonymized homeserver usage statistics.
+matrix_report_stats: false
+
+# Enable Maubot?
+# A plugin-based Matrix bot system written in Python.
+matrix_maubot_enabled: true
+
+# Postgre SQL variables for Maubot
+matrix_maubot_postgres_database: "matrix_maubot"
+matrix_maubot_postgres_role: "matrix_maubot"
+matrix_maubot_postgres_password: "Password1!"
+
+matrix_maubot_admin_user: "maubot"
+matrix_maubot_admin_password: "Password1!"
+
+# Enable WhatsApp bridge?
+matrix_whatsapp_enabled: false
+
+# List of users who can administer or use WhatsApp bridge.
+# You will have to go to {{ data_dir }}/matrix/bridges/signal/config.yml
+# and update in there. Ansible won't update the bridge config if it already exists!
+# Same applies for list of users.
+matrix_whatsapp_permissions: >
+  {
+    "*": "relaybot",
+    "@example:matrix.{{ domain_name }}": "admin",
+    "matrix.{{ domain_name }}": "user"
+  }
+
+# Enable Hangouts bridge?
+matrix_hangouts_enabled: false
+
+# Postgre SQL variables for Hangouts bridge
+matrix_hangouts_postgres_database: "matrix_hangouts"
+matrix_hangouts_postgres_role: "matrix_hangouts"
+matrix_hangouts_postgres_password: "Password1!"
+
+# List of users who can administer Hangouts bridge.
+# You will have to go to {{ data_dir }}/matrix/bridges/signal/config.yml
+# and update in there. Ansible won't update the bridge config if it already exists!
+# Same applies for list of users.
+matrix_hangouts_permissions: >
+  {
+    "*": "relaybot",
+    "@example:matrix.{{ domain_name }}": "admin",
+    "matrix.{{ domain_name }}": "user"
+  }
+
+# Enable Facebook bridge?
+matrix_facebook_enabled: false
+
+# Postgre SQL variables for Facebook bridge
+matrix_facebook_postgres_database: "matrix_facebook"
+matrix_facebook_postgres_role: "matrix_facebook"
+matrix_facebook_postgres_password: "Password1!"
+
+# List of users who can administer Facebook bridge.
+# You will have to go to {{ data_dir }}/matrix/bridges/signal/config.yml
+# and update in there. Ansible won't update the bridge config if it already exists!
+# Same applies for list of users.
+matrix_facebook_permissions: >
+  {
+    "*": "relaybot",
+    "@example:matrix.{{ domain_name }}": "admin",
+    "matrix.{{ domain_name }}": "user"
+  }
+
+# Enable Signal bridge?
+matrix_signal_enabled: false
+
+# Postgre SQL variables for Signal bridge
+matrix_signal_postgres_database: "matrix_signal"
+matrix_signal_postgres_role: "matrix_signal"
+matrix_signal_postgres_password: "Password1!"
+
+# List of users who can administer Signal bridge.
+# This can not be changed from here once the bridge is deployed.
+# You will have to go to {{ data_dir }}/matrix/bridges/signal/config.yml
+# and update in there. Ansible won't update the bridge config if it already exists!
+# Same applies for list of users.
+matrix_signal_permissions: >
+  {
+    "*": "relaybot",
+    "@example:matrix.{{ domain_name }}": "admin",
+    "matrix.{{ domain_name }}": "user"
+  }
+
+# Enable Discord bridge?
+# TODO: Does not work at the moment!
+matrix_discord_enabled: false
+
+# Postgre SQL variables for Discord bridge
+matrix_discord_postgres_database: "matrix_discord"
+matrix_discord_postgres_role: "matrix_discord"
+matrix_discord_postgres_password: "Password1!"
+
+# Regex of Matrix IDs allowed to use the puppet bridge
+matrix_discord_provisioning_whitelist:
+  - "{{ ('@example:matrix.' + domain_name) | replace('.', '\\\\.') }}"
+
+# Regex of Matrix IDs who are allowed to use the bridge in relay mode.
+# Relay mode is when a single Discord bot account relays messages of
+# multiple Matrix users.
+matrix_discord_relay_whitelist:
+  - "{{ ('matrix.' + domain_name) | replace('.', '\\\\.') }}"
+
+# Regex of Matrix IDs who are allowed to use bridge self-servicing (plumbed rooms)
+matrix_discord_selfservice_whitelist:
+  - "{{ ('@example:matrix.' + domain_name) | replace('.', '\\\\.') }}"

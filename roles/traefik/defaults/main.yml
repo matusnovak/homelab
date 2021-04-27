@@ -23,7 +23,7 @@ traefik_https_enabled: true
 # Does not affect port inside of Traefik's container.
 traefik_https_port: 443
 
-# Where should the ports be exposed to? Can be either "overlay" or "host"
+# Where should the ports be exposed to? Can be either "ingress" or "host"
 # host - Container ports are exposed directly to the host.
 #        Only on the host they are running on, accessible via localhost.
 # ingress - Container ports are exposed to the overlay network.

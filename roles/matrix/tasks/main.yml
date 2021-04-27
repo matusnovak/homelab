@@ -1,0 +1,834 @@
+---
+- name: Check if traefik role is included
+  fail:
+    msg: "Matrix needs the traefik role"
+  when: "'traefik' not in role_names"
+
+- name: Check if LDAP role is included
+  fail:
+    msg: "Matrix needs the ldap role"
+  when: "matrix_ldap_enabled and 'ldap' not in role_names"
+
+- name: Check if postgres role is included
+  fail:
+    msg: "Matrix needs the postgres role"
+  when: "'postgres' not in role_names"
+
+# ==================== Folders ====================
+
+- name: Create Synapse folders
+  become: yes
+  file:
+    path: "{{ data_dir }}/matrix/{{ item }}"
+    state: directory
+    mode: 0755
+    owner: "1337"
+    group: "1337"
+    recurse: no
+  loop:
+    - "synapse"
+    - "bridges"
+    - "bots"
+
+- name: Create Nginx folders
+  become: yes
+  file:
+    path: "{{ data_dir }}/matrix/{{ item }}"
+    state: directory
+    mode: 0755
+    owner: "0"
+    group: "0"
+    recurse: no
+  loop:
+    - "nginx"
+    - "nginx/www"
+    - "nginx/www/.well-known"
+    - "nginx/www/.well-known/matrix"
+
+- name: Create Coturn folders
+  become: yes
+  file:
+    path: "{{ data_dir }}/matrix/{{ item }}"
+    state: directory
+    mode: 0755
+    owner: "0"
+    group: "0"
+    recurse: no
+  loop:
+    - "coturn"
+  when: "matrix_coturn_enabled"
+
+- name: Create Riot folders
+  become: yes
+  file:
+    path: "{{ data_dir }}/matrix/{{ item }}"
+    state: directory
+    mode: 0755
+    owner: "0"
+    group: "0"
+    recurse: no
+  loop:
+    - "riot"
+  when: "matrix_riot_enabled"
+
+# ==================== Signing Key ====================
+
+- name: Set some facts
+  set_fact:
+    matrix_signing_key_file: "matrix.{{ domain_name }}.signing.key"
+
+- name: Check if signing key exists
+  stat:
+    path: "{{ data_dir }}/matrix/synapse/{{ matrix_signing_key_file }}"
+  register: matrix_signing_key
+
+- name: Generate signing key
+  docker_run:
+    container:
+      image: "{{ matrix_synapse_image }}"
+      command:
+        - "generate"
+      volumes:
+        - host: "/tmp/matrix/synapse"
+          guest: "/data"
+          read_only: false
+      environment:
+        - key: "SYNAPSE_SERVER_NAME"
+          value: "matrix.{{ domain_name }}"
+        - key: "SYNAPSE_REPORT_STATS"
+          value: "no"
+  when: "not matrix_signing_key.stat.exists"
+
+- name: Copy signing key
+  become: yes
+  copy:
+    remote_src: true
+    src: "/tmp/matrix/synapse/{{ matrix_signing_key_file }}"
+    dest: "{{ data_dir }}/matrix/synapse/{{ matrix_signing_key_file }}"
+  when: "not matrix_signing_key.stat.exists"
+
+- name: Create log config
+  become: yes
+  copy:
+    src: "roles/matrix/files/synapse/domain_name.log.config"
+    dest: "{{ data_dir }}/matrix/synapse/matrix.{{ domain_name }}.log.config"
+  register: matrix_log
+
+# ==================== Config ====================
+- name: Generate config files
+  become: yes
+  template:
+    src: "roles/matrix/files/{{item}}.j2"
+    dest: "{{ data_dir }}/matrix/{{item}}"
+  loop:
+    - "synapse/homeserver.yaml"
+    - "nginx/matrix.conf"
+    - "nginx/www/.well-known/matrix/client"
+    - "nginx/www/.well-known/matrix/server"
+    - "{{ matrix_coturn_enabled | ternary('coturn/turnserver.conf', undefined) }}"
+  when: "item is not undefined"
+  register: matrix_synapse_config
+
+- name: Remove existing service if config changes
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    remove:
+      - "matrix_synapse"
+      - "matrix_coturn"
+      - "matrix_nginx"
+  when: matrix_synapse_config.changed
+
+- name: Generate Riot config files
+  become: yes
+  template:
+    src: "roles/matrix/files/{{item}}.j2"
+    dest: "{{ data_dir }}/matrix/{{item}}"
+  loop:
+    - "riot/config.json"
+  register: "matrix_riot_config"
+  when: "matrix_riot_enabled"
+
+- name: Remove existing service if config changes
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    remove:
+      - "matrix_riot"
+  when: "matrix_riot_enabled and matrix_riot_config.changed"
+
+# ==================== LDAP ====================
+
+- name: Create LDAP group
+  ldap_group:
+    container: "{{ openldap_service.tasks[0].id }}"
+    user: "{{ ldap_admin_user }}"
+    password: "{{ ldap_admin_password }}"
+    base: "{{ ldap_groups_dn }}"
+    cn: "{{ matrix_ldap_group }}"
+    members:
+      - "{{ ldap_admin_user }}"
+  when: matrix_ldap_enabled
+
+# ==================== Postgre SQL ====================
+
+- name: Create database role
+  postgres_role:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    role: "{{ matrix_postgres_role }}"
+    role_password: "{{ matrix_postgres_password }}"
+
+- name: Create database
+  postgres_database:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    database: "{{ matrix_postgres_database }}"
+    role: "{{ matrix_postgres_role }}"
+    extra: "ENCODING 'UTF8' LC_COLLATE='C' LC_CTYPE='C' template=template0"
+
+# ==================== Maubot ====================
+- name: Create Maubot folder
+  become: yes
+  file:
+    path: "{{ data_dir }}/matrix/bots/maubot"
+    state: directory
+    mode: 0755
+    owner: "1337"
+    group: "1337"
+    recurse: no
+  when: "matrix_maubot_enabled"
+
+- name: Create Maubot database role
+  postgres_role:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    role: "{{ matrix_maubot_postgres_role }}"
+    role_password: "{{ matrix_maubot_postgres_password }}"
+  when: "matrix_maubot_enabled"
+
+- name: Create Maubot database
+  postgres_database:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    database: "{{ matrix_maubot_postgres_database }}"
+    role: "{{ matrix_maubot_postgres_role }}"
+    extra: "ENCODING 'UTF8' LC_COLLATE='C' LC_CTYPE='C' template=template0"
+  when: "matrix_maubot_enabled"
+
+- name: Check Maubot config
+  become: yes
+  stat:
+    path: "{{ data_dir }}/matrix/bots/maubot/config.yaml"
+  register: "matrix_maubot_config_file"
+  when: "matrix_maubot_enabled"
+
+- name: Create Maubot config
+  become: yes
+  template:
+    src: "roles/matrix/files/bots/maubot/{{item}}.j2"
+    dest: "{{ data_dir }}/matrix/bots/maubot/{{item}}"
+    owner: "1337"
+    group: "1337"
+  loop:
+    - "config.yaml"
+  register: "matrix_maubot_config"
+  when: "matrix_maubot_enabled and not matrix_maubot_config_file.stat.exists"
+
+- name: Deploy Maubot
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      matrix_maubot:
+        image: "{{ matrix_maubot_image }}"
+        deploy:
+          replicas: 1
+        restart_policy:
+          condition: "any"
+          delay: "5s"
+          max_attempts: 5
+        networks:
+          - "{{ docker_network_name }}"
+        volumes:
+          - "{{ data_dir }}/matrix/bots/maubot:/data:rw"
+  register: "result"
+  when: "matrix_maubot_enabled"
+
+- name: Set facts
+  set_fact:
+    matrix_maubot_service: "{{ result.services.matrix_maubot }}"
+  when: "matrix_maubot_enabled"
+
+# ==================== WhatsApp Bridge ====================
+- name: Create WhatsApp bridge folder
+  become: yes
+  file:
+    path: "{{ data_dir }}/matrix/bridges/whatsapp"
+    state: directory
+    mode: 0755
+    owner: "1337"
+    group: "1337"
+    recurse: no
+  when: "matrix_whatsapp_enabled"
+
+- name: Check WhatsApp bridge config
+  become: yes
+  stat:
+    path: "{{ data_dir }}/matrix/bridges/whatsapp/config.yaml"
+  register: "matrix_whatsapp_config_file"
+  when: "matrix_whatsapp_enabled"
+
+- name: Create WhatsApp bridge config
+  become: yes
+  template:
+    src: "roles/matrix/files/bridges/whatsapp/{{item}}.j2"
+    dest: "{{ data_dir }}/matrix/bridges/whatsapp/{{item}}"
+    owner: "1337"
+    group: "1337"
+  loop:
+    - "config.yaml"
+  register: "matrix_whatsapp_config"
+  when: "matrix_whatsapp_enabled and not matrix_whatsapp_config_file.stat.exists"
+
+- name: Set WhatsApp networks
+  set_fact:
+    matrix_whatsapp_networks: >
+      {
+        "{{ docker_network_name }}": {
+          "aliases": ["whatsappbridge"]
+        }
+      }
+  when: "matrix_whatsapp_enabled"
+
+- name: Deploy WhatsApp bridge
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      matrix_whatsapp:
+        image: "{{ matrix_whatsapp_image }}"
+        deploy:
+          replicas: 1
+        restart_policy:
+          condition: "any"
+          delay: "5s"
+          max_attempts: 5
+        networks: "{{ matrix_whatsapp_networks }}"
+        volumes:
+          - "{{ data_dir }}/matrix/bridges/whatsapp:/data:rw"
+  register: "result"
+  when: "matrix_whatsapp_enabled"
+
+- name: Set facts
+  set_fact:
+    matrix_whatsapp_service: "{{ result.services.matrix_whatsapp }}"
+  when: "matrix_whatsapp_enabled"
+
+- name: Remove existing service if config changes
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    remove:
+      - "matrix_synapse"
+      - "matrix_nginx"
+  when: "matrix_whatsapp_enabled and result.changed"
+
+# ==================== Hangouts Bridge ====================
+- name: Create Hangouts bridge folder
+  become: yes
+  file:
+    path: "{{ data_dir }}/matrix/bridges/hangouts"
+    state: directory
+    mode: 0755
+    owner: "1337"
+    group: "1337"
+    recurse: no
+  when: "matrix_hangouts_enabled"
+
+- name: Create Hangouts database role
+  postgres_role:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    role: "{{ matrix_hangouts_postgres_role }}"
+    role_password: "{{ matrix_hangouts_postgres_password }}"
+  when: "matrix_hangouts_enabled"
+
+- name: Create Hangouts database
+  postgres_database:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    database: "{{ matrix_hangouts_postgres_database }}"
+    role: "{{ matrix_hangouts_postgres_role }}"
+    extra: "ENCODING 'UTF8' LC_COLLATE='C' LC_CTYPE='C' template=template0"
+  when: "matrix_hangouts_enabled"
+
+- name: Check Hangouts bridge config
+  become: yes
+  stat:
+    path: "{{ data_dir }}/matrix/bridges/hangouts/config.yaml"
+  register: "matrix_hangouts_config_file"
+  when: "matrix_hangouts_enabled"
+
+- name: Create Hangouts bridge config
+  become: yes
+  template:
+    src: "roles/matrix/files/bridges/hangouts/{{item}}.j2"
+    dest: "{{ data_dir }}/matrix/bridges/hangouts/{{item}}"
+    owner: "1337"
+    group: "1337"
+  loop:
+    - "config.yaml"
+  register: "matrix_hangouts_config"
+  when: "matrix_hangouts_enabled and not matrix_hangouts_config_file.stat.exists"
+
+- name: Set Hangouts networks
+  set_fact:
+    matrix_hangouts_networks: >
+      {
+        "{{ docker_network_name }}": {
+          "aliases": ["hangoutsbridge"]
+        }
+      }
+  when: "matrix_hangouts_enabled"
+
+- name: Deploy Hangouts bridge
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      matrix_hangouts:
+        image: "{{ matrix_hangouts_image }}"
+        deploy:
+          replicas: 1
+        restart_policy:
+          condition: "any"
+          delay: "5s"
+          max_attempts: 5
+        networks: "{{ matrix_hangouts_networks }}"
+        volumes:
+          - "{{ data_dir }}/matrix/bridges/hangouts:/data:rw"
+  register: "result"
+  when: "matrix_hangouts_enabled"
+
+- name: Set facts
+  set_fact:
+    matrix_hangouts_service: "{{ result.services.matrix_hangouts }}"
+  when: "matrix_hangouts_enabled"
+
+- name: Remove existing service if config changes
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    remove:
+      - "matrix_synapse"
+      - "matrix_nginx"
+  when: "matrix_hangouts_enabled and result.changed"
+
+# ==================== Facebook Bridge ====================
+- name: Create Facebook bridge folder
+  become: yes
+  file:
+    path: "{{ data_dir }}/matrix/bridges/facebook"
+    state: directory
+    mode: 0755
+    owner: "1337"
+    group: "1337"
+    recurse: no
+  when: "matrix_facebook_enabled"
+
+- name: Create Facebook database role
+  postgres_role:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    role: "{{ matrix_facebook_postgres_role }}"
+    role_password: "{{ matrix_facebook_postgres_password }}"
+  when: "matrix_facebook_enabled"
+
+- name: Create Facebook database
+  postgres_database:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    database: "{{ matrix_facebook_postgres_database }}"
+    role: "{{ matrix_facebook_postgres_role }}"
+    extra: "ENCODING 'UTF8' LC_COLLATE='C' LC_CTYPE='C' template=template0"
+  when: "matrix_facebook_enabled"
+
+- name: Check Facebook bridge config
+  become: yes
+  stat:
+    path: "{{ data_dir }}/matrix/bridges/facebook/config.yaml"
+  register: "matrix_facebook_config_file"
+  when: "matrix_facebook_enabled"
+
+- name: Create Facebook bridge config
+  become: yes
+  template:
+    src: "roles/matrix/files/bridges/facebook/{{item}}.j2"
+    dest: "{{ data_dir }}/matrix/bridges/facebook/{{item}}"
+    owner: "1337"
+    group: "1337"
+  loop:
+    - "config.yaml"
+  register: "matrix_facebook_config"
+  when: "matrix_facebook_enabled and not matrix_facebook_config_file.stat.exists"
+
+- name: Set Facebook networks
+  set_fact:
+    matrix_facebook_networks: >
+      {
+        "{{ docker_network_name }}": {
+          "aliases": ["facebookbridge"]
+        }
+      }
+  when: "matrix_facebook_enabled"
+
+- name: Deploy Facebook bridge
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      matrix_facebook:
+        image: "{{ matrix_facebook_image }}"
+        deploy:
+          replicas: 1
+        restart_policy:
+          condition: "any"
+          delay: "5s"
+          max_attempts: 5
+        networks: "{{ matrix_facebook_networks }}"
+        volumes:
+          - "{{ data_dir }}/matrix/bridges/facebook:/data:rw"
+  register: "result"
+  when: "matrix_facebook_enabled"
+
+- name: Set facts
+  set_fact:
+    matrix_facebook_service: "{{ result.services.matrix_facebook }}"
+  when: "matrix_facebook_enabled"
+
+- name: Remove existing service if config changes
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    remove:
+      - "matrix_synapse"
+      - "matrix_nginx"
+  when: "matrix_facebook_enabled and result.changed"
+
+# ==================== Signal Bridge ====================
+- name: Create Signal bridge folder
+  become: yes
+  file:
+    path: "{{ data_dir }}/matrix/bridges/signal"
+    state: directory
+    mode: 0755
+    owner: "1337"
+    group: "1337"
+    recurse: no
+  when: "matrix_signal_enabled"
+
+- name: Create Signal database role
+  postgres_role:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    role: "{{ matrix_signal_postgres_role }}"
+    role_password: "{{ matrix_signal_postgres_password }}"
+  when: "matrix_signal_enabled"
+
+- name: Create Signal database
+  postgres_database:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    database: "{{ matrix_signal_postgres_database }}"
+    role: "{{ matrix_signal_postgres_role }}"
+    extra: "ENCODING 'UTF8' LC_COLLATE='C' LC_CTYPE='C' template=template0"
+  when: "matrix_signal_enabled"
+
+- name: Check Signal bridge config
+  become: yes
+  stat:
+    path: "{{ data_dir }}/matrix/bridges/signal/config.yaml"
+  register: "matrix_signal_config_file"
+  when: "matrix_signal_enabled"
+
+- name: Create Signal bridge config
+  become: yes
+  template:
+    src: "roles/matrix/files/bridges/signal/{{item}}.j2"
+    dest: "{{ data_dir }}/matrix/bridges/signal/{{item}}"
+    owner: "1337"
+    group: "1337"
+  loop:
+    - "config.yaml"
+  register: "matrix_signal_config"
+  when: "matrix_signal_enabled and not matrix_signal_config_file.stat.exists"
+
+- name: Set Signal networks
+  set_fact:
+    matrix_signal_networks: >
+      {
+        "{{ docker_network_name }}": {
+          "aliases": ["signalbridge"]
+        }
+      }
+  when: "matrix_signal_enabled"
+
+- name: Deploy Signal bridge
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      matrix_signal:
+        image: "{{ matrix_signal_image }}"
+        deploy:
+          replicas: 1
+        restart_policy:
+          condition: "any"
+          delay: "5s"
+          max_attempts: 5
+        networks: "{{ matrix_signal_networks }}"
+        volumes:
+          - "{{ data_dir }}/matrix/bridges/signal:/data:rw"
+  register: "result"
+  when: "matrix_signal_enabled"
+
+- name: Set facts
+  set_fact:
+    matrix_signal_service: "{{ result.services.matrix_signal }}"
+  when: "matrix_signal_enabled"
+
+- name: Remove existing service if config changes
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    remove:
+      - "matrix_synapse"
+      - "matrix_nginx"
+  when: "matrix_signal_enabled and result.changed"
+
+
+# ==================== Discord Bridge ====================
+- name: Create Discord bridge folder
+  become: yes
+  file:
+    path: "{{ data_dir }}/matrix/bridges/discord"
+    state: directory
+    mode: 0755
+    owner: "1000"
+    group: "1000"
+    recurse: no
+  when: "matrix_discord_enabled"
+
+- name: Create Discord database role
+  postgres_role:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    role: "{{ matrix_discord_postgres_role }}"
+    role_password: "{{ matrix_discord_postgres_password }}"
+  when: "matrix_discord_enabled"
+
+- name: Create Discord database
+  postgres_database:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    database: "{{ matrix_discord_postgres_database }}"
+    role: "{{ matrix_discord_postgres_role }}"
+    extra: "ENCODING 'UTF8' LC_COLLATE='C' LC_CTYPE='C' template=template0"
+  when: "matrix_discord_enabled"
+
+- name: Check Discord bridge config
+  become: yes
+  stat:
+    path: "{{ data_dir }}/matrix/bridges/discord/config.yaml"
+  register: "matrix_discord_config_file"
+  when: "matrix_discord_enabled"
+
+- name: Create Discord bridge config
+  become: yes
+  template:
+    src: "roles/matrix/files/bridges/discord/{{item}}.j2"
+    dest: "{{ data_dir }}/matrix/bridges/discord/{{item}}"
+    owner: "1000"
+    group: "1000"
+  loop:
+    - "config.yaml"
+  register: "matrix_discord_config"
+  when: "matrix_discord_enabled and not matrix_discord_config_file.stat.exists"
+
+- name: Set Discord networks
+  set_fact:
+    matrix_discord_networks: >
+      {
+        "{{ docker_network_name }}": {
+          "aliases": ["discordbridge"]
+        }
+      }
+  when: "matrix_discord_enabled"
+
+- name: Deploy Discord bridge
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      matrix_discord:
+        image: "{{ matrix_discord_image }}"
+        deploy:
+          replicas: 1
+        restart_policy:
+          condition: "any"
+          delay: "5s"
+          max_attempts: 5
+        networks: "{{ matrix_discord_networks }}"
+        volumes:
+          - "{{ data_dir }}/matrix/bridges/discord:/data:rw"
+  register: "result"
+  when: "matrix_discord_enabled"
+
+- name: Set facts
+  set_fact:
+    matrix_discord_service: "{{ result.services.matrix_discord }}"
+  when: "matrix_discord_enabled"
+
+- name: Remove existing service if config changes
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    remove:
+      - "matrix_synapse"
+      - "matrix_nginx"
+  when: "matrix_discord_enabled and result.changed"
+
+# ==================== Redis ====================
+
+- name: Deploy Redis
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      matrix_redis:
+        image: "{{ matrix_redis_image }}"
+        command: "redis-server --requirepass {{ matrix_redis_password }}"
+        deploy:
+          replicas: 1
+        networks:
+          - "{{ docker_network_name }}"
+  register: result
+
+- name: Set facts
+  set_fact:
+    matrix_redis_service: "{{ result.services.matrix_redis }}"
+
+# ==================== Coturn ====================
+
+- name: Deploy Coturn
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      matrix_coturn:
+        image: "{{ matrix_coturn_image }}"
+        deploy:
+          replicas: 1
+        networks:
+          - "{{ docker_network_name }}"
+        volumes:
+          - "{{ data_dir }}/matrix/coturn/turnserver.conf:/etc/coturn/turnserver.conf"
+        ports:
+          - "{{ matrix_coturn_listening_port }}:{{ matrix_coturn_listening_port }}/udp"
+          - "{{ matrix_coturn_listening_port }}:{{ matrix_coturn_listening_port }}/tcp"
+          - "{{ matrix_coturn_port_min }}-{{ matrix_coturn_port_max }}:{{ matrix_coturn_port_min }}-{{ matrix_coturn_port_max }}/udp"
+  register: result
+  when: "matrix_coturn_enabled"
+
+- name: Set facts
+  set_fact:
+    matrix_coturn_service: "{{ result.services.matrix_coturn }}"
+  when: "matrix_coturn_enabled"
+
+# ==================== Synapse ====================
+
+- name: Deploy Synapse
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    timeout: 120
+    definition:
+      matrix_synapse:
+        image: "{{ matrix_synapse_image }}"
+        deploy:
+          replicas: 1
+        networks:
+          - "{{ docker_network_name }}"
+        volumes:
+          - "{{ data_dir }}/matrix/synapse:/data"
+          - "{{ data_dir }}/matrix/bridges:/bridges"
+        environment:
+          UID: "1337"
+          GID: "1337"
+          TZ: "Europe/London"
+          SYNAPSE_CONFIG_DIR: "/data"
+          SYNAPSE_CONFIG_PATH: "/data/homeserver.yaml"
+  register: result
+
+- name: Set facts
+  set_fact:
+    matrix_synapse_service: "{{ result.services.matrix_synapse }}"
+
+# ==================== Nginx ====================
+
+- name: Deploy Nginx
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      matrix_nginx:
+        image: "{{ matrix_nginx_image }}"
+        deploy:
+          replicas: 1
+          labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.matrix.rule=Host(`matrix.{{ domain_name }}`)"
+            - "traefik.http.services.matrix.loadbalancer.server.port=80"
+            - "traefik.http.routers.matrix.entrypoints={{ traefik_entrypoints }}"
+            - "traefik.http.routers.matrix.tls={{ traefik_tls }}"
+            - "traefik.http.routers.matrix.tls.certresolver={{ traefik_certresolver }}"
+        networks:
+          - "{{ docker_network_name }}"
+        volumes:
+          - "{{ data_dir }}/matrix/nginx/matrix.conf:/etc/nginx/conf.d/matrix.conf"
+          - "{{ data_dir }}/matrix/nginx/www:/var/www"
+  register: result
+
+- name: Set facts
+  set_fact:
+    matrix_nginx_service: "{{ result.services.matrix_nginx }}"
+
+- name: Healthcheck
+  http_wait:
+    url: "{{ traefik_address }}/_matrix/client/versions"
+    status_code: "200"
+    retries: 6
+    delay: 10
+    headers:
+      - "Host: matrix.{{ domain_name }}"
+
+# ==================== Riot (Element) ====================
+
+- name: Deploy Riot
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      matrix_riot:
+        image: "{{ matrix_riot_image }}"
+        deploy:
+          replicas: 1
+          labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.riot.rule=Host(`riot.{{ domain_name }}`)"
+            - "traefik.http.services.riot.loadbalancer.server.port=80"
+            - "traefik.http.routers.riot.entrypoints={{ traefik_entrypoints }}"
+            - "traefik.http.routers.riot.tls={{ traefik_tls }}"
+            - "traefik.http.routers.riot.tls.certresolver={{ traefik_certresolver }}"
+        networks:
+          - "{{ docker_network_name }}"
+        volumes:
+          - "{{ data_dir }}/matrix/riot/config.json:/app/config.json:ro"
+  register: result
+  when: "matrix_riot_enabled"
+
+- name: Set facts
+  set_fact:
+    matrix_riot_service: "{{ result.services.matrix_riot }}"
+
+- name: Healthcheck
+  http_wait:
+    url: "{{ traefik_address }}/"
+    status_code: "200"
+    retries: 3
+    delay: 5
+    headers:
+      - "Host: riot.{{ domain_name }}"

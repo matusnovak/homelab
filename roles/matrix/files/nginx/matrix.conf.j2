@@ -1,0 +1,37 @@
+server {
+  listen         80 default_server;
+  server_name    matrix.{{ domain_name }};
+
+{% if matrix_maubot_enabled %}
+  # Traefik -> nginx -> maubot
+  location /maubot {
+    resolver 127.0.0.11 valid=10s ipv6=off;
+    proxy_pass http://matrix_maubot:29316;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    client_max_body_size 128m;
+  }
+
+  location /maubot/v1/logs {
+    resolver 127.0.0.11 valid=10s ipv6=off; 
+    proxy_pass http://matrix_maubot:29316/maubot/v1/logs;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "Upgrade";
+    proxy_set_header X-Forwarded-For $remote_addr; 
+  }
+{% endif %}
+
+  # Traefik -> nginx -> synapse
+  location /_matrix {
+    resolver 127.0.0.11 valid=10s ipv6=off;
+    proxy_pass http://matrix_synapse:8008;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    client_max_body_size 128m;
+  }
+
+  location /.well-known/matrix/ {
+    root /var/www/;
+    default_type application/json;
+    add_header Access-Control-Allow-Origin  *;
+  }
+}
