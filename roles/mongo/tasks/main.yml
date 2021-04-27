@@ -1,0 +1,38 @@
+---
+- name: Check if base role is included
+  fail:
+    msg: "MongoDB needs the base role"
+  when: "'base' not in role_names"
+
+- name: Create folder structure
+  become: yes
+  file:
+    path: "{{ data_dir }}/mongo/{{ item }}"
+    state: directory
+    mode: "0700"
+    owner: "999"
+    group: "999"
+    recurse: false
+  loop:
+    - data
+
+- name: Deploy service
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      mongo:
+        image: "{{ mongo_image }}"
+        deploy:
+          replicas: 1
+        networks:
+          - "{{ docker_network_name }}"
+        volumes:
+          - "{{ data_dir }}/mongo/data:/data/db"
+        environment:
+          MONGO_INITDB_ROOT_USERNAME: "{{ mongo_admin_user }}"
+          MONGO_INITDB_ROOT_PASSWORD: "{{ mongo_admin_password }}"
+  register: result
+
+- name: Set facts
+  set_fact:
+    mongo_service: "{{ result.services.mongo }}"

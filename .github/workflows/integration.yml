@@ -22,6 +22,8 @@ jobs:
             role: 'ldap'
           - name: 'Matrix'
             role: 'matrix'
+          - name: 'MongoDB'
+            role: 'mongo'
           - name: 'NextCloud'
             role: 'nextcloud'
           - name: 'phpLDAPadmin'

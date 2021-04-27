@@ -1,0 +1,9 @@
+---
+# Docker image name
+mongo_image: "docker.io/library/mongo:latest"
+
+# Name of the admin user that Mongo will use
+mongo_admin_user: "root"
+
+# Password for the admin user
+mongo_admin_password: "Password!"
