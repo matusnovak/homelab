@@ -81,6 +81,7 @@ def command_init(args: dict) -> bool:
     res = request('PUT', f'{base_url}/api/users/1',
                   code=200, json=data, headers=headers)
     print('Configured admin user')
+    return True
 
 
 def main():

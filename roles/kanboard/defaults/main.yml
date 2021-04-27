@@ -2,6 +2,9 @@
 # Docker image name
 kanboard_image: "docker.io/kanboard/kanboard:latest"
 
+# Password for the admin user
+kanboard_admin_passwords: "Password1!"
+
 # Postgre SQL database name, will be created automatically.
 kanboard_postgres_database: "kanboard"
 

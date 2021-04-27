@@ -98,9 +98,26 @@
 
 - name: Healthcheck
   http_wait:
-    url: "{{ traefik_address }}"
+    url: "{{ traefik_address }}/login"
     status_code: "200"
     retries: 5
     delay: 6
     headers:
       - "Host: kanboard.{{ domain_name }}"
+
+- name: Setup data
+  set_fact:
+    init_data: |
+      {
+        "url": "{{ traefik_address }}",
+        "host": "kanboard.{{ domain_name }}",
+        "username": "admin",
+        "password": "{{ kanboard_admin_passwords }}"
+      }
+
+- name: Initialize
+  script: "roles/kanboard/scripts/main.py init {{ init_data | to_json | tojson }}"
+  args:
+    executable: python3
+  register: kanboard_init_script
+  changed_when: "'Changed!' in kanboard_init_script.stdout"
