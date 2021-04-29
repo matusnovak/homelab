@@ -204,6 +204,13 @@
           MINIO_SECRET_KEY: "{{ gitlab_minio_secret_key }}"
   when: "gitlab_minio_enabled"
 
+- name: Create GitLab network
+  docker_network:
+    name: "{{ project_name }}_gitlab"
+    driver: overlay
+    attachable: true
+  register: result
+
 - name: Deploy service
   docker_swarm_service:
     project_name: "{{ project_name }}"
@@ -240,6 +247,7 @@
             - "traefik.http.routers.gitlab-pages.service=gitlab-pages"
         networks:
           - "{{ docker_network_name }}"
+          - "{{ project_name }}_gitlab"
         ports:
           - target: "{{ gitlab_ssh_port }}"
             published: "{{ gitlab_ssh_port }}"
@@ -258,21 +266,11 @@
   set_fact:
     gitlab_runner_networks: >
       {
-        "{{ docker_network_name }}": {
+        "{{ project_name }}_gitlab": {
           "aliases": ["gitlabrunner"]
         }
       }
   when: "gitlab_runner_secret != ''"
-
-- name: Change the config data
-  docker_config:
-    name: "{{ project_name }}_gitlab_runner"
-    data: |
-      [[runners]]
-        [runners.docker]
-          privileged = false
-          disable_cache = true
-    state: present
 
 - name: Deploy Runner
   docker_swarm_service:
@@ -282,6 +280,10 @@
         image: "{{ gitlab_runner_image }}"
         deploy:
           replicas: 1
+        restart_policy:
+          condition: "any"
+          delay: "30s"
+          max_attempts: 10
         command: |
           /bin/bash -c '
             set -e
@@ -300,11 +302,9 @@
           DOCKER_IMAGE: "docker"
           DOCKER_VOLUMES: "/var/run/docker.sock:/var/run/docker.sock"
           RUNNER_NAME: "docker"
+          CLONE_URL: "http://gitlab:80"
           CI_SERVER_URL: "http://gitlab:80"
           REGISTRATION_TOKEN: "{{ gitlab_runner_secret }}"
-          TEMPLATE_CONFIG_FILE: "/config-template.toml"
-        configs:
-          - source: "{{ project_name }}_gitlab_runner"
-            target: "/config-template.toml"
-            mode: 0444
+          DOCKER_NETWORK_MODE: "{{ project_name }}_gitlab"
+          DOCKER_DISABLE_CACHE: "true"
   when: "gitlab_runner_secret != ''"
