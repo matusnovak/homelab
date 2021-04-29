@@ -110,7 +110,7 @@
           - "{{ data_dir }}/nextcloud/apps:/var/www/html/custom_apps"
           - "{{ data_dir }}/nextcloud/config:/var/www/html/config"
           - "{{ data_dir }}/nextcloud/theme:/var/www/html/themes/custom"
-          - "{{ nextcloud_data_path == '' | ternary(data_dir + '/nextcloud/data', nextcloud_data_path) }}:/var/www/html/data"
+          - "{{ (nextcloud_data_path == '') | ternary(data_dir + '/nextcloud/data', nextcloud_data_path) }}:/var/www/html/data"
         environment:
           POSTGRES_DB: "{{ nextcloud_postgres_database }}"
           POSTGRES_USER: "{{ nextcloud_postgres_role }}"

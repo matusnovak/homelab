@@ -56,6 +56,9 @@ def execute(params: dict, tries: int = 5) -> dict:
             f'ALTER ROLE {role} WITH LOGIN;'
         ]
 
+        if params['superuser']:
+            queries.append(f'ALTER ROLE {role} WITH SUPERUSER;')
+
         code, output = container.exec_run(query(' '.join(queries)), environment={
             'PGPASSWORD': params['password']
         })
@@ -101,6 +104,11 @@ def main():
             'type': 'str',
             'required': True,
             'no_log': True
+        },
+        'superuser': {
+            'type': 'bool',
+            'required': False,
+            'default': False
         }
     }
 
