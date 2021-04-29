@@ -1,0 +1,8 @@
+---
+- hosts: homelab
+  roles:
+    - base
+    - ldap
+    - postgres
+    - traefik
+    - gitlab
