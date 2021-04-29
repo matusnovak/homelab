@@ -34,10 +34,10 @@ gitlab_ldap_group: "gitlab"
 # Maybe this can be a USB mounted drive?
 # It is not advised to change this later.
 # 
-# Set to empty string '' if you want Ansible to create data folder in:
+# Set to empty string "" if you want Ansible to create data folder in:
 #   {{ data_dir }}/gitlab/git
 # Otherwise set to some absobule path, such as: "/repositories"
-gitlab_git_data_path: ''
+gitlab_git_data_path: ""
 
 # Git LFS
 gitlab_lfs_enabled: true
@@ -50,7 +50,7 @@ gitlab_minio_enabled: true
 # registry, lfs, artifacts, uploads, packages.
 # They will be stored via MinIO as objects
 # If set to empty string, the data will be stored in {{ data_dir }}/gitlab/objects
-gitlab_minio_path: ''
+gitlab_minio_path: ""
 
 # Credentials for MinIO. Can be any random string, at least 8 characters.
 gitlab_minio_access_key: "2frat8nff5dj5esx"
@@ -74,5 +74,5 @@ gitlab_packages_enabled: true
 # Copy the "registration token"
 # And add it here. 
 # Leaving this string empty will not deploy any runners
-gitlab_runner_secret: "yNz9yCbuUJ5MrDtZzkfV"
+gitlab_runner_secret: ""
 
