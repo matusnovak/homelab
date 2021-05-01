@@ -268,7 +268,7 @@
 
 - name: Set facts
   set_fact:
-    haste_service: "{{ result.services.haste }}"
+    gitlab_service: "{{ result.services.gitlab }}"
 
 - name: Healthcheck
   http_wait:
