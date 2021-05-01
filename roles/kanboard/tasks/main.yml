@@ -77,6 +77,8 @@
         image: "{{ kanboard_image }}"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ kanboard_constraints }}"
           labels:
             - "traefik.enable=true"
             - "traefik.http.routers.kanboard.rule=Host(`kanboard.{{ domain_name }}`)"

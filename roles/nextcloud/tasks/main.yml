@@ -85,6 +85,8 @@
         command: "redis-server --requirepass {{ nextcloud_redis_password }}"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ nextcloud_constraints }}"
         networks:
           - "{{ docker_network_name }}"
 
@@ -96,6 +98,8 @@
         image: "{{ nextcloud_image }}"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ nextcloud_constraints }}"
           labels:
             - "traefik.enable=true"
             - "traefik.http.routers.nextcloud.rule=Host(`nextcloud.{{ domain_name }}`)"
@@ -174,6 +178,8 @@
         image: "{{ nextcloud_onlyoffice_image }}"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ nextcloud_onlyoffice_constraints }}"
           labels:
             - "traefik.enable=true"
             - "traefik.http.routers.office.rule=Host(`office.{{ domain_name }}`)"

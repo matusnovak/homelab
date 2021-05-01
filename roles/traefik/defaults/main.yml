@@ -2,6 +2,11 @@
 # Docker image name
 traefik_image: "docker.io/library/traefik:v2.1"
 
+# Where should the service be deployed?
+# If not constraints are defined, the service will deploy anywhere it can.
+traefik_constraints:
+  - "node.role == manager"
+
 # The Docker socket that traefik should connect to.
 # This is the path on the host!
 traefik_docker_socket: "/var/run/docker.sock"

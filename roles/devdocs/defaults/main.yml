@@ -1,3 +1,8 @@
 ---
 # Docker image name
 devdocs_image: "docker.io/devdocs/devdocs:latest"
+
+# Where should the service be deployed?
+# If not constraints are defined, the service will deploy anywhere it can.
+devdocs_constraints:
+  - "node.role == manager"

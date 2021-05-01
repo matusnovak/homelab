@@ -51,6 +51,8 @@
         image: "{{ jellyfin_image }}"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ jellyfin_constraints }}"
           labels:
             - "traefik.enable=true"
             - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.{{ domain_name }}`)"

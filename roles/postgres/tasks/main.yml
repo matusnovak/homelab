@@ -24,6 +24,8 @@
         image: "{{ postgres_image }}"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ postgres_constraints }}"
         healthcheck:
           test: ["CMD-SHELL", "pg_isready -U postgres"]
           interval: 10s

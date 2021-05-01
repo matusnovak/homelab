@@ -1,3 +1,8 @@
 ---
 # Docker image name
 adminer_image: "docker.io/library/adminer:latest"
+
+# Where should the service be deployed?
+# If not constraints are defined, the service will deploy anywhere it can.
+adminer_constraints:
+  - "node.role == manager"

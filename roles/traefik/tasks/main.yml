@@ -106,6 +106,8 @@
         image: "{{ traefik_image }}"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ traefik_constraints }}"
           labels:
             - "traefik.enable=true"
             - "traefik.http.routers.traefik.rule=Host(`traefik.{{ domain_name }}`)"

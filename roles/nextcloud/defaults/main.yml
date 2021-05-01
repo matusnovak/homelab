@@ -4,6 +4,14 @@ nextcloud_image: "docker.io/library/nextcloud:apache"
 nextcloud_redis_image: "docker.io/library/redis:latest"
 nextcloud_onlyoffice_image: "docker.io/onlyoffice/documentserver:latest"
 
+# Where should the service be deployed?
+# If not constraints are defined, the service will deploy anywhere it can.
+nextcloud_constraints:
+  - "node.role == manager"
+
+# Same as above, but for the OnlyOffice document server
+nextcloud_onlyoffice_constraints: "{{ nextcloud_constraints }}"
+
 # Password for the user "admin" that will be created on first startup.
 nextcloud_admin_password: "Password1!"
 

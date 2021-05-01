@@ -2,6 +2,11 @@
 # Docker image name
 postgres_image: "docker.io/library/postgres:11"
 
+# Where should the service be deployed?
+# If not constraints are defined, the service will deploy anywhere it can.
+postgres_constraints:
+  - "node.role == manager"
+
 # Password for the role "postgres" that is created when
 # Postgre SQL first starts.
 postgres_password: "Password1!"

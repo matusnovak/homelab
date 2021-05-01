@@ -1,3 +1,8 @@
 ---
 # Docker image name
 phpldapadmin_image: "docker.io/osixia/phpldapadmin:latest"
+
+# Where should the service be deployed?
+# If not constraints are defined, the service will deploy anywhere it can.
+phpldapadmin_constraints:
+  - "node.role == manager"

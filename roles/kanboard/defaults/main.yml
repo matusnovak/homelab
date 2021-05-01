@@ -2,6 +2,11 @@
 # Docker image name
 kanboard_image: "docker.io/kanboard/kanboard:latest"
 
+# Where should the service be deployed?
+# If not constraints are defined, the service will deploy anywhere it can.
+kanboard_constraints:
+  - "node.role == manager"
+
 # Password for the admin user
 kanboard_admin_passwords: "Password1!"
 

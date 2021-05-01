@@ -12,6 +12,8 @@
         image: "{{ devdocs_image }}"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ devdocs_constraints }}"
           labels:
             - "traefik.enable=true"
             - "traefik.http.routers.devdocs.rule=Host(`devdocs.{{ domain_name }}`)"

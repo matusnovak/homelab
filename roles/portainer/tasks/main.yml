@@ -45,6 +45,8 @@
         image: "{{ portainer_agent_image }}"
         deploy:
           mode: "global"
+          placement:
+            constraints: "{{ portainer_agent_constraints }}"
         networks:
           - "{{ project_name }}_portainer"
           - "{{ docker_network_name }}"
@@ -75,6 +77,8 @@
         deploy:
           mode: "replicated"
           replicas: 1
+          placement:
+            constraints: "{{ portainer_constraints }}"
           labels:
             - "traefik.enable=true"
             - "traefik.http.routers.portainer.rule=Host(`portainer.{{ domain_name }}`)"

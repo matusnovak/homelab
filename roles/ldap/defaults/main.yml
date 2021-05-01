@@ -2,6 +2,11 @@
 # Docker image name
 ldap_image: "docker.io/osixia/openldap:latest"
 
+# Where should the service be deployed?
+# If not constraints are defined, the service will deploy anywhere it can.
+ldap_constraints:
+  - "node.role == manager"
+
 # Name of the organization for LDAP.
 # This does not affect things, it's for information only.
 # Can not be changed later!

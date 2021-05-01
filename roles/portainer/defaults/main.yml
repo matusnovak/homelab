@@ -3,6 +3,15 @@
 portainer_image: "docker.io/portainer/portainer:latest"
 portainer_agent_image: "docker.io/portainer/agent:latest"
 
+# Where should the service be deployed?
+# If not constraints are defined, the service will deploy anywhere it can.
+portainer_constraints:
+  - "node.role == manager"
+
+# Where should the agent service be deployed?
+# If not constraints are defined, the service will deploy anywhere it can.
+portainer_agent_constraints: []
+
 # Password for the admin user that will be created when Portainer first starts.
 portainer_admin_passwords: "Password1!"
 

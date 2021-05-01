@@ -63,6 +63,8 @@
         command: "redis-server --requirepass {{ authelia_redis_password }}"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ authelia_constraints }}"
         networks:
           - "{{ docker_network_name }}"
 
@@ -75,6 +77,8 @@
         image: "{{ authelia_image }}"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ authelia_constraints }}"
           labels:
             - "traefik.enable=true"
             - "traefik.http.routers.authelia.rule=Host(`auth.{{ domain_name }}`)"

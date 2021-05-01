@@ -2,6 +2,11 @@
 # Docker image name
 jellyfin_image: "docker.io/linuxserver/jellyfin:latest"
 
+# Where should the service be deployed?
+# If not constraints are defined, the service will deploy anywhere it can.
+jellyfin_constraints:
+  - "node.role == manager"
+
 # Password for the admin user
 jellyfin_admin_passwords: "Password1!"
 

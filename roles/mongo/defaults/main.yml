@@ -2,6 +2,11 @@
 # Docker image name
 mongo_image: "docker.io/library/mongo:latest"
 
+# Where should the service be deployed?
+# If not constraints are defined, the service will deploy anywhere it can.
+mongo_constraints:
+  - "node.role == manager"
+
 # Name of the admin user that Mongo will use
 mongo_admin_user: "root"
 

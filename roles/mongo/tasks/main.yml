@@ -24,6 +24,8 @@
         image: "{{ mongo_image }}"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ mongo_constraints }}"
         networks:
           - "{{ docker_network_name }}"
         volumes:

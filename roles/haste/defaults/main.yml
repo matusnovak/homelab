@@ -2,6 +2,11 @@
 # Docker image name
 haste_image: "docker.io/dirtycajunrice/haste-server:latest"
 
+# Where should the service be deployed?
+# If not constraints are defined, the service will deploy anywhere it can.
+haste_constraints:
+  - "node.role == manager"
+
 # Allowed values are: "file" or "postgres"
 haste_provider: "file"
 

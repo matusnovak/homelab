@@ -12,6 +12,24 @@ matrix_facebook_image: 'dock.mau.dev/tulir/mautrix-facebook:latest'
 matrix_signal_image: 'dock.mau.dev/tulir/mautrix-signal:latest'
 matrix_maubot_image: 'dock.mau.dev/maubot/maubot:latest'
 
+# Where should the service be deployed?
+# If not constraints are defined, the service will deploy anywhere it can.
+matrix_constraints:
+  - "node.role == manager"
+
+# Deployment constraints for each container
+matrix_synapse_constraints: "{{ matrix_constraints }}"
+matrix_redis_constraints: "{{ matrix_constraints }}"
+matrix_riot_constraints: "{{ matrix_constraints }}"
+matrix_nginx_constraints: "{{ matrix_constraints }}"
+matrix_coturn_constraints: "{{ matrix_constraints }}"
+matrix_hangouts_constraints: "{{ matrix_constraints }}"
+matrix_whatsapp_constraints: "{{ matrix_constraints }}"
+matrix_discord_constraints: "{{ matrix_constraints }}"
+matrix_facebook_constraints: "{{ matrix_constraints }}"
+matrix_signal_constraints: "{{ matrix_constraints }}"
+matrix_maubot_constraints: "{{ matrix_constraints }}"
+
 # Registration shared secret for Matrix - Synapse
 # Must be a strong random string with length of 50 characters
 # Don't use the one from this sample! Generate your own!

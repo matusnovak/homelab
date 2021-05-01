@@ -17,6 +17,8 @@
         image: "{{ phpldapadmin_image }}"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ phpldapadmin_constraints }}"
           labels:
             - "traefik.enable=true"
             - "traefik.http.routers.phpldapadmin.rule=Host(`ldap.{{ domain_name }}`)"

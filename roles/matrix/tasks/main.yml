@@ -241,9 +241,11 @@
         image: "{{ matrix_maubot_image }}"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ matrix_maubot_constraints }}"
         restart_policy:
-          condition: "any"
-          delay: "5s"
+          condition: "on-failure"
+          delay: "30s"
           max_attempts: 5
         networks:
           - "{{ docker_network_name }}"
@@ -306,9 +308,11 @@
         image: "{{ matrix_whatsapp_image }}"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ matrix_whatsapp_constraints }}"
         restart_policy:
-          condition: "any"
-          delay: "5s"
+          condition: "on-failure"
+          delay: "30s"
           max_attempts: 5
         networks: "{{ matrix_whatsapp_networks }}"
         volumes:
@@ -395,9 +399,11 @@
         image: "{{ matrix_hangouts_image }}"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ matrix_hangouts_constraints }}"
         restart_policy:
-          condition: "any"
-          delay: "5s"
+          condition: "on-failure"
+          delay: "30s"
           max_attempts: 5
         networks: "{{ matrix_hangouts_networks }}"
         volumes:
@@ -484,9 +490,11 @@
         image: "{{ matrix_facebook_image }}"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ matrix_facebook_constraints }}"
         restart_policy:
-          condition: "any"
-          delay: "5s"
+          condition: "on-failure"
+          delay: "30s"
           max_attempts: 5
         networks: "{{ matrix_facebook_networks }}"
         volumes:
@@ -573,9 +581,11 @@
         image: "{{ matrix_signal_image }}"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ matrix_signal_constraints }}"
         restart_policy:
-          condition: "any"
-          delay: "5s"
+          condition: "on-failure"
+          delay: "30s"
           max_attempts: 5
         networks: "{{ matrix_signal_networks }}"
         volumes:
@@ -663,9 +673,11 @@
         image: "{{ matrix_discord_image }}"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ matrix_discord_constraints }}"
         restart_policy:
-          condition: "any"
-          delay: "5s"
+          condition: "on-failure"
+          delay: "30s"
           max_attempts: 5
         networks: "{{ matrix_discord_networks }}"
         volumes:
@@ -697,6 +709,8 @@
         command: "redis-server --requirepass {{ matrix_redis_password }}"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ matrix_redis_constraints }}"
         networks:
           - "{{ docker_network_name }}"
   register: result
@@ -715,6 +729,8 @@
         image: "{{ matrix_coturn_image }}"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ matrix_coturn_constraints }}"
         networks:
           - "{{ docker_network_name }}"
         volumes:
@@ -742,6 +758,8 @@
         image: "{{ matrix_synapse_image }}"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ matrix_synapse_constraints }}"
         networks:
           - "{{ docker_network_name }}"
         volumes:
@@ -769,6 +787,8 @@
         image: "{{ matrix_nginx_image }}"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ matrix_nginx_constraints }}"
           labels:
             - "traefik.enable=true"
             - "traefik.http.routers.matrix.rule=Host(`matrix.{{ domain_name }}`)"
@@ -806,6 +826,8 @@
         image: "{{ matrix_riot_image }}"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ matrix_riot_constraints }}"
           labels:
             - "traefik.enable=true"
             - "traefik.http.routers.riot.rule=Host(`riot.{{ domain_name }}`)"

@@ -195,6 +195,8 @@
         command: "/bin/bash -c 'mkdir -p /export/{gitlab-registry-storage,gitlab-pages-storage,gitlab-terraform-storage,gitlab-dependency-storage,gitlab-diffs-storage,gitlab-lfs-storage,gitlab-artifacts-storage,gitlab-uploads-storage,gitlab-packages-storage,gitlab-backup-storage} && /usr/bin/minio server /export'"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ gitlab_minio_constraints }}"
         networks: "{{ gitlab_minio_networks }}"
         volumes:
           - "{{ (gitlab_minio_path == '') | ternary(data_dir + '/gitlab/objects', gitlab_minio_path) }}:/export"
@@ -220,6 +222,8 @@
         image: "{{ gitlab_image }}"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ gitlab_constraints }}"
           labels:
             - "traefik.enable=true"
             # Web
@@ -262,6 +266,19 @@
           - "{{ (gitlab_git_data_path == '') | ternary(data_dir + '/gitlab/git', gitlab_git_data_path) }}:/git-data"
   register: result
 
+- name: Set facts
+  set_fact:
+    haste_service: "{{ result.services.haste }}"
+
+- name: Healthcheck
+  http_wait:
+    url: "{{ traefik_address }}/users/sign_in"
+    status_code: "200"
+    retries: 3
+    delay: 10
+    headers:
+      - "Host: gitlab.{{ domain_name }}"
+
 - name: Set Runner facts
   set_fact:
     gitlab_runner_networks: >
@@ -280,6 +297,8 @@
         image: "{{ gitlab_runner_image }}"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ gitlab_runner_constraints }}"
         restart_policy:
           condition: "any"
           delay: "30s"

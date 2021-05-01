@@ -2,8 +2,19 @@
 # Docker image name
 gitlab_image: "docker.io/gitlab/gitlab-ce:latest"
 gitlab_runner_image: "docker.io/gitlab/gitlab-runner:alpine"
-gitlab_dind_image: "docker.io/library/docker:dind"
 gitlab_minio_image: "docker.io/minio/minio:latest"
+
+# Where should the service be deployed?
+# If not constraints are defined, the service will deploy anywhere it can.
+gitlab_constraints:
+  - "node.role == manager"
+
+# Same as above, but for the S3 object store MinIO
+gitlab_minio_constraints: "{{ gitlab_constraints }}"
+
+# Same as above, but for the runner itself.
+# The runner will spawn jobs as Docker containers on the same node it has been deployed to.
+gitlab_runner_constraints: "{{ gitlab_constraints }}"
 
 # Password for the admin user
 gitlab_admin_passwords: "Password1!"

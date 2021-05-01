@@ -3,6 +3,11 @@
 authelia_image: "docker.io/authelia/authelia:latest"
 authelia_redis_image: "docker.io/library/redis:latest"
 
+# Where should the service be deployed?
+# If not constraints are defined, the service will deploy anywhere it can.
+authelia_constraints:
+  - "node.role == manager"
+
 # JWT secret, any random string
 authelia_jwt_secret: "secret"
 

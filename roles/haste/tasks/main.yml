@@ -42,6 +42,8 @@
             - "NONE"
         deploy:
           replicas: 1
+          placement:
+            constraints: "{{ haste_constraints }}"
           labels:
             - "traefik.enable=true"
             - "traefik.http.routers.haste.rule=Host(`haste.{{ domain_name }}`)"
