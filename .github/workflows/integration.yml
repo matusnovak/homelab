@@ -1,9 +1,91 @@
 name: integration
 on: [push, pull_request]
 jobs:
+  apps:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: 'Authelia'
+            role: 'authelia'
+          - name: 'Adminer'
+            role: 'adminer'
+          #- name: 'DevDocs'
+          #  role: 'devdocs'
+          - name: 'FileBrowser'
+            role: 'filebrowser'
+          - name: 'GitLab'
+            role: 'gitlab'
+          - name: 'Haste'
+            role: 'haste'
+          - name: 'Jellyfin'
+            role: 'jellyfin'
+          - name: 'Kanboard'
+            role: 'kanboard'
+          - name: 'OpenLDAP'
+            role: 'ldap'
+          - name: 'Matrix'
+            role: 'matrix'
+          - name: 'MongoDB'
+            role: 'mongo'
+          - name: 'NextCloud'
+            role: 'nextcloud'
+          - name: 'phpLDAPadmin'
+            role: 'phpldapadmin'
+          - name: 'Portainer'
+            role: 'portainer'
+          - name: 'Postgre SQL'
+            role: 'postgres'
+          - name: 'Traefik'
+            role: 'traefik'
+
+    name: 'App: ${{ matrix.name }}'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Init Docker Swarm
+        run: docker swarm init
+
+      - name: Setup files
+        run: |
+          sudo mkdir /homelab
+          cp ./.github/sites/${{ matrix.role }}.yml.sample ./integration.yml
+
+      - name: Ansible
+        run: |
+          ansible-playbook integration.yml -vvv
+
+      - name: Dump logs
+        if: ${{ always() }}
+        run: |
+          mkdir -p /tmp/docker/{logs,inspect,service}
+          containers=$(docker ps -a | awk '{if(NR>1) print $NF}')
+          for container in $containers
+          do
+            docker logs $container >& /tmp/docker/logs/$container.log || true
+            docker inspect $container >& /tmp/docker/inspect/$container.log || true
+          done
+          services=$(docker service ls -q | awk '{if(NR>1) print $NF}')
+          for service in $services
+          do
+            docker service ps $service --no-trunc >& /tmp/docker/service/$service.log || true
+          done
+
+      - name: Store logs as artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.name }} Logs
+          path: /tmp/docker/
+
   docs:
     name: 'Documentation'
     runs-on: ubuntu-latest
+    needs: [apps]
     timeout-minutes: 5
     
     steps:
@@ -24,7 +106,7 @@ jobs:
         run: cd docs && hugo
       
       - name: Deploy
-        # if: startsWith(github.ref, 'refs/heads/master')
+        if: startsWith(github.ref, 'refs/heads/master')
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
