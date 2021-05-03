@@ -1,0 +1,21 @@
+baseURL: http://matusnovak.github.io/homelab
+languageCode: en-us
+title: Homelab
+theme: hugo-book
+anonifyURLs: true
+
+menu:
+  # before: []
+  after:
+    - name: Github repo link
+      url: https://github.com/matusnovak/homelab
+      weight: 10
+
+params:
+  BookTheme: "light"
+  BookToC: true
+  BookSection: docs
+  BookRepo: https://github.com/matusnovak/homelab
+  BookEditPath: edit/master/docs
+  BookSearch: true
+  BookComments: false
