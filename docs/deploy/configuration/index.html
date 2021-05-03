@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta name="generator" content="Hugo 0.83.1" />
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Deploy - Configuration #  Ansible Variables #  Ansible uses variables to specify differences between systems. This project uses these variables to define properties such as: domain name, docker project (i.e. stack name), LDAP information, passwords, etc.
+Each application has its own dedicated folder inside of repo/roles/&lt;name&gt;/defaults/main.yml. These variables define how the application will be deployed. Some applications depend on variables from other roles (for example, NextCloud depends on Traefik).">
+<meta name="theme-color" content="#FFFFFF"><meta property="og:title" content="Configuration" />
+<meta property="og:description" content="Deploy - Configuration #  Ansible Variables #  Ansible uses variables to specify differences between systems. This project uses these variables to define properties such as: domain name, docker project (i.e. stack name), LDAP information, passwords, etc.
+Each application has its own dedicated folder inside of repo/roles/&lt;name&gt;/defaults/main.yml. These variables define how the application will be deployed. Some applications depend on variables from other roles (for example, NextCloud depends on Traefik)." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://matusnovak.github.io/homelab/docs/deploy/configuration/" /><meta property="article:section" content="docs" />
+
+
+
+<title>Configuration | Homelab</title>
+<link rel="manifest" href="/homelab/manifest.json">
+<link rel="icon" href="/homelab/favicon.png" type="image/x-icon">
+<link rel="stylesheet" href="/homelab/book.min.e935e20bd0d469378cb482f0958edf258c731a4f895dccd55799c6fbc8043f23.css" integrity="sha256-6TXiC9DUaTeMtILwlY7fJYxzGk&#43;JXczVV5nG&#43;8gEPyM=">
+<script defer src="/homelab/en.search.min.54be81aeb46b8f945d68b4dd32e631300740ee34068426a7a132cfdcff9d453f.js" integrity="sha256-VL6BrrRrj5RdaLTdMuYxMAdA7jQGhCanoTLP3P&#43;dRT8="></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+
+  
+</head>
+
+<body dir="ltr">
+  <input type="checkbox" class="hidden toggle" id="menu-control" />
+  <input type="checkbox" class="hidden toggle" id="toc-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      <div class="book-menu-content">
+        
+  <nav>
+<h2 class="book-brand">
+  <a href="/homelab"><span>Homelab</span>
+  </a>
+</h2>
+
+
+<div class="book-search">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/deploy/" class="">Deploy</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/deploy/requirements/" class="">Requirements</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/deploy/folder_structure/" class="">Folder Structure</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/deploy/configuration/" class=" active">Configuration</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/deploy/vault/" class="">Vault</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/deploy/playbook/" class="">Ansible Playbook</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/apps/" class="">Apps</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/apps/adminer/" class="">Adminer</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/maintenance/" class="">Maintenance</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/maintenance/remove_app/" class="">Remove App</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/contributing/" class="">Contributing</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+
+
+
+
+
+
+
+
+
+
+  
+<ul>
+  
+  <li>
+    <a href="https://github.com/matusnovak/homelab" target="_blank" rel="noopener">
+        Github repo link
+      </a>
+  </li>
+  
+</ul>
+
+
+
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var a=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(b){localStorage.setItem("menu.scrollTop",a.scrollTop)}),a.scrollTop=localStorage.getItem("menu.scrollTop")})()</script>
+
+
+ 
+      </div>
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/homelab/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <strong>Configuration</strong>
+
+  <label for="toc-control">
+    
+    <img src="/homelab/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+  <aside class="hidden clearfix">
+    
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#ansible-variables">Ansible Variables</a></li>
+    <li><a href="#select-apps-to-deploy">Select apps to deploy</a></li>
+    <li><a href="#override-default-variables">Override default variables</a></li>
+    <li><a href="#next">Next</a></li>
+  </ul>
+</nav>
+
+
+
+  </aside>
+  
+ 
+      </header>
+
+      
+      
+  <article class="markdown"><h1 id="deploy---configuration">
+  Deploy - Configuration
+  <a class="anchor" href="#deploy---configuration">#</a>
+</h1>
+<h2 id="ansible-variables">
+  Ansible Variables
+  <a class="anchor" href="#ansible-variables">#</a>
+</h2>
+<p>Ansible uses variables to specify differences between systems. This project uses these variables to define properties such as: domain name, docker project (i.e. stack name), LDAP information, passwords, etc.</p>
+<p>Each application has its own dedicated folder inside of <code>repo/roles/&lt;name&gt;/defaults/main.yml</code>. These variables define how the application will be deployed. Some applications depend on variables from other roles (for example, NextCloud depends on Traefik).</p>
+<p>The default variables work &ldquo;out of the box&rdquo; and are tested on GitHub Actions every time some change is made to this project. Meaning, you don&rsquo;t have to modify them in order for your deployment to succeed.</p>
+<p>However, you probably don&rsquo;t want a default domain name of <code>https://homelab.lan</code>. <strong>You should go through the variables and override them depending on what you want!</strong>. It is highly recommended that you first check <code>repo/roles/base/main.yml</code>!</p>
+<blockquote class="book-hint warning">
+  <p><strong>Warning</strong></p>
+<p>Don&rsquo;t change the variables in <code>repo/roles/&lt;name&gt;/defaults/main.yml</code>. It is recommended that you &ldquo;override&rdquo; them in your <code>repo/group_vars/homelab/*.yml</code> files.</p>
+
+</blockquote>
+
+<p>You can read more about Ansible variables here: <a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#playbooks-variables">https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#playbooks-variables</a></p>
+<h2 id="select-apps-to-deploy">
+  Select apps to deploy
+  <a class="anchor" href="#select-apps-to-deploy">#</a>
+</h2>
+<p>In order to deploy your Homelab, you will have to create the following file:</p>
+<pre><code>repo/site.yml
+</code></pre><p>That has the following format:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yml" data-lang="yml">---
+- <span style="color:#f92672">hosts</span>: <span style="color:#ae81ff">homelab</span>
+  <span style="color:#f92672">roles</span>:
+    - <span style="color:#ae81ff">base</span>
+    - <span style="color:#ae81ff">postgres</span>
+    - <span style="color:#ae81ff">ldap</span>
+    <span style="color:#75715e"># etc... name of the roles...</span>
+
+</code></pre></div><p>You must choose the apps you wish to deploy by simply adding the role name into the <code>roles:</code> list. <strong>You must also ensure that all of the dependencies for your app are listed before your app!</strong> For example, NextCloud depends on Traefik, LDAP, and Postgres. Therefore the <code>- nextcloud</code> must be listed <strong>after</strong> <code>- postgres \n - ldap \n - traefik</code>.</p>
+<p><strong>To find out what apps you can deploy, their role names, and their dependencies, head over to the <a href="http://matusnovak.github.io/homelab/docs/apps/">Apps</a> page.</strong></p>
+<blockquote class="book-hint warning">
+  <p><strong>Warning</strong></p>
+<p>Removing the role from the <code>repo/site.yml</code> will not remove the app (i.e. Docker service) from your host. Removing the role chages the configuration of some relevant apps, but it will not remove them. Additionally, removing the role does not remove the data for that app.</p>
+<p>Removing files, databases, and Docker services must be done manually! Ansible will take care only for the configuration.</p>
+<p>To read more about this, go to the <strong><a href="http://matusnovak.github.io/homelab/docs/maintenance/remove_app/">Remove App</a></strong> page.</p>
+
+</blockquote>
+
+<h2 id="override-default-variables">
+  Override default variables
+  <a class="anchor" href="#override-default-variables">#</a>
+</h2>
+<p>To override the default variables, create a folder <code>repo/group_vars/homelab</code> and create a file <code>repo/group_vars/homelab/main.yml</code>. <strong>This file will contain your variables</strong> in a YAML syntax. Simply copy the key name (for example <code>domain_name:</code> from <code>repo/roles/base/main.yml</code>) and add it here &amp; change the value.</p>
+<p>You can create separate files in this directory. It is recommended that you use <code>main.yml</code> or <code>&lt;role name&gt;.yml</code> naming conventions.</p>
+<p>You should at <strong>minimum</strong> override the following:</p>
+<ul>
+<li><code>data_dir</code> - into <code>/homelab/data</code></li>
+<li><code>domain_name</code> - into your domain of your choosing</li>
+<li><code>domain_component</code> - to match your domain (must be in form of <code>dc=example,dc=com</code>)</li>
+</ul>
+<p>You should override the <strong>passwords</strong> in an <strong>encrypted YAML</strong> file. This encrypted file is called <strong>Vault</strong>. Head over to the next page to see how that is done.</p>
+<h2 id="next">
+  Next
+  <a class="anchor" href="#next">#</a>
+</h2>
+<p><strong><a href="http://matusnovak.github.io/homelab/docs/deploy/vault/">Vault</a></strong></p>
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  <div class="flex flex-wrap justify-between">
+
+
+
+
+
+  <div>
+    <a class="flex align-center" href="https://github.com/matusnovak/homelab/edit/master/docs/content/docs/deploy/configuration.md" target="_blank" rel="noopener">
+      <img src="/homelab/svg/edit.svg" class="book-icon" alt="Edit" />
+      <span>Edit this page</span>
+    </a>
+  </div>
+
+</div>
+
+ 
+        
+      </footer>
+
+      
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      <div class="book-toc-content">
+        
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#ansible-variables">Ansible Variables</a></li>
+    <li><a href="#select-apps-to-deploy">Select apps to deploy</a></li>
+    <li><a href="#override-default-variables">Override default variables</a></li>
+    <li><a href="#next">Next</a></li>
+  </ul>
+</nav>
+
+
+ 
+      </div>
+    </aside>
+    
+  </main>
+
+  
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>http://matusnovak.github.io/homelab/docs/apps/adminer/</loc>
+  </url><url>
+    <loc>http://matusnovak.github.io/homelab/docs/maintenance/remove_app/</loc>
+  </url><url>
+    <loc>http://matusnovak.github.io/homelab/docs/deploy/requirements/</loc>
+  </url><url>
+    <loc>http://matusnovak.github.io/homelab/docs/deploy/folder_structure/</loc>
+  </url><url>
+    <loc>http://matusnovak.github.io/homelab/docs/deploy/configuration/</loc>
+  </url><url>
+    <loc>http://matusnovak.github.io/homelab/docs/deploy/</loc>
+  </url><url>
+    <loc>http://matusnovak.github.io/homelab/docs/apps/</loc>
+  </url><url>
+    <loc>http://matusnovak.github.io/homelab/docs/deploy/vault/</loc>
+  </url><url>
+    <loc>http://matusnovak.github.io/homelab/docs/deploy/playbook/</loc>
+  </url><url>
+    <loc>http://matusnovak.github.io/homelab/docs/maintenance/</loc>
+  </url><url>
+    <loc>http://matusnovak.github.io/homelab/docs/contributing/</loc>
+  </url><url>
+    <loc>http://matusnovak.github.io/homelab/categories/</loc>
+  </url><url>
+    <loc>http://matusnovak.github.io/homelab/docs/</loc>
+  </url><url>
+    <loc>http://matusnovak.github.io/homelab/</loc>
+  </url><url>
+    <loc>http://matusnovak.github.io/homelab/tags/</loc>
+  </url>
+</urlset>

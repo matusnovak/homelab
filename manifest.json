@@ -1,0 +1,15 @@
+{
+  "name": "Homelab",
+  "short_name": "Homelab",
+  "start_url": "/homelab/",
+  "scope": "/homelab/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "/homelab/favicon.svg",
+      "sizes": "512x512"
+    }
+  ]
+}

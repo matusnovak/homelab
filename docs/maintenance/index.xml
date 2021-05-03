@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Maintenance on Homelab</title>
+    <link>http://matusnovak.github.io/homelab/docs/maintenance/</link>
+    <description>Recent content in Maintenance on Homelab</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language><atom:link href="http://matusnovak.github.io/homelab/docs/maintenance/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Remove App</title>
+      <link>http://matusnovak.github.io/homelab/docs/maintenance/remove_app/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://matusnovak.github.io/homelab/docs/maintenance/remove_app/</guid>
+      <description>Maintenance - Remove App #  TODO</description>
+    </item>
+    
+  </channel>
+</rss>

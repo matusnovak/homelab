@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Home on Homelab</title>
+    <link>http://matusnovak.github.io/homelab/</link>
+    <description>Recent content in Home on Homelab</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language><atom:link href="http://matusnovak.github.io/homelab/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Adminer</title>
+      <link>http://matusnovak.github.io/homelab/docs/apps/adminer/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://matusnovak.github.io/homelab/docs/apps/adminer/</guid>
+      <description>Apps - Adminer #  Adminer (formerly phpMinAdmin) is a full-featured database management tool written in PHP. https://www.adminer.org/</description>
+    </item>
+    
+    <item>
+      <title>Remove App</title>
+      <link>http://matusnovak.github.io/homelab/docs/maintenance/remove_app/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://matusnovak.github.io/homelab/docs/maintenance/remove_app/</guid>
+      <description>Maintenance - Remove App #  TODO</description>
+    </item>
+    
+    <item>
+      <title>Requirements</title>
+      <link>http://matusnovak.github.io/homelab/docs/deploy/requirements/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://matusnovak.github.io/homelab/docs/deploy/requirements/</guid>
+      <description>Deploy - Requirements #  OS #  It is recommended that you will use Ubuntu or similar Debian based system. This project assumes that you have apt-get installed. It is highly recommended that you use Ubuntu Server for the best experience.
+Docker #  This project requires that you have installed Docker. Link to the instructions: https://docs.docker.com/engine/install/ubuntu/
+You don&amp;rsquo;t need to install Docker compose.
+Python 3 #  You will need to install Python 3 and pip.</description>
+    </item>
+    
+    <item>
+      <title>Folder Structure</title>
+      <link>http://matusnovak.github.io/homelab/docs/deploy/folder_structure/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://matusnovak.github.io/homelab/docs/deploy/folder_structure/</guid>
+      <description>Deploy - Folder Structure #  Data folder #  All of the persistent data created and used by all of the apps will be located in a single folder defined by data_dir variable.
+For example, NextCloud will use the following folders:
+ {{ data_dir }}/nextcloud/html {{ data_dir }}/nextcloud/apps {{ data_dir }}/nextcloud/config {{ data_dir }}/nextcloud/theme  Each app will have its own subfolder. Portainer goes into portainer, all Matrix services go into matrix, and so on.</description>
+    </item>
+    
+    <item>
+      <title>Configuration</title>
+      <link>http://matusnovak.github.io/homelab/docs/deploy/configuration/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://matusnovak.github.io/homelab/docs/deploy/configuration/</guid>
+      <description>Deploy - Configuration #  Ansible Variables #  Ansible uses variables to specify differences between systems. This project uses these variables to define properties such as: domain name, docker project (i.e. stack name), LDAP information, passwords, etc.
+Each application has its own dedicated folder inside of repo/roles/&amp;lt;name&amp;gt;/defaults/main.yml. These variables define how the application will be deployed. Some applications depend on variables from other roles (for example, NextCloud depends on Traefik).</description>
+    </item>
+    
+    <item>
+      <title>Vault</title>
+      <link>http://matusnovak.github.io/homelab/docs/deploy/vault/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://matusnovak.github.io/homelab/docs/deploy/vault/</guid>
+      <description>Deploy - Vault #  Ansible Vault #  Ansible Vaults work just as any other YAML configuration file, except they are encrypted. More information here: https://docs.ansible.com/ansible/latest/user_guide/vault.html
+Create Vault #  To create Vault, simply do the following:
+$ cd /homelab $ export EDITOR=nano $ ansible-vault create repo/group_vars/homelab/vault.yml You will be asked to type a new password for this vault. You will need this password if you want to deploy the apps or if you want to edit it.</description>
+    </item>
+    
+    <item>
+      <title>Ansible Playbook</title>
+      <link>http://matusnovak.github.io/homelab/docs/deploy/playbook/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://matusnovak.github.io/homelab/docs/deploy/playbook/</guid>
+      <description>Deploy - Ansible Playbook #  Before you begin #  Before you deploy your Homelab, make sure you have done the following:
+ Enabled Docker Swarm. You are on the Swarm manager. Set data_dir to your desired folder by overwriting it in group_vars. Set the desired domain name and domain component. Chosen the apps you wish to use by adding their roles into site.yml. Overwritten any default variables for the apps you wish to use.</description>
+    </item>
+    
+  </channel>
+</rss>

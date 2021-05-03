@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta name="generator" content="Hugo 0.83.1" />
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Deploy - Folder Structure #  Data folder #  All of the persistent data created and used by all of the apps will be located in a single folder defined by data_dir variable.
+For example, NextCloud will use the following folders:
+ {{ data_dir }}/nextcloud/html {{ data_dir }}/nextcloud/apps {{ data_dir }}/nextcloud/config {{ data_dir }}/nextcloud/theme  Each app will have its own subfolder. Portainer goes into portainer, all Matrix services go into matrix, and so on.">
+<meta name="theme-color" content="#FFFFFF"><meta property="og:title" content="Folder Structure" />
+<meta property="og:description" content="Deploy - Folder Structure #  Data folder #  All of the persistent data created and used by all of the apps will be located in a single folder defined by data_dir variable.
+For example, NextCloud will use the following folders:
+ {{ data_dir }}/nextcloud/html {{ data_dir }}/nextcloud/apps {{ data_dir }}/nextcloud/config {{ data_dir }}/nextcloud/theme  Each app will have its own subfolder. Portainer goes into portainer, all Matrix services go into matrix, and so on." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://matusnovak.github.io/homelab/docs/deploy/folder_structure/" /><meta property="article:section" content="docs" />
+
+
+
+<title>Folder Structure | Homelab</title>
+<link rel="manifest" href="/homelab/manifest.json">
+<link rel="icon" href="/homelab/favicon.png" type="image/x-icon">
+<link rel="stylesheet" href="/homelab/book.min.e935e20bd0d469378cb482f0958edf258c731a4f895dccd55799c6fbc8043f23.css" integrity="sha256-6TXiC9DUaTeMtILwlY7fJYxzGk&#43;JXczVV5nG&#43;8gEPyM=">
+<script defer src="/homelab/en.search.min.54be81aeb46b8f945d68b4dd32e631300740ee34068426a7a132cfdcff9d453f.js" integrity="sha256-VL6BrrRrj5RdaLTdMuYxMAdA7jQGhCanoTLP3P&#43;dRT8="></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+
+  
+</head>
+
+<body dir="ltr">
+  <input type="checkbox" class="hidden toggle" id="menu-control" />
+  <input type="checkbox" class="hidden toggle" id="toc-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      <div class="book-menu-content">
+        
+  <nav>
+<h2 class="book-brand">
+  <a href="/homelab"><span>Homelab</span>
+  </a>
+</h2>
+
+
+<div class="book-search">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/deploy/" class="">Deploy</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/deploy/requirements/" class="">Requirements</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/deploy/folder_structure/" class=" active">Folder Structure</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/deploy/configuration/" class="">Configuration</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/deploy/vault/" class="">Vault</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/deploy/playbook/" class="">Ansible Playbook</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/apps/" class="">Apps</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/apps/adminer/" class="">Adminer</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/maintenance/" class="">Maintenance</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/maintenance/remove_app/" class="">Remove App</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/contributing/" class="">Contributing</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+
+
+
+
+
+
+
+
+
+
+  
+<ul>
+  
+  <li>
+    <a href="https://github.com/matusnovak/homelab" target="_blank" rel="noopener">
+        Github repo link
+      </a>
+  </li>
+  
+</ul>
+
+
+
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var a=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(b){localStorage.setItem("menu.scrollTop",a.scrollTop)}),a.scrollTop=localStorage.getItem("menu.scrollTop")})()</script>
+
+
+ 
+      </div>
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/homelab/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <strong>Folder Structure</strong>
+
+  <label for="toc-control">
+    
+    <img src="/homelab/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+  <aside class="hidden clearfix">
+    
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#data-folder">Data folder</a></li>
+    <li><a href="#git-repository">Git Repository</a></li>
+    <li><a href="#next">Next</a></li>
+  </ul>
+</nav>
+
+
+
+  </aside>
+  
+ 
+      </header>
+
+      
+      
+  <article class="markdown"><h1 id="deploy---folder-structure">
+  Deploy - Folder Structure
+  <a class="anchor" href="#deploy---folder-structure">#</a>
+</h1>
+<h2 id="data-folder">
+  Data folder
+  <a class="anchor" href="#data-folder">#</a>
+</h2>
+<p>All of the persistent data created and used by all of the apps will be located in a single folder defined by <code>data_dir</code> variable.</p>
+<p>For example, NextCloud will use the following folders:</p>
+<ul>
+<li><code>{{ data_dir }}/nextcloud/html</code></li>
+<li><code>{{ data_dir }}/nextcloud/apps</code></li>
+<li><code>{{ data_dir }}/nextcloud/config</code></li>
+<li><code>{{ data_dir }}/nextcloud/theme</code></li>
+</ul>
+<p>Each app will have its own subfolder. Portainer goes into <code>portainer</code>, all Matrix services go into <code>matrix</code>, and so on. The name of the subfolder matches the Ansible &ldquo;rule&rdquo; of the app. This makes it easier to run backups. (TODO: describe backup options).</p>
+<p>For the purpose of this example, we will set variable <code>data_dir</code> to <code>&quot;/homelab/data&quot;</code>. You will have to create that folder yourself!</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ sudo mkdir /homelab
+$ sudo chown 1000:1000 /homelab
+$ mkdir /homelab/data 
+</code></pre></div><h2 id="git-repository">
+  Git Repository
+  <a class="anchor" href="#git-repository">#</a>
+</h2>
+<p>Next, you will have to clone this repository somewhere in your system.</p>
+<p>Ansible works in a way that you can have all of the configurations located in some local workstation and it will be deployed into some remote server. For the purpose of this example, <strong>we will use the same machine to run the Ansible and to deploy the services into</strong> (i.e. everything is on localhost). Read here for more information: <a href="https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html">https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html</a></p>
+<p>Clone this repository into your desired folder. We will use <code>/homelab/repo</code> as the destination.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ cd /homelab 
+$ git clone https://github.com/matusnovak/homelab.git repo
+<span style="color:#75715e"># Now you have /homelab/repo</span>
+</code></pre></div><blockquote class="book-hint info">
+  <p><strong>Note</strong></p>
+<p>All of the configuration (i.e. Ansible variables) will be stored in this repository in the <code>group_vars/homelab</code> folder. Don&rsquo;t remove this repository.</p>
+
+</blockquote>
+
+<h2 id="next">
+  Next
+  <a class="anchor" href="#next">#</a>
+</h2>
+<p><strong><a href="http://matusnovak.github.io/homelab/docs/deploy/configuration/">Configuration</a></strong></p>
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  <div class="flex flex-wrap justify-between">
+
+
+
+
+
+  <div>
+    <a class="flex align-center" href="https://github.com/matusnovak/homelab/edit/master/docs/content/docs/deploy/folder_structure.md" target="_blank" rel="noopener">
+      <img src="/homelab/svg/edit.svg" class="book-icon" alt="Edit" />
+      <span>Edit this page</span>
+    </a>
+  </div>
+
+</div>
+
+ 
+        
+      </footer>
+
+      
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      <div class="book-toc-content">
+        
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#data-folder">Data folder</a></li>
+    <li><a href="#git-repository">Git Repository</a></li>
+    <li><a href="#next">Next</a></li>
+  </ul>
+</nav>
+
+
+ 
+      </div>
+    </aside>
+    
+  </main>
+
+  
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

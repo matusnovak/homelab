@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta name="generator" content="Hugo 0.83.1" />
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Deploy - Ansible Playbook #  Before you begin #  Before you deploy your Homelab, make sure you have done the following:
+ Enabled Docker Swarm. You are on the Swarm manager. Set data_dir to your desired folder by overwriting it in group_vars. Set the desired domain name and domain component. Chosen the apps you wish to use by adding their roles into site.yml. Overwritten any default variables for the apps you wish to use.">
+<meta name="theme-color" content="#FFFFFF"><meta property="og:title" content="Ansible Playbook" />
+<meta property="og:description" content="Deploy - Ansible Playbook #  Before you begin #  Before you deploy your Homelab, make sure you have done the following:
+ Enabled Docker Swarm. You are on the Swarm manager. Set data_dir to your desired folder by overwriting it in group_vars. Set the desired domain name and domain component. Chosen the apps you wish to use by adding their roles into site.yml. Overwritten any default variables for the apps you wish to use." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://matusnovak.github.io/homelab/docs/deploy/playbook/" /><meta property="article:section" content="docs" />
+
+
+
+<title>Ansible Playbook | Homelab</title>
+<link rel="manifest" href="/homelab/manifest.json">
+<link rel="icon" href="/homelab/favicon.png" type="image/x-icon">
+<link rel="stylesheet" href="/homelab/book.min.e935e20bd0d469378cb482f0958edf258c731a4f895dccd55799c6fbc8043f23.css" integrity="sha256-6TXiC9DUaTeMtILwlY7fJYxzGk&#43;JXczVV5nG&#43;8gEPyM=">
+<script defer src="/homelab/en.search.min.54be81aeb46b8f945d68b4dd32e631300740ee34068426a7a132cfdcff9d453f.js" integrity="sha256-VL6BrrRrj5RdaLTdMuYxMAdA7jQGhCanoTLP3P&#43;dRT8="></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+
+  
+</head>
+
+<body dir="ltr">
+  <input type="checkbox" class="hidden toggle" id="menu-control" />
+  <input type="checkbox" class="hidden toggle" id="toc-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      <div class="book-menu-content">
+        
+  <nav>
+<h2 class="book-brand">
+  <a href="/homelab"><span>Homelab</span>
+  </a>
+</h2>
+
+
+<div class="book-search">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/deploy/" class="">Deploy</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/deploy/requirements/" class="">Requirements</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/deploy/folder_structure/" class="">Folder Structure</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/deploy/configuration/" class="">Configuration</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/deploy/vault/" class="">Vault</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/deploy/playbook/" class=" active">Ansible Playbook</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/apps/" class="">Apps</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/apps/adminer/" class="">Adminer</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/maintenance/" class="">Maintenance</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/maintenance/remove_app/" class="">Remove App</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/contributing/" class="">Contributing</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+
+
+
+
+
+
+
+
+
+
+  
+<ul>
+  
+  <li>
+    <a href="https://github.com/matusnovak/homelab" target="_blank" rel="noopener">
+        Github repo link
+      </a>
+  </li>
+  
+</ul>
+
+
+
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var a=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(b){localStorage.setItem("menu.scrollTop",a.scrollTop)}),a.scrollTop=localStorage.getItem("menu.scrollTop")})()</script>
+
+
+ 
+      </div>
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/homelab/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <strong>Ansible Playbook</strong>
+
+  <label for="toc-control">
+    
+    <img src="/homelab/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+  <aside class="hidden clearfix">
+    
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#before-you-begin">Before you begin</a></li>
+    <li><a href="#run-the-playbook">Run the Playbook</a></li>
+    <li><a href="#health-check">Health check</a></li>
+    <li><a href="#playbook-tips">Playbook tips</a></li>
+  </ul>
+</nav>
+
+
+
+  </aside>
+  
+ 
+      </header>
+
+      
+      
+  <article class="markdown"><h1 id="deploy---ansible-playbook">
+  Deploy - Ansible Playbook
+  <a class="anchor" href="#deploy---ansible-playbook">#</a>
+</h1>
+<h2 id="before-you-begin">
+  Before you begin
+  <a class="anchor" href="#before-you-begin">#</a>
+</h2>
+<p>Before you deploy your Homelab, make sure you have done the following:</p>
+<ul>
+<li>Enabled Docker Swarm.</li>
+<li><strong>You are on the Swarm manager.</strong></li>
+<li>Set <code>data_dir</code> to your desired folder by overwriting it in group_vars.</li>
+<li>Set the desired domain name and domain component.</li>
+<li>Chosen the apps you wish to use by adding their roles into <code>site.yml</code>.</li>
+<li>Overwritten any default variables for the apps you wish to use.</li>
+</ul>
+<h2 id="run-the-playbook">
+  Run the Playbook
+  <a class="anchor" href="#run-the-playbook">#</a>
+</h2>
+<p>To deploy your apps, simply run the playbook using the following command:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ cd /homelab/repo
+$ ansible-playbook -i hosts site.yml --ask-become-pass --ask-vault-pass
+</code></pre></div><p>After the Playbook has run, you should see the following:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-txt" data-lang="txt">PLAY RECAP ***********************************************************************
+127.0.0.1                  : ok=18  changed=9    unreachable=0    failed=0    skipped=45   rescued=0    ignored=0
+</code></pre></div><p>The <code>ok=18</code> means that the tasks have been successful. The <code>changed=9</code> means that some tasks have modified your system. Re-running your Playbook without changing any variables will produce <code>changed=0</code> (i.e. nothing has been modified).</p>
+<p><strong>You are now able to access your apps!</strong></p>
+<p><strong>To find out what subdomain to use to access your applications, and how to log in, go to the <a href="http://matusnovak.github.io/homelab/docs/apps/">Apps</a> page.</strong></p>
+<h2 id="health-check">
+  Health check
+  <a class="anchor" href="#health-check">#</a>
+</h2>
+<p>If you want to check whether your application is alive and accessible, you can use the following curl command:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ curl -v -k <span style="color:#e6db74">&#34;https://localhost&#34;</span> -H <span style="color:#e6db74">&#34;Host: nextcloud.yourdomain.name&#34;</span>
+</code></pre></div><p>Simply replace <code>nextcloud</code> with the correct subdomain for your app. You need to provide the <code>Host</code> header so that Traefik knows where to forward your request to.</p>
+<h2 id="playbook-tips">
+  Playbook tips
+  <a class="anchor" href="#playbook-tips">#</a>
+</h2>
+<p>You can add <code>-v</code>, <code>-vv</code>, or <code>-vvv</code> into the <code>ansible-playbook</code> command line to see more verbose output. Note that this output will print out your passwords.</p>
+<p>If you are re-running the playbook multiple times, you can create a file <code>vault.pass</code> with the Vault password in plaintext (no newlines) and then replace <code>--ask-vault-pass</code> with <code>--vault-password-file vault.pass</code>. This is NOT recommended but useful for debugging purposes.</p>
+<p>You can also use <code>--extra-vars &quot;ansible_become_pass=SudoPasswordHere&quot;</code> instead of <code>--ask-become-pass</code>. This is NOT recommended but useful for debugging purposes.</p>
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  <div class="flex flex-wrap justify-between">
+
+
+
+
+
+  <div>
+    <a class="flex align-center" href="https://github.com/matusnovak/homelab/edit/master/docs/content/docs/deploy/playbook.md" target="_blank" rel="noopener">
+      <img src="/homelab/svg/edit.svg" class="book-icon" alt="Edit" />
+      <span>Edit this page</span>
+    </a>
+  </div>
+
+</div>
+
+ 
+        
+      </footer>
+
+      
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      <div class="book-toc-content">
+        
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#before-you-begin">Before you begin</a></li>
+    <li><a href="#run-the-playbook">Run the Playbook</a></li>
+    <li><a href="#health-check">Health check</a></li>
+    <li><a href="#playbook-tips">Playbook tips</a></li>
+  </ul>
+</nav>
+
+
+ 
+      </div>
+    </aside>
+    
+  </main>
+
+  
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

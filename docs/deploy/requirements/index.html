@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta name="generator" content="Hugo 0.83.1" />
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Deploy - Requirements #  OS #  It is recommended that you will use Ubuntu or similar Debian based system. This project assumes that you have apt-get installed. It is highly recommended that you use Ubuntu Server for the best experience.
+Docker #  This project requires that you have installed Docker. Link to the instructions: https://docs.docker.com/engine/install/ubuntu/
+You don&rsquo;t need to install Docker compose.
+Python 3 #  You will need to install Python 3 and pip.">
+<meta name="theme-color" content="#FFFFFF"><meta property="og:title" content="Requirements" />
+<meta property="og:description" content="Deploy - Requirements #  OS #  It is recommended that you will use Ubuntu or similar Debian based system. This project assumes that you have apt-get installed. It is highly recommended that you use Ubuntu Server for the best experience.
+Docker #  This project requires that you have installed Docker. Link to the instructions: https://docs.docker.com/engine/install/ubuntu/
+You don&rsquo;t need to install Docker compose.
+Python 3 #  You will need to install Python 3 and pip." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://matusnovak.github.io/homelab/docs/deploy/requirements/" /><meta property="article:section" content="docs" />
+
+
+
+<title>Requirements | Homelab</title>
+<link rel="manifest" href="/homelab/manifest.json">
+<link rel="icon" href="/homelab/favicon.png" type="image/x-icon">
+<link rel="stylesheet" href="/homelab/book.min.e935e20bd0d469378cb482f0958edf258c731a4f895dccd55799c6fbc8043f23.css" integrity="sha256-6TXiC9DUaTeMtILwlY7fJYxzGk&#43;JXczVV5nG&#43;8gEPyM=">
+<script defer src="/homelab/en.search.min.54be81aeb46b8f945d68b4dd32e631300740ee34068426a7a132cfdcff9d453f.js" integrity="sha256-VL6BrrRrj5RdaLTdMuYxMAdA7jQGhCanoTLP3P&#43;dRT8="></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+
+  
+</head>
+
+<body dir="ltr">
+  <input type="checkbox" class="hidden toggle" id="menu-control" />
+  <input type="checkbox" class="hidden toggle" id="toc-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      <div class="book-menu-content">
+        
+  <nav>
+<h2 class="book-brand">
+  <a href="/homelab"><span>Homelab</span>
+  </a>
+</h2>
+
+
+<div class="book-search">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/deploy/" class="">Deploy</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/deploy/requirements/" class=" active">Requirements</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/deploy/folder_structure/" class="">Folder Structure</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/deploy/configuration/" class="">Configuration</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/deploy/vault/" class="">Vault</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/deploy/playbook/" class="">Ansible Playbook</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/apps/" class="">Apps</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/apps/adminer/" class="">Adminer</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/maintenance/" class="">Maintenance</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/maintenance/remove_app/" class="">Remove App</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="http://matusnovak.github.io/homelab/docs/contributing/" class="">Contributing</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+
+
+
+
+
+
+
+
+
+
+  
+<ul>
+  
+  <li>
+    <a href="https://github.com/matusnovak/homelab" target="_blank" rel="noopener">
+        Github repo link
+      </a>
+  </li>
+  
+</ul>
+
+
+
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var a=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(b){localStorage.setItem("menu.scrollTop",a.scrollTop)}),a.scrollTop=localStorage.getItem("menu.scrollTop")})()</script>
+
+
+ 
+      </div>
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/homelab/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <strong>Requirements</strong>
+
+  <label for="toc-control">
+    
+    <img src="/homelab/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+  <aside class="hidden clearfix">
+    
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#os">OS</a></li>
+    <li><a href="#docker">Docker</a></li>
+    <li><a href="#python-3">Python 3</a></li>
+    <li><a href="#ansible">Ansible</a></li>
+    <li><a href="#swarm-mode">Swarm Mode</a></li>
+    <li><a href="#next">Next</a></li>
+  </ul>
+</nav>
+
+
+
+  </aside>
+  
+ 
+      </header>
+
+      
+      
+  <article class="markdown"><h1 id="deploy---requirements">
+  Deploy - Requirements
+  <a class="anchor" href="#deploy---requirements">#</a>
+</h1>
+<h2 id="os">
+  OS
+  <a class="anchor" href="#os">#</a>
+</h2>
+<p>It is recommended that you will use Ubuntu or similar Debian based system. This project assumes that you have <code>apt-get</code> installed. It is highly recommended that you use <a href="https://ubuntu.com/download/server">Ubuntu Server</a> for the best experience.</p>
+<h2 id="docker">
+  Docker
+  <a class="anchor" href="#docker">#</a>
+</h2>
+<p>This project requires that you have installed Docker. Link to the instructions: <a href="https://docs.docker.com/engine/install/ubuntu/">https://docs.docker.com/engine/install/ubuntu/</a></p>
+<p>You don&rsquo;t need to install Docker compose.</p>
+<h2 id="python-3">
+  Python 3
+  <a class="anchor" href="#python-3">#</a>
+</h2>
+<p>You will need to install Python 3 and pip. The Python 3 already comes installed with the latest Ubuntu OS by default. To install Python and pip, use the following command:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ sudo apt-get install python3 python3-pip
+</code></pre></div><h2 id="ansible">
+  Ansible
+  <a class="anchor" href="#ansible">#</a>
+</h2>
+<p>Finally, you will need Ansible installed on your machine where you are running this project from. Link to the instructions: <a href="https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-ubuntu">https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-ubuntu</a></p>
+<p>In short, you will have to do the following:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ sudo apt update
+$ sudo apt install software-properties-common
+$ sudo apt-add-repository --yes --update ppa:ansible/ansible
+$ sudo apt install ansible
+</code></pre></div><h2 id="swarm-mode">
+  Swarm Mode
+  <a class="anchor" href="#swarm-mode">#</a>
+</h2>
+<p>You must setup Docker Swarm. You don&rsquo;t need to add additional nodes into your cluster (but you can). All you need is a single manager. To configure Docker in Swarm Mode, run the following command:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker swarm init
+</code></pre></div><p>You don&rsquo;t need to do additional steps afterwards. The token displayed in the output is used to connect additional worker nodes into your manager.</p>
+<h2 id="next">
+  Next
+  <a class="anchor" href="#next">#</a>
+</h2>
+<p><strong><a href="http://matusnovak.github.io/homelab/docs/deploy/folder_structure/">Folder Structure</a></strong></p>
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  <div class="flex flex-wrap justify-between">
+
+
+
+
+
+  <div>
+    <a class="flex align-center" href="https://github.com/matusnovak/homelab/edit/master/docs/content/docs/deploy/requirements.md" target="_blank" rel="noopener">
+      <img src="/homelab/svg/edit.svg" class="book-icon" alt="Edit" />
+      <span>Edit this page</span>
+    </a>
+  </div>
+
+</div>
+
+ 
+        
+      </footer>
+
+      
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      <div class="book-toc-content">
+        
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#os">OS</a></li>
+    <li><a href="#docker">Docker</a></li>
+    <li><a href="#python-3">Python 3</a></li>
+    <li><a href="#ansible">Ansible</a></li>
+    <li><a href="#swarm-mode">Swarm Mode</a></li>
+    <li><a href="#next">Next</a></li>
+  </ul>
+</nav>
+
+
+ 
+      </div>
+    </aside>
+    
+  </main>
+
+  
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
