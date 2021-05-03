@@ -24,7 +24,7 @@ jobs:
         run: cd docs && hugo
       
       - name: Deploy
-        if: startsWith(github.ref, 'refs/heads/master')
+        # if: startsWith(github.ref, 'refs/heads/master')
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
