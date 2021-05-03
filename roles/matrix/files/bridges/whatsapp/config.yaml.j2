@@ -7,8 +7,8 @@ appservice:
   hostname: 0.0.0.0
   port: 29319
   database:
-    type: sqlite3
-    uri: mautrix-whatsapp.db
+    type: postgres
+    uri: postgres://{{ matrix_whatsapp_postgres_role }}:{{ matrix_whatsapp_postgres_password }}@{{ postgres_service.name }}/{{ matrix_whatsapp_postgres_database }}?sslmode=disable
     max_open_conns: 20
     max_idle_conns: 2
   provisioning:

@@ -8,7 +8,7 @@ haste_constraints:
   - "node.role == manager"
 
 # Allowed values are: "file" or "postgres"
-haste_provider: "file"
+haste_provider: "postgres"
 
 # Name of the database
 # Only used if the haste_provider is set to "postgres"

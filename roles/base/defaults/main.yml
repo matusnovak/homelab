@@ -21,3 +21,11 @@ docker_network_name: "{{ project_name }}_network"
 # If enabled, and the network is in the global scope,
 # non-service containers on worker nodes will be able to connect to the network.
 docker_network_attachable: True
+
+# Optional IPAM config. Must be an array. 
+# Example:
+#  - subnet: "10.0.1.0/24"
+#    gateway: "10.0.1.1"
+docker_network_ipam:
+  - subnet: "172.3.27.0/24"
+    gateway: "172.3.27.1"

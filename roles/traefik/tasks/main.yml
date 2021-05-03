@@ -63,21 +63,6 @@
     owner: root
     group: root
 
-- name: Set traefik_address
-  set_fact:
-    traefik_address: "{{ traefik_protocol }}://localhost:{{ traefik_port }}"
-  when: traefik_port_mode == 'host'
-
-- name: Check swarm load balancer
-  fail:
-    msg: "Can not retrieve swarm network load balancer. Maybe you are running inside of CI/CD?"
-  when: traefik_port_mode == 'ingress' and docker_network_load_balancer is not defined
-
-- name: Set traefik_address
-  set_fact:
-    traefik_address: "{{ traefik_protocol }}://{{ docker_network_load_balancer }}:{{ traefik_port }}"
-  when: traefik_port_mode == 'ingress'
-
 - name: Set HTTP port
   set_fact:
     traefik_ports: >
@@ -104,6 +89,8 @@
     definition:
       traefik:
         image: "{{ traefik_image }}"
+        restart_policy:
+          condition: "any"
         deploy:
           replicas: 1
           placement:
@@ -118,6 +105,7 @@
             - "traefik.http.routers.traefik.middlewares={{ traefik_authelia_enabled | ternary('authelia@file', '') }}"
         networks:
           - "{{ docker_network_name }}"
+        environment: "{{ traefik_environment_variables }}"
         ports: "{{ traefik_ports }}"
         volumes:
           - "{{ traefik_docker_socket }}:/var/run/docker.sock:ro"
@@ -129,6 +117,7 @@
 - name: Set facts
   set_fact:
     traefik_service: "{{ result.services.traefik }}"
+    traefik_address: "{{ traefik_protocol }}://localhost:{{ traefik_port }}"
 
 - name: Healthcheck
   http_wait:

@@ -35,6 +35,7 @@
     name: "{{ project_name }}_portainer"
     driver: overlay
     attachable: "{{ portainer_network_attachable }}"
+    ipam_config: "{{ portainer_network_ipam }}"
   register: result
 
 - name: Deploy agent service
@@ -43,13 +44,14 @@
     definition:
       portainer_agent:
         image: "{{ portainer_agent_image }}"
+        restart_policy:
+          condition: "any"
         deploy:
           mode: "global"
           placement:
             constraints: "{{ portainer_agent_constraints }}"
         networks:
           - "{{ project_name }}_portainer"
-          - "{{ docker_network_name }}"
         volumes:
           - "/var/run/docker.sock:/var/run/docker.sock" # TODO
           - "/var/lib/docker/volumes:/var/lib/docker/volumes" # TODO
@@ -69,6 +71,8 @@
     definition:
       portainer:
         image: "{{ portainer_image }}"
+        restart_policy:
+          condition: "any"
         command: "/portainer"
         args:
           - "-H"

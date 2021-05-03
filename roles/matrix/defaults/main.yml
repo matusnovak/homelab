@@ -158,6 +158,11 @@ matrix_maubot_admin_password: "Password1!"
 # Enable WhatsApp bridge?
 matrix_whatsapp_enabled: false
 
+# Postgre SQL variables for WhatsApp bridge
+matrix_whatsapp_postgres_database: "matrix_whatsapp"
+matrix_whatsapp_postgres_role: "matrix_whatsapp"
+matrix_whatsapp_postgres_password: "Password1!"
+
 # List of users who can administer or use WhatsApp bridge.
 # You will have to go to {{ data_dir }}/matrix/bridges/signal/config.yml
 # and update in there. Ansible won't update the bridge config if it already exists!

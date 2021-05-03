@@ -143,6 +143,7 @@ def configure_ldap(args: dict):
     post_action('countInBaseDN')
 
     post_action('save', 'ldap_experienced_admin', '1')
+    post_action('save', 'ldap_display_name', 'cn')
 
     filter = args['ldap']['filter']
     post_action('save', 'ldap_userlist_filter', filter)

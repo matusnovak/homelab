@@ -82,6 +82,8 @@
     definition:
       nextcloud_redis:
         image: "{{ nextcloud_redis_image }}"
+        restart_policy:
+          condition: "any"
         command: "redis-server --requirepass {{ nextcloud_redis_password }}"
         deploy:
           replicas: 1
@@ -96,6 +98,8 @@
     definition:
       nextcloud:
         image: "{{ nextcloud_image }}"
+        restart_policy:
+          condition: "any"
         deploy:
           replicas: 1
           placement:
@@ -176,6 +180,8 @@
     definition:
       nextcloud_onlyoffice:
         image: "{{ nextcloud_onlyoffice_image }}"
+        restart_policy:
+          condition: "any"
         deploy:
           replicas: 1
           placement:

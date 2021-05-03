@@ -37,6 +37,8 @@
     definition:
       haste:
         image: "{{ haste_image }}"
+        restart_policy:
+          condition: "any"
         healthcheck:
           test:
             - "NONE"

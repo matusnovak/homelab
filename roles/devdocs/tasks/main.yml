@@ -10,6 +10,8 @@
     definition:
       devdocs:
         image: "{{ devdocs_image }}"
+        restart_policy:
+          condition: "any"
         deploy:
           replicas: 1
           placement:
@@ -29,11 +31,11 @@
   set_fact:
     devdocs_service: "{{ result.services.devdocs }}"
 
-- name: Healthcheck
+- name: Healthcheck (may take a while)
   http_wait:
     url: "{{ traefik_address }}/"
     status_code: "200"
     retries: 6
-    delay: 10
+    delay: 30
     headers:
       - "Host: devdocs.{{ domain_name }}"

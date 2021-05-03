@@ -1,6 +1,7 @@
 .vscode/
 temp/
 dev.yml
+site.yml
 vault.yml
 .vault_pass
 __pycache__/

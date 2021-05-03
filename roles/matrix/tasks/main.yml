@@ -185,80 +185,6 @@
     role: "{{ matrix_postgres_role }}"
     extra: "ENCODING 'UTF8' LC_COLLATE='C' LC_CTYPE='C' template=template0"
 
-# ==================== Maubot ====================
-- name: Create Maubot folder
-  become: yes
-  file:
-    path: "{{ data_dir }}/matrix/bots/maubot"
-    state: directory
-    mode: 0755
-    owner: "1337"
-    group: "1337"
-    recurse: no
-  when: "matrix_maubot_enabled"
-
-- name: Create Maubot database role
-  postgres_role:
-    container: "{{ postgres_service.tasks[0].id }}"
-    password: "{{ postgres_password }}"
-    role: "{{ matrix_maubot_postgres_role }}"
-    role_password: "{{ matrix_maubot_postgres_password }}"
-  when: "matrix_maubot_enabled"
-
-- name: Create Maubot database
-  postgres_database:
-    container: "{{ postgres_service.tasks[0].id }}"
-    password: "{{ postgres_password }}"
-    database: "{{ matrix_maubot_postgres_database }}"
-    role: "{{ matrix_maubot_postgres_role }}"
-    extra: "ENCODING 'UTF8' LC_COLLATE='C' LC_CTYPE='C' template=template0"
-  when: "matrix_maubot_enabled"
-
-- name: Check Maubot config
-  become: yes
-  stat:
-    path: "{{ data_dir }}/matrix/bots/maubot/config.yaml"
-  register: "matrix_maubot_config_file"
-  when: "matrix_maubot_enabled"
-
-- name: Create Maubot config
-  become: yes
-  template:
-    src: "roles/matrix/files/bots/maubot/{{item}}.j2"
-    dest: "{{ data_dir }}/matrix/bots/maubot/{{item}}"
-    owner: "1337"
-    group: "1337"
-  loop:
-    - "config.yaml"
-  register: "matrix_maubot_config"
-  when: "matrix_maubot_enabled and not matrix_maubot_config_file.stat.exists"
-
-- name: Deploy Maubot
-  docker_swarm_service:
-    project_name: "{{ project_name }}"
-    definition:
-      matrix_maubot:
-        image: "{{ matrix_maubot_image }}"
-        deploy:
-          replicas: 1
-          placement:
-            constraints: "{{ matrix_maubot_constraints }}"
-        restart_policy:
-          condition: "on-failure"
-          delay: "30s"
-          max_attempts: 5
-        networks:
-          - "{{ docker_network_name }}"
-        volumes:
-          - "{{ data_dir }}/matrix/bots/maubot:/data:rw"
-  register: "result"
-  when: "matrix_maubot_enabled"
-
-- name: Set facts
-  set_fact:
-    matrix_maubot_service: "{{ result.services.matrix_maubot }}"
-  when: "matrix_maubot_enabled"
-
 # ==================== WhatsApp Bridge ====================
 - name: Create WhatsApp bridge folder
   become: yes
@@ -269,6 +195,23 @@
     owner: "1337"
     group: "1337"
     recurse: no
+  when: "matrix_whatsapp_enabled"
+
+- name: Create WhatsApp database role
+  postgres_role:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    role: "{{ matrix_whatsapp_postgres_role }}"
+    role_password: "{{ matrix_whatsapp_postgres_password }}"
+  when: "matrix_whatsapp_enabled"
+
+- name: Create WhatsApp database
+  postgres_database:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    database: "{{ matrix_whatsapp_postgres_database }}"
+    role: "{{ matrix_whatsapp_postgres_role }}"
+    extra: "ENCODING 'UTF8' LC_COLLATE='C' LC_CTYPE='C' template=template0"
   when: "matrix_whatsapp_enabled"
 
 - name: Check WhatsApp bridge config
@@ -303,6 +246,7 @@
 - name: Deploy WhatsApp bridge
   docker_swarm_service:
     project_name: "{{ project_name }}"
+    timeout: 60
     definition:
       matrix_whatsapp:
         image: "{{ matrix_whatsapp_image }}"
@@ -311,8 +255,8 @@
           placement:
             constraints: "{{ matrix_whatsapp_constraints }}"
         restart_policy:
-          condition: "on-failure"
-          delay: "30s"
+          condition: "any"
+          delay: "15s"
           max_attempts: 5
         networks: "{{ matrix_whatsapp_networks }}"
         volumes:
@@ -394,6 +338,7 @@
 - name: Deploy Hangouts bridge
   docker_swarm_service:
     project_name: "{{ project_name }}"
+    timeout: 60
     definition:
       matrix_hangouts:
         image: "{{ matrix_hangouts_image }}"
@@ -402,8 +347,8 @@
           placement:
             constraints: "{{ matrix_hangouts_constraints }}"
         restart_policy:
-          condition: "on-failure"
-          delay: "30s"
+          condition: "any"
+          delay: "15s"
           max_attempts: 5
         networks: "{{ matrix_hangouts_networks }}"
         volumes:
@@ -485,6 +430,7 @@
 - name: Deploy Facebook bridge
   docker_swarm_service:
     project_name: "{{ project_name }}"
+    timeout: 60
     definition:
       matrix_facebook:
         image: "{{ matrix_facebook_image }}"
@@ -493,8 +439,8 @@
           placement:
             constraints: "{{ matrix_facebook_constraints }}"
         restart_policy:
-          condition: "on-failure"
-          delay: "30s"
+          condition: "any"
+          delay: "15s"
           max_attempts: 5
         networks: "{{ matrix_facebook_networks }}"
         volumes:
@@ -576,6 +522,7 @@
 - name: Deploy Signal bridge
   docker_swarm_service:
     project_name: "{{ project_name }}"
+    timeout: 60
     definition:
       matrix_signal:
         image: "{{ matrix_signal_image }}"
@@ -584,8 +531,8 @@
           placement:
             constraints: "{{ matrix_signal_constraints }}"
         restart_policy:
-          condition: "on-failure"
-          delay: "30s"
+          condition: "any"
+          delay: "15s"
           max_attempts: 5
         networks: "{{ matrix_signal_networks }}"
         volumes:
@@ -668,6 +615,7 @@
 - name: Deploy Discord bridge
   docker_swarm_service:
     project_name: "{{ project_name }}"
+    timeout: 60
     definition:
       matrix_discord:
         image: "{{ matrix_discord_image }}"
@@ -676,8 +624,8 @@
           placement:
             constraints: "{{ matrix_discord_constraints }}"
         restart_policy:
-          condition: "on-failure"
-          delay: "30s"
+          condition: "any"
+          delay: "15s"
           max_attempts: 5
         networks: "{{ matrix_discord_networks }}"
         volumes:
@@ -706,6 +654,10 @@
     definition:
       matrix_redis:
         image: "{{ matrix_redis_image }}"
+        restart_policy:
+          condition: "any"
+          delay: "30s"
+          max_attempts: 5
         command: "redis-server --requirepass {{ matrix_redis_password }}"
         deploy:
           replicas: 1
@@ -724,9 +676,14 @@
 - name: Deploy Coturn
   docker_swarm_service:
     project_name: "{{ project_name }}"
+    timeout: 60
     definition:
       matrix_coturn:
         image: "{{ matrix_coturn_image }}"
+        restart_policy:
+          condition: "any"
+          delay: "30s"
+          max_attempts: 5
         deploy:
           replicas: 1
           placement:
@@ -756,6 +713,10 @@
     definition:
       matrix_synapse:
         image: "{{ matrix_synapse_image }}"
+        restart_policy:
+          condition: "any"
+          delay: "30s"
+          max_attempts: 5
         deploy:
           replicas: 1
           placement:
@@ -777,6 +738,81 @@
   set_fact:
     matrix_synapse_service: "{{ result.services.matrix_synapse }}"
 
+# ==================== Maubot ====================
+- name: Create Maubot folder
+  become: yes
+  file:
+    path: "{{ data_dir }}/matrix/bots/maubot"
+    state: directory
+    mode: 0755
+    owner: "1337"
+    group: "1337"
+    recurse: no
+  when: "matrix_maubot_enabled"
+
+- name: Create Maubot database role
+  postgres_role:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    role: "{{ matrix_maubot_postgres_role }}"
+    role_password: "{{ matrix_maubot_postgres_password }}"
+  when: "matrix_maubot_enabled"
+
+- name: Create Maubot database
+  postgres_database:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    database: "{{ matrix_maubot_postgres_database }}"
+    role: "{{ matrix_maubot_postgres_role }}"
+    extra: "ENCODING 'UTF8' LC_COLLATE='C' LC_CTYPE='C' template=template0"
+  when: "matrix_maubot_enabled"
+
+- name: Check Maubot config
+  become: yes
+  stat:
+    path: "{{ data_dir }}/matrix/bots/maubot/config.yaml"
+  register: "matrix_maubot_config_file"
+  when: "matrix_maubot_enabled"
+
+- name: Create Maubot config
+  become: yes
+  template:
+    src: "roles/matrix/files/bots/maubot/{{item}}.j2"
+    dest: "{{ data_dir }}/matrix/bots/maubot/{{item}}"
+    owner: "1337"
+    group: "1337"
+  loop:
+    - "config.yaml"
+  register: "matrix_maubot_config"
+  when: "matrix_maubot_enabled and not matrix_maubot_config_file.stat.exists"
+
+- name: Deploy Maubot
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    timeout: 120
+    definition:
+      matrix_maubot:
+        image: "{{ matrix_maubot_image }}"
+        deploy:
+          replicas: 1
+          placement:
+            constraints: "{{ matrix_maubot_constraints }}"
+        restart_policy:
+          condition: "any"
+          delay: "30s"
+          max_attempts: 5
+        networks:
+          - "{{ docker_network_name }}"
+        volumes:
+          - "{{ data_dir }}/matrix/bots/maubot:/data:rw"
+  register: "result"
+  when: "matrix_maubot_enabled"
+
+- name: Set facts
+  set_fact:
+    matrix_maubot_service: "{{ result.services.matrix_maubot }}"
+  when: "matrix_maubot_enabled"
+
 # ==================== Nginx ====================
 
 - name: Deploy Nginx
@@ -785,6 +821,10 @@
     definition:
       matrix_nginx:
         image: "{{ matrix_nginx_image }}"
+        restart_policy:
+          condition: "any"
+          delay: "15s"
+          max_attempts: 5
         deploy:
           replicas: 1
           placement:
@@ -824,6 +864,10 @@
     definition:
       matrix_riot:
         image: "{{ matrix_riot_image }}"
+        restart_policy:
+          condition: "any"
+          delay: "30s"
+          max_attempts: 5
         deploy:
           replicas: 1
           placement:

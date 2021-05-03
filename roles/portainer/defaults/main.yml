@@ -15,6 +15,14 @@ portainer_agent_constraints: []
 # Password for the admin user that will be created when Portainer first starts.
 portainer_admin_passwords: "Password1!"
 
+# Optional IPAM config. Must be an array. 
+# Example:
+#  - subnet: "10.0.1.0/24"
+#    gateway: "10.0.1.1"
+portainer_network_ipam:
+  - subnet: "172.3.28.0/24"
+    gateway: "172.3.28.1"
+
 # Portainer Agents will share a common network. This will be also used
 # by the Potainer (manager). Should this network be attachable?
 portainer_network_attachable: true

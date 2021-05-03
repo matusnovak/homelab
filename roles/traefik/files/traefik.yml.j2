@@ -34,8 +34,16 @@ certificatesResolvers:
     acme:
       email: "{{ traefik_acme_email }}"
       storage: "/acme.json"
+{% if traefik_acme_challenge == 'web' %}
       httpChallenge:
         entryPoint: "web"
+{% elif traefik_acme_challenge == 'web-secure' %}
+      httpChallenge:
+        entryPoint: "web-secure"
+{% elif traefik_acme_challenge == 'dns' %}
+      dnsChallenge:
+        provider: "{{ traefik_dns_challenge_provider }}"
+{% endif %}
 {% endif %}
 
 {% if traefik_metrics_enabled %}

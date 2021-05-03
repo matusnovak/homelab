@@ -192,6 +192,8 @@
     definition:
       gitlab_minio:
         image: "{{ gitlab_minio_image }}"
+        restart_policy:
+          condition: "any"
         command: "/bin/bash -c 'mkdir -p /export/{gitlab-registry-storage,gitlab-pages-storage,gitlab-terraform-storage,gitlab-dependency-storage,gitlab-diffs-storage,gitlab-lfs-storage,gitlab-artifacts-storage,gitlab-uploads-storage,gitlab-packages-storage,gitlab-backup-storage} && /usr/bin/minio server /export'"
         deploy:
           replicas: 1
@@ -220,6 +222,8 @@
     definition:
       gitlab:
         image: "{{ gitlab_image }}"
+        restart_policy:
+          condition: "any"
         deploy:
           replicas: 1
           placement:
@@ -295,6 +299,8 @@
     definition:
       gitlab_runner:
         image: "{{ gitlab_runner_image }}"
+        restart_policy:
+          condition: "any"
         deploy:
           replicas: 1
           placement:

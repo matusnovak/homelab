@@ -39,6 +39,8 @@
       filebrowser:
         image: "{{ filebrowser_image }}"
         user: "{{ filebrowser_uid }}:{{ filebrowser_gid }}"
+        restart_policy:
+          condition: "any"
         healthcheck:
           test:
             - "NONE"

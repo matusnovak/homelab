@@ -75,6 +75,8 @@
     definition:
       kanboard:
         image: "{{ kanboard_image }}"
+        restart_policy:
+          condition: "any"
         deploy:
           replicas: 1
           placement:

@@ -23,14 +23,10 @@
     name: "{{ docker_network_name }}"
     driver: overlay
     attachable: "{{ docker_network_attachable }}"
+    ipam_config: "{{ docker_network_ipam }}"
   register: result
 
 - name: Set facts
   set_fact:
     docker_network: "{{ result.network }}"
     docker_network_lb_name: "lb-{{ docker_network_name }}"
-
-- name: Find shared network load balancer
-  set_fact:
-    docker_network_load_balancer: "{{ docker_network.Containers['lb-' + docker_network_name]['IPv4Address'].split('/')[0] }}"
-  when: "docker_network.Containers != None and docker_network_lb_name in docker_network.Containers"

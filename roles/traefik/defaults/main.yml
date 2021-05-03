@@ -61,6 +61,23 @@ traefik_acme_enabled: false
 # Must be your own email. You don't need a Let's Encrypt account.
 traefik_acme_email: "email@example.com"
 
+# What type of challenge to use?
+# web - Uses HTTP port, you must own the domain.
+# web-secure - Uses HTTPS port, you must own the domain.
+# dns - Use DNS challenge provider.
+# More here: https://doc.traefik.io/traefik/https/acme/#dnschallenge
+traefik_acme_challenge: "web"
+
+# Only used if traefik_acme_challenge is set to "dns"
+# Example values:
+# route53 - Use AWS Route 53 challenge. You must provide valid 
+#           AWS credentials as extra environment variables.
+traefik_dns_challenge_provider: "route53"
+
+# Extra environment variables. You can define anything.
+# Must be a map, not an array.
+traefik_environment_variables:
+
 # Enable Prometheus metrics?
 # Will be exposed at http://traefik/metrics accessible
 # only within the Docker network.

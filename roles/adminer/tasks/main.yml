@@ -10,6 +10,8 @@
     definition:
       adminer:
         image: "{{ adminer_image }}"
+        restart_policy:
+          condition: "any"
         deploy:
           replicas: 1
           labels:

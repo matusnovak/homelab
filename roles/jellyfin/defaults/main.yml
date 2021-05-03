@@ -1,6 +1,6 @@
 ---
 # Docker image name
-jellyfin_image: "docker.io/linuxserver/jellyfin:latest"
+jellyfin_image: "docker.io/jellyfin/jellyfin:latest"
 
 # Where should the service be deployed?
 # If not constraints are defined, the service will deploy anywhere it can.
@@ -12,16 +12,13 @@ jellyfin_admin_passwords: "Password1!"
 
 # The user ID to use for accessing media.
 # The Jellyfin will act on behalf of this user on your host path.
-jellyfin_uid: 0
+jellyfin_uid: "1000"
 
 # The user group ID to use for accessing media.
 # The Jellyfin will act on behalf of this group on your host path.
 # If you are using Samba share and you would like for Jellyfin
 # to access it, you probably will have to use group ID of 118.
-jellyfin_gid: 0
-
-# The umask that Jellyfin should apply when creating files.
-jellyfin_umask: "022"
+jellyfin_gid: "1000"
 
 # List of paths that should be mounted by Jellyfin.
 # You can use these to enable Jellyfin to access your media.
