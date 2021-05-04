@@ -51,7 +51,7 @@
     owner: "0"
     group: "0"
     recurse: no
-  when: "gitlab_minio_enabled"
+  when: "gitlab_minio_path != ''"
 
 - name: Create LDAP group
   ldap_group:
