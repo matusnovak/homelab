@@ -411,14 +411,32 @@
       }
   when: "gitlab_runner_secret != ''"
 
+# Source: https://medium.com/@tonywooster/docker-in-docker-in-gitlab-runners-220caeb708ca
+- name: Deploy Docker-in-Docker
+  docker_container:
+    name: "{{ project_name }}_gitlab_dind"
+    image: "{{ gitlab_dind_image }}"
+    restart_policy: "unless-stopped"
+    privileged: true
+    volumes:
+      - "/var/lib/docker"
+      - "{{ data_dir }}/gitlab/dind/certs:/certs"
+    networks:
+      - name: "{{ project_name }}_gitlab"
+        aliases: ["docker"]
+    env:
+      DOCKER_TLS_CERTDIR: "/certs"
+    command:
+      - --storage-driver=overlay2
+  when: "gitlab_runner_secret != ''"
+
+# Implemented based on https://gist.github.com/MetalArend/38db0f86f71a220d101f2a5ae49fc78c
 - name: Deploy Runner
   docker_swarm_service:
     project_name: "{{ project_name }}"
     definition:
       gitlab_runner:
         image: "{{ gitlab_runner_image }}"
-        restart_policy:
-          condition: "any"
         deploy:
           replicas: 1
           placement:
@@ -432,22 +450,31 @@
             set -e
             echo "gitlab gitlab.homelab.lan" >> /etc/hosts
             gitlab-runner register --non-interactive
+            sed -i "s/^concurrent = .*/concurrent = ${CONCURRENT}/" /etc/gitlab-runner/config.toml
             gitlab-runner list
             gitlab-runner run --user=gitlab-runner
           '
-        networks: "{{ gitlab_runner_networks }}"
+        networks: >
+          {
+            "{{ project_name }}_gitlab": {
+              "aliases": ["gitlabrunner"]
+            }
+          }
         volumes:
-          - /var/run/docker.sock:/var/run/docker.sock
+          - "{{ data_dir }}/gitlab/dind/certs/client:/certs:ro"
         environment:
+          CONCURRENT: "4"
           REGISTER_LOCKED: "1"
           REGISTER_NON_INTERACTIVE: "1"
           RUNNER_EXECUTOR: "docker"
+          DOCKER_CERT_PATH: "/certs"
+          DOCKER_TLS_VERIFY: "true"
           DOCKER_IMAGE: "docker"
           DOCKER_VOLUMES: "/var/run/docker.sock:/var/run/docker.sock"
           RUNNER_NAME: "docker"
-          CLONE_URL: "http://gitlab:80"
+          DOCKER_HOST: "tcp://docker:2376"
+          CLONE_URL: "{{ traefik_protocol }}://gitlab.{{ domain_name }}"
           CI_SERVER_URL: "http://gitlab:80"
           REGISTRATION_TOKEN: "{{ gitlab_runner_secret }}"
-          DOCKER_NETWORK_MODE: "{{ project_name }}_gitlab"
           DOCKER_DISABLE_CACHE: "true"
   when: "gitlab_runner_secret != ''"

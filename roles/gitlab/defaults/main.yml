@@ -2,6 +2,7 @@
 # Docker image name
 gitlab_image: "docker.io/gitlab/gitlab-ce:latest"
 gitlab_runner_image: "docker.io/gitlab/gitlab-runner:alpine"
+gitlab_dind_image: "docker.io/library/docker:dind"
 gitlab_minio_image: "docker.io/minio/minio:latest"
 gitlab_blockdiag_image: "docker.io/yuzutech/kroki-blockdiag:latest"
 gitlab_mermaid_image: "docker.io/yuzutech/kroki-mermaid:latest"
