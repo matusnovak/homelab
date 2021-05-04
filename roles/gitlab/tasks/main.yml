@@ -27,8 +27,31 @@
     - "config"
     - "logs"
     - "data"
-    - "git"
-    - "objects"
+    - "{{ (gitlab_git_data_path == '') | ternary('git', undefined) }}"
+    - "{{ gitlab_minio_enabled | ternary('objects', undefined) }}"
+  when: "item is not undefined"
+
+- name: Create git-data folder
+  become: yes
+  file:
+    path: "{{ gitlab_git_data_path }}"
+    state: directory
+    mode: 0755
+    owner: "0"
+    group: "0"
+    recurse: no
+  when: "gitlab_git_data_path != ''"
+
+- name: Create object store folder
+  become: yes
+  file:
+    path: "{{ gitlab_minio_path }}"
+    state: directory
+    mode: 0755
+    owner: "0"
+    group: "0"
+    recurse: no
+  when: "gitlab_minio_enabled"
 
 - name: Create LDAP group
   ldap_group:
@@ -61,6 +84,10 @@
     gitlab_omnibus_config: |
       external_url '{{ traefik_protocol }}://gitlab.{{ domain_name }}'
       git_data_dirs({ "default" => { "path" => "/git-data" } })
+      redis['enable'] = false
+      gitlab_rails['redis_host'] = 'gitlabredis'
+      gitlab_rails['redis_port'] = 6379
+      gitlab_rails['redis_password'] =  '{{ gitlab_redis_password }}'
       nginx['listen_port'] = 80
       nginx['listen_https'] = false
       postgresql['enable'] = false
@@ -213,6 +240,7 @@
     name: "{{ project_name }}_gitlab"
     driver: overlay
     attachable: true
+    ipam_config: "{{ gitlab_network_ipam }}"
   register: result
 
 - name: Deploy Kroki - BlockDiag
@@ -333,6 +361,27 @@
           KROKI_EXCALIDRAW_HOST: "gitlabexcalidraw"
   when: "gitlab_kroki_enabled"
 
+- name: Deploy Redis
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      gitlab_redis:
+        image: "{{ gitlab_redis_image }}"
+        restart_policy:
+          condition: "any"
+        command: "redis-server --requirepass {{ gitlab_redis_password }}"
+        deploy:
+          replicas: 1
+          placement:
+            constraints: "{{ gitlab_constraints }}"
+        networks: >
+          {
+            "{{ docker_network_name }}": {
+              "aliases": ["gitlabredis"]
+            }
+          }
+  register: result
+
 - name: Deploy service
   docker_swarm_service:
     project_name: "{{ project_name }}"
@@ -401,16 +450,6 @@
     headers:
       - "Host: gitlab.{{ domain_name }}"
 
-- name: Set Runner facts
-  set_fact:
-    gitlab_runner_networks: >
-      {
-        "{{ project_name }}_gitlab": {
-          "aliases": ["gitlabrunner"]
-        }
-      }
-  when: "gitlab_runner_secret != ''"
-
 # Source: https://medium.com/@tonywooster/docker-in-docker-in-gitlab-runners-220caeb708ca
 - name: Deploy Docker-in-Docker
   docker_container:
@@ -472,9 +511,11 @@
           DOCKER_IMAGE: "docker"
           DOCKER_VOLUMES: "/var/run/docker.sock:/var/run/docker.sock"
           RUNNER_NAME: "docker"
+          DOCKER_DNS: "{{ gitlab_runner_dns }}"
+          DOCKER_EXTRA_HOSTS: "{{ gitlab_runner_extra_hosts }}"
           DOCKER_HOST: "tcp://docker:2376"
           CLONE_URL: "{{ traefik_protocol }}://gitlab.{{ domain_name }}"
-          CI_SERVER_URL: "http://gitlab:80"
+          CI_SERVER_URL: "{{ traefik_protocol }}://gitlab.{{ domain_name }}"
           REGISTRATION_TOKEN: "{{ gitlab_runner_secret }}"
           DOCKER_DISABLE_CACHE: "true"
   when: "gitlab_runner_secret != ''"

@@ -1,6 +1,7 @@
 ---
 # Docker image name
 gitlab_image: "docker.io/gitlab/gitlab-ce:latest"
+gitlab_redis_image: "docker.io/library/redis:latest"
 gitlab_runner_image: "docker.io/gitlab/gitlab-runner:alpine"
 gitlab_dind_image: "docker.io/library/docker:dind"
 gitlab_minio_image: "docker.io/minio/minio:latest"
@@ -15,12 +16,23 @@ gitlab_excalidraw_image: "docker.io/yuzutech/kroki-excalidraw:latest"
 gitlab_constraints:
   - "node.role == manager"
 
+# Optional IPAM config. Must be an array. 
+# Example:
+#  - subnet: "10.0.1.0/24"
+#    gateway: "10.0.1.1"
+gitlab_network_ipam:
+  - subnet: "172.3.29.0/24"
+    gateway: "172.3.29.1"
+
 # Same as above, but for the S3 object store MinIO
 gitlab_minio_constraints: "{{ gitlab_constraints }}"
 
 # Same as above, but for the runner itself.
 # The runner will spawn jobs as Docker containers on the same node it has been deployed to.
 gitlab_runner_constraints: "{{ gitlab_constraints }}"
+
+# Redis password. Can be any string.
+gitlab_redis_password: "Password1!"
 
 # Password for the admin user
 gitlab_admin_passwords: "Password1!"
@@ -100,3 +112,10 @@ gitlab_kroki_enabled: true
 # Leaving this string empty will not deploy any runners
 gitlab_runner_secret: ""
 
+# Set the DNS for the container that will be created by the runner to run the job
+# See "dns" config from https://docs.gitlab.com/runner/configuration/advanced-configuration.html
+gitlab_runner_dns: "8.8.8.8"
+
+# Set extra host mappings for the container that will be created by the runner to run the job
+# See "extra_hosts" config from https://docs.gitlab.com/runner/configuration/advanced-configuration.html
+gitlab_runner_extra_hosts: ""
