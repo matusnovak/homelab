@@ -215,6 +215,124 @@
     attachable: true
   register: result
 
+- name: Deploy Kroki - BlockDiag
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    timeout: 60
+    definition:
+      gitlab_blockdiag:
+        image: "{{ gitlab_blockdiag_image }}"
+        restart_policy:
+          condition: "any"
+        deploy:
+          replicas: 1
+          placement:
+            constraints: "{{ gitlab_constraints }}"
+        networks: >
+          {
+            "{{ docker_network_name }}": {
+              "aliases": ["gitlabblockdiag"]
+            }
+          }
+  when: "gitlab_kroki_enabled"
+
+- name: Deploy Kroki - Mermaid
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    timeout: 60
+    definition:
+      gitlab_mermaid:
+        image: "{{ gitlab_mermaid_image }}"
+        restart_policy:
+          condition: "any"
+        deploy:
+          replicas: 1
+          placement:
+            constraints: "{{ gitlab_constraints }}"
+        networks: >
+          {
+            "{{ docker_network_name }}": {
+              "aliases": ["gitlabmermaid"]
+            }
+          }
+  when: "gitlab_kroki_enabled"
+
+- name: Deploy Kroki - BPMN
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    timeout: 60
+    definition:
+      gitlab_bpmn:
+        image: "{{ gitlab_bpmn_image }}"
+        restart_policy:
+          condition: "any"
+        deploy:
+          replicas: 1
+          placement:
+            constraints: "{{ gitlab_constraints }}"
+        networks: >
+          {
+            "{{ docker_network_name }}": {
+              "aliases": ["gitlabbpmn"]
+            }
+          }
+  when: "gitlab_kroki_enabled"
+
+- name: Deploy Kroki - Excalidraw
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    timeout: 60
+    definition:
+      gitlab_excalidraw:
+        image: "{{ gitlab_excalidraw_image }}"
+        restart_policy:
+          condition: "any"
+        deploy:
+          replicas: 1
+          placement:
+            constraints: "{{ gitlab_constraints }}"
+        networks: >
+          {
+            "{{ docker_network_name }}": {
+              "aliases": ["gitlabexcalidraw"]
+            }
+          }
+  when: "gitlab_kroki_enabled"
+
+- name: Deploy Kroki
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    timeout: 60
+    definition:
+      gitlab_kroki:
+        image: "{{ gitlab_kroki_image }}"
+        restart_policy:
+          condition: "any"
+        deploy:
+          replicas: 1
+          placement:
+            constraints: "{{ gitlab_constraints }}"
+          labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.gitlab-kroki.rule=Host(`kroki.{{ domain_name }}`)"
+            - "traefik.http.services.gitlab-kroki.loadbalancer.server.port=8000"
+            - "traefik.http.routers.gitlab-kroki.entrypoints={{ traefik_entrypoints }}"
+            - "traefik.http.routers.gitlab-kroki.tls={{ traefik_tls }}"
+            - "traefik.http.routers.gitlab-kroki.tls.certresolver={{ traefik_certresolver }}"
+            - "traefik.http.routers.gitlab-kroki.service=gitlab-kroki"
+        networks: >
+          {
+            "{{ docker_network_name }}": {
+              "aliases": ["gitlabkroki"]
+            }
+          }
+        environment:
+          KROKI_BLOCKDIAG_HOST: "gitlabblockdiag"
+          KROKI_MERMAID_HOST: "gitlabmermaid"
+          KROKI_BPMN_HOST: "gitlabbpmn"
+          KROKI_EXCALIDRAW_HOST: "gitlabexcalidraw"
+  when: "gitlab_kroki_enabled"
+
 - name: Deploy service
   docker_swarm_service:
     project_name: "{{ project_name }}"

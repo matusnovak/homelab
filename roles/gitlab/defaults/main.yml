@@ -3,6 +3,11 @@
 gitlab_image: "docker.io/gitlab/gitlab-ce:latest"
 gitlab_runner_image: "docker.io/gitlab/gitlab-runner:alpine"
 gitlab_minio_image: "docker.io/minio/minio:latest"
+gitlab_blockdiag_image: "docker.io/yuzutech/kroki-blockdiag:latest"
+gitlab_mermaid_image: "docker.io/yuzutech/kroki-mermaid:latest"
+gitlab_kroki_image: "docker.io/yuzutech/kroki:latest"
+gitlab_bpmn_image: "docker.io/yuzutech/kroki-bpmn:latest"
+gitlab_excalidraw_image: "docker.io/yuzutech/kroki-excalidraw:latest"
 
 # Where should the service be deployed?
 # If not constraints are defined, the service will deploy anywhere it can.
@@ -79,6 +84,13 @@ gitlab_registry_enabled: true
 # Enable GitLab's packages?
 # See https://docs.gitlab.com/ee/administration/packages/
 gitlab_packages_enabled: true
+
+# Kroki diagrams
+# See https://docs.gitlab.com/ee/administration/integration/kroki.html
+# To enable Kroki in your GitLab, go to https://gitlab.homelab.lan/admin/application_settings/general
+# and scroll to the section "Kroki". Set the URL to https://kroki.homelab.lan/ (depends on your domain_name variabl!)
+# Enable all BlockDiag, BPMN, and Excalidraw options.
+gitlab_kroki_enabled: true
 
 # To enable GitLab Runners, go to 
 # https://gitlab.homelab.lan/admin/runners
