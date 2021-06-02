@@ -7,6 +7,9 @@ pihole_image: "docker.io/pihole/pihole:latest"
 pihole_constraints:
   - "node.role == manager"
 
+# Admin password for the web interface
+pihole_admin_password: "Password1!"
+
 # Port for DNS requests
 pihole_port: 53
 
