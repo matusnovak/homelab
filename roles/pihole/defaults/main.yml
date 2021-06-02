@@ -11,7 +11,8 @@ pihole_constraints:
 pihole_admin_password: "Password1!"
 
 # Port for DNS requests
-pihole_port: 53
+# Recommended: 53
+pihole_port: 5053
 
 # Where should the ports be exposed to? Can be either "ingress" or "host"
 # host - Container ports are exposed directly to the host.

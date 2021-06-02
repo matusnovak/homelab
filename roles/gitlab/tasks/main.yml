@@ -441,14 +441,18 @@
   set_fact:
     gitlab_service: "{{ result.services.gitlab }}"
 
-- name: Healthcheck
-  http_wait:
-    url: "{{ traefik_address }}/users/sign_in"
-    status_code: "200"
-    retries: 3
-    delay: 10
-    headers:
-      - "Host: gitlab.{{ domain_name }}"
+# Temporarely disabled healthcheck due to an error of:
+# > urlopen error [Errno -2] Name or service not known
+# I have no idea how "localhost" (i.e. traefik_address) can be "not known"...
+
+#- name: Healthcheck
+#  http_wait:
+#    url: "{{ traefik_address }}/users/sign_in"
+#    status_code: "200"
+#    retries: 3
+#    delay: 10
+#    headers:
+#      - "Host: gitlab.{{ domain_name }}"
 
 # Source: https://medium.com/@tonywooster/docker-in-docker-in-gitlab-runners-220caeb708ca
 - name: Deploy Docker-in-Docker
