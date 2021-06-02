@@ -59,7 +59,7 @@
           VIRTUAL_HOST: "pihole.{{ domain_name }}"
           DNSMASQ_LISTENING: "all"
           DHCP_ACTIVE: "false"
-          PIHOLE_DNS_: "{{ pihole_dns_cloudflared | ternary(docker_gateway_address + '#' + (cloudflared_port | string), pihole_dns) }}"
+          PIHOLE_DNS_: "{{ pihole_dns_cloudflared | ternary(docker_gateway_address + '#' + (cloudflared_port | default('5054') | string), pihole_dns) }}"
   register: result
 
 - name: Set facts
