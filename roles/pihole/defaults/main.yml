@@ -32,4 +32,4 @@ pihole_dns_cloudflared: false
 # Upstream DNS server(s) for Pi-hole to forward queries to, seperated by a semicolon
 # (supports non-standard ports with #[port number])
 # Example: "8.8.8.8;8.8.4.4"
-pihole_dns: "8.8.8.8,8.8.4.4"
+pihole_dns: "8.8.8.8;8.8.4.4"
