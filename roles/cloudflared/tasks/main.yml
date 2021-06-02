@@ -1,0 +1,34 @@
+---
+- name: Check if base role is included
+  fail:
+    msg: "Cloudflared needs the base role"
+  when: "'base' not in role_names"
+
+- name: Deploy service
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      cloudflared:
+        image: "{{ cloudflared_image }}"
+        restart_policy:
+          condition: "any"
+        deploy:
+          replicas: 1
+          placement:
+            constraints: "{{ cloudflared_constraints }}"
+        networks:
+          - "{{ docker_network_name }}"
+        ports:
+          - target: "{{ cloudflared_port }}"
+            published: "{{ cloudflared_port }}"
+            protocol: "udp"
+            mode: "{{ cloudflared_port_mode }}"
+        environment:
+          UPSTREAM1: "{{ cloudflared_upstream_1 }}"
+          UPSTREAM2: "{{ cloudflared_upstream_2 }}"
+          PORT: "{{ cloudflared_port }}"
+  register: result
+
+- name: Set facts
+  set_fact:
+    cloudflared_service: "{{ result.services.cloudflared }}"

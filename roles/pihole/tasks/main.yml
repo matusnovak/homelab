@@ -1,0 +1,76 @@
+---
+- name: Check if traefik role is included
+  fail:
+    msg: "Pi-Hole needs the traefik role"
+  when: "'traefik' not in role_names"
+
+- name: Create folders
+  become: yes
+  file:
+    path: "{{ data_dir }}/pihole/{{ item }}"
+    state: directory
+    mode: 0775
+    owner: "0"
+    group: "0"
+    recurse: no
+  loop:
+    - "data"
+    - "dnsmasq.d"
+
+- name: Deploy service
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    timeout: 120
+    definition:
+      pihole:
+        image: "{{ pihole_image }}"
+        restart_policy:
+          condition: "any"
+        deploy:
+          replicas: 1
+          placement:
+            constraints: "{{ pihole_constraints }}"
+          labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.pihole.rule=Host(`pihole.{{ domain_name }}`)"
+            - "traefik.http.services.pihole.loadbalancer.server.port=80"
+            - "traefik.http.routers.pihole.entrypoints={{ traefik_entrypoints }}"
+            - "traefik.http.routers.pihole.tls={{ traefik_tls }}"
+            - "traefik.http.routers.pihole.tls.certresolver={{ traefik_certresolver }}"
+        networks:
+          - "{{ docker_network_name }}"
+        ports:
+          - target: "53"
+            published: "{{ pihole_port }}"
+            protocol: "tcp"
+            mode: "{{ pihole_port_mode }}"
+          - target: "53"
+            published: "{{ pihole_port }}"
+            protocol: "udp"
+            mode: "{{ pihole_port_mode }}"
+        volumes:
+          - "{{ data_dir }}/pihole/data:/etc/pihole"
+          - "{{ data_dir }}/pihole/dnsmasq.d:/etc/dnsmasq.d"
+        environment:
+          TZ: "{{ timezone }}"
+          WEBPASSWORD: "{{ pihole_admin_password }}"
+          IPv6: "false"
+          QUERY_LOGGING: "{{ pihole_query_logging | bool | lower }}"
+          VIRTUAL_HOST: "pihole.{{ domain_name }}"
+          DNSMASQ_LISTENING: "all"
+          DHCP_ACTIVE: "false"
+          PIHOLE_DNS_: "{{ pihole_dns_cloudflared | ternary(docker_gateway_address + '#' + (cloudflared_port | string), pihole_dns) }}"
+  register: result
+
+- name: Set facts
+  set_fact:
+    pihole_service: "{{ result.services.pihole }}"
+
+- name: Healthcheck
+  http_wait:
+    url: "{{ traefik_address }}/admin/"
+    status_code: "200"
+    retries: 5
+    delay: 6
+    headers:
+      - "Host: pihole.{{ domain_name }}"

@@ -30,3 +30,12 @@
   set_fact:
     docker_network: "{{ result.network }}"
     docker_network_lb_name: "lb-{{ docker_network_name }}"
+
+- name: Inspect Docker gwbridge
+  docker_network:
+    name: "docker_gwbridge"
+  register: result
+
+- name: Set facts
+  set_fact:
+    docker_gateway_address: "{{ result.network.IPAM.Config[0].Gateway }}"

@@ -1,0 +1,31 @@
+---
+# Docker image name
+pihole_image: "docker.io/pihole/pihole:latest"
+
+# Where should the service be deployed?
+# If not constraints are defined, the service will deploy anywhere it can.
+pihole_constraints:
+  - "node.role == manager"
+
+# Port for DNS requests
+pihole_port: 53
+
+# Where should the ports be exposed to? Can be either "ingress" or "host"
+# host - Container ports are exposed directly to the host.
+#        Only on the host they are running on, accessible via localhost.
+# ingress - Container ports are exposed to the overlay network.
+#           On all hosts, accessible via overlay network IP address (load balancer address!).
+# See https://docs.docker.com/engine/swarm/ingress/
+pihole_port_mode: "host"
+
+# Enable query logging or not.
+pihole_query_logging: true
+
+# Use cloudflared (role) in order to use DNS over HTTPS.
+# When this is set to "true", the PiHole will no longer use "pihole_dns"
+pihole_dns_cloudflared: false
+
+# Upstream DNS server(s) for Pi-hole to forward queries to, seperated by a semicolon
+# (supports non-standard ports with #[port number])
+# Example: "8.8.8.8;8.8.4.4"
+pihole_dns: "8.8.8.8,8.8.4.4"

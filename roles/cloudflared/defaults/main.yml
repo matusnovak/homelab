@@ -1,0 +1,25 @@
+---
+# Docker image name
+cloudflared_image: "docker.io/visibilityspots/cloudflared:latest"
+
+# Where should the service be deployed?
+# If not constraints are defined, the service will deploy anywhere it can.
+cloudflared_constraints:
+  - "node.role == manager"
+
+# Port for DNS requests
+cloudflared_port: 5054
+
+# Where should the ports be exposed to? Can be either "ingress" or "host"
+# host - Container ports are exposed directly to the host.
+#        Only on the host they are running on, accessible via localhost.
+# ingress - Container ports are exposed to the overlay network.
+#           On all hosts, accessible via overlay network IP address (load balancer address!).
+# See https://docs.docker.com/engine/swarm/ingress/
+cloudflared_port_mode: "host"
+
+# List of upstreams to use
+# Alternatives:
+#   https://dns.google/dns-query
+cloudflared_upstream_1: "https://1.1.1.1/dns-query"
+cloudflared_upstream_2: "https://1.0.0.1/dns-query"

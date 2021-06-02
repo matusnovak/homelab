@@ -29,3 +29,6 @@ docker_network_attachable: True
 docker_network_ipam:
   - subnet: "172.3.27.0/24"
     gateway: "172.3.27.1"
+
+# Timezone
+timezone: "Europe/London"
