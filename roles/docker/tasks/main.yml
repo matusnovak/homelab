@@ -6,7 +6,7 @@
   changed_when: no
 
 - name: Install docker
-  when: docker_exist.rc == 1
+  when: docker_exist.rc != 0
   block:
     - name: Install required system packages
       apt: '{{ item }}'
