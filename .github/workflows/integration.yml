@@ -27,7 +27,7 @@ jobs:
           echo "- hosts: homelab" >> site.yml
           echo "  roles:" >> site.yml
           echo "    - ${{ matrix.role }}" >> site.yml
-          ansible-playbook site.yml -vvv
+          ansible-playbook -vvv -i hosts site.yml
 
       - name: Dump logs
         if: ${{ always() }}
