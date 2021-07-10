@@ -3,3 +3,5 @@ allow_duplicates: false
 
 dependencies:
   - role: base
+  - role: docker
+  - role: golang

@@ -21,14 +21,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
 
-      - name: Setup files
-        run: |
-          sudo mkdir /homelab
-          cp ./.github/sites/${{ matrix.role }}.yml.sample ./integration.yml
-
       - name: Ansible
         run: |
-          ansible-playbook integration.yml -vvv
+          echo "---" >> site.yml
+          echo "- hosts: homelab" >> site.yml
+          echo "  roles:" >> site.yml
+          echo "    - ${{ matrix.role }}" >> site.yml
+          ansible-playbook site.yml -vvv
 
       - name: Dump logs
         if: ${{ always() }}
