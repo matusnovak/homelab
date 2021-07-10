@@ -1,0 +1,21 @@
+---
+# Where should we put the data? This will be mounted by applications
+data_dir: "/homelab"
+
+# Name of the project. This will be used by Docker to create stack and services.
+project_name: homelab
+
+# Your domain of your choice. This will be used to access your applications.
+# You must either own this domain, or have local DNS entry to route traffic
+# to the correct server/host/vm.
+domain_name: homelab.lan
+
+# Domain component of LDAP. This should match your
+# domain_name variable. Must start with "dc=".
+# Can not be changed later!
+domain_component: dc=homelab,dc=lan
+
+k8s_api_version: 'v1'
+k8s_api_key: null
+k8s_ssl_verify: null
+k8s_host: 'https://127.0.0.1:16443'

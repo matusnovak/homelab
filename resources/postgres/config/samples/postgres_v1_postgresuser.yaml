@@ -1,0 +1,7 @@
+apiVersion: postgres.matusnovak.com/v1
+kind: PostgresUser
+metadata:
+  name: postgresuser-sample
+spec:
+  # Add fields here
+  foo: bar

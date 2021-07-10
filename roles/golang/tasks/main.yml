@@ -1,0 +1,22 @@
+---
+- name: Check if go is installed
+  shell: command -v go >/dev/null 2>&1
+  register: go_exist
+  ignore_errors: yes
+  changed_when: no
+
+- name: Install golang
+  when: go_exist == false
+  block:
+
+    - name: Install snap
+      apt:
+        name: snapd
+        state: present
+      become: yes
+
+    - name: Install microk8s
+      snap:
+        name: go
+        classic: yes
+      become: yes

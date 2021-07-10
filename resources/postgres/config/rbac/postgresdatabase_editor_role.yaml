@@ -1,0 +1,24 @@
+# permissions for end users to edit postgresdatabases.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: postgresdatabase-editor-role
+rules:
+- apiGroups:
+  - postgres.matusnovak.com
+  resources:
+  - postgresdatabases
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - postgres.matusnovak.com
+  resources:
+  - postgresdatabases/status
+  verbs:
+  - get

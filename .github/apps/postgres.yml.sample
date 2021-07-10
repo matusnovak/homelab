@@ -1,0 +1,7 @@
+---
+- hosts: homelab
+  roles:
+    - docker
+    - golang
+    - microk8s
+    - postgres

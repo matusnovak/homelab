@@ -1,0 +1,3 @@
+---
+# Docker image name
+adminer_image: "docker.io/library/adminer:latest"

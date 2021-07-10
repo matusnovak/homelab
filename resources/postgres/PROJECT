@@ -1,0 +1,25 @@
+domain: matusnovak.com
+layout:
+- go.kubebuilder.io/v3
+projectName: postgres
+repo: github.com/matusnovak/homelab/resources/postgres
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: matusnovak.com
+  group: postgres
+  kind: PostgresUser
+  path: github.com/matusnovak/homelab/resources/postgres/api/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: matusnovak.com
+  group: postgres
+  kind: PostgresDatabase
+  path: github.com/matusnovak/homelab/resources/postgres/api/v1
+  version: v1
+version: "3"

@@ -1,0 +1,103 @@
+---
+
+- name: Create service
+  community.kubernetes.k8s:
+    state: present
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: adminer
+        namespace: '{{ project_name }}'
+        labels:
+          app: adminer
+      spec:
+        ports:
+          - port: 8080
+            name: web
+            protocol: TCP
+        selector:
+          app: adminer
+
+- name: Create deployment
+  community.kubernetes.k8s:
+    state: present
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    definition:
+      apiVersion: v1
+      kind: Deployment
+      metadata:
+        name: adminer
+        namespace: '{{ project_name }}'
+        labels:
+          app: adminer
+      spec:
+        replicas: 1
+        selector:
+          matchLabels:
+            app: adminer
+        template:
+          metadata:
+            name: adminer
+            namespace: '{{ project_name }}'
+            labels:
+              app: adminer
+          spec:
+            #updateStrategy:
+            #  type: RollingUpdate
+            containers:
+              - name: adminer
+                image: '{{ adminer_image }}'
+                imagePullPolicy: "IfNotPresent"
+                ports:
+                  - name: web
+                    containerPort: 8080
+                env:
+                  - name: ADMINER_DESIGN
+                    value: nette
+                  - name: ADMINER_DEFAULT_SERVER
+                    value: 'postgres.{{ project_name }}.svc.cluster.local'
+
+- name: Wait for service ready
+  community.kubernetes.k8s_info:
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    kind: Deployment
+    namespace: '{{ project_name }}'
+    name: 'adminer'
+    label_selectors: 
+      - app = adminer
+  register: output_info
+  until: output_info | json_query('resources[*].status.readyReplicas') | select ('match','1') | list | length == 1
+  delay: 5
+  retries: 5
+
+- name: Create ingress route
+  community.kubernetes.k8s:
+    state: present
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    definition:
+      apiVersion: traefik.containo.us/v1alpha1
+      kind: IngressRoute
+      metadata:
+        name: adminer-ingress
+        namespace: '{{ project_name }}'
+      spec:
+        entryPoints:
+          - web
+          - websecure
+        routes:
+          - match: Host(`adminer.{{ domain_name }}`)
+            kind: Rule
+            services:
+              - name: adminer
+                port: 8080
+        tls: {}

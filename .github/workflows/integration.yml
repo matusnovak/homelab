@@ -1,0 +1,44 @@
+name: integration
+on: [push, pull_request]
+jobs:
+  apps:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: 'Adminer'
+            role: 'adminer'
+          - name: 'Postgre SQL'
+            role: 'postgres'
+          - name: 'Traefik'
+            role: 'traefik'
+
+    name: 'App: ${{ matrix.name }}'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Setup files
+        run: |
+          sudo mkdir /homelab
+          cp ./.github/sites/${{ matrix.role }}.yml.sample ./integration.yml
+
+      - name: Ansible
+        run: |
+          ansible-playbook integration.yml -vvv
+
+      - name: Dump logs
+        if: ${{ always() }}
+        run: |
+          mkdir -p /tmp/microk8s/{logs,describe}
+          kubectl get all --all-namespaces 2>&1 > /tmp/microk8s/get-all.log
+
+      - name: Store logs as artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.name }} Logs
+          path: /tmp/microk8s/

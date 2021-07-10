@@ -1,0 +1,55 @@
+entryPoints:
+{% if traefik_http_enabled %}
+  web:
+    address: ":80"
+{% endif %}{% if traefik_https_enabled %}
+  websecure:
+    address: ":443"
+{% endif %}
+
+accessLog: {}
+
+log:
+  level: {{ traefik_log_level }}
+
+{% if traefik_dashboard_enabled %}
+api:
+  dashboard: true
+  insecure: true
+{% endif %}
+
+providers:
+  kubernetesCRD:
+    namespaces:
+      - "{{ project_name }}"
+    allowCrossNamespace: false
+  kubernetesingress: {}
+
+{% if traefik_acme_enabled %}
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: "{{ traefik_acme_email }}"
+      storage: "/certs/acme.json"
+{% if traefik_acme_challenge == 'web' %}
+      httpChallenge:
+        entryPoint: "web"
+{% elif traefik_acme_challenge == 'websecure' %}
+      httpChallenge:
+        entryPoint: "websecure"
+{% elif traefik_acme_challenge == 'dns' %}
+      dnsChallenge:
+        provider: "{{ traefik_dns_challenge_provider }}"
+{% endif %}
+{% endif %}
+
+{% if traefik_metrics_enabled %}
+metrics:
+  prometheus:
+    entryPoint: "traefik"
+    buckets:
+      - 0.1
+      - 0.3
+      - 1.2
+      - 5.0
+{%- endif %}

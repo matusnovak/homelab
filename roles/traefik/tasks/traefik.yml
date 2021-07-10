@@ -1,0 +1,199 @@
+---
+- name: Create configuration
+  community.kubernetes.k8s:
+    state: present
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    definition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: traefik-config
+        namespace: '{{ project_name }}'
+        labels:
+          app: traefik
+      data:
+        'traefik.yml': "{{ lookup('template', 'roles/traefik/files/traefik.yml.j2') }}"
+
+- name: Create service
+  community.kubernetes.k8s:
+    state: present
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: traefik
+        namespace: '{{ project_name }}'
+        labels:
+          app: traefik
+      spec:
+        type: LoadBalancer
+        externalTrafficPolicy: Local
+        ports:
+          - port: 443
+            protocol: TCP
+            name: 'https'
+          - port: 80
+            protocol: TCP
+            name: 'http'
+          - port: 8080
+            protocol: TCP
+            name: 'admin'
+        selector:
+          app: traefik
+
+- name: Create service account
+  community.kubernetes.k8s:
+    state: present
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    definition:
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        namespace: '{{ project_name }}'
+        name: traefik-ingress-controller
+
+- name: Create persistent volume claim
+  community.kubernetes.k8s:
+    state: present
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    definition:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        namespace: '{{ project_name }}'
+        name: traefik-certs-pv-claim
+        labels:
+          app: traefik
+          type: local
+      spec:
+        storageClassName: microk8s-hostpath
+        resources:
+          requests:
+            storage: 128Mi
+        accessModes:
+          - ReadWriteMany
+
+- name: Create deployment
+  community.kubernetes.k8s:
+    state: present
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    definition:
+      apiVersion: v1
+      kind: Deployment
+      metadata:
+        name: traefik
+        namespace: '{{ project_name }}'
+        labels:
+          app: traefik
+      spec:
+        replicas: 1
+        selector:
+          matchLabels:
+            app: traefik
+        template:
+          metadata:
+            name: traefik
+            namespace: '{{ project_name }}'
+            labels:
+              app: traefik
+          spec:
+            containers:
+              - name: traefik
+                image: '{{ traefik_image }}'
+                imagePullPolicy: "IfNotPresent"
+                ports:
+                  - name: 'http'
+                    containerPort: 80
+                  - name: 'https'
+                    containerPort: 443
+                  - name: 'admin'
+                    containerPort: 8080
+                volumeMounts:
+                  - mountPath: /etc/traefik/traefik.yml
+                    name: traefik-config
+                    subPath: 'traefik.yml'
+                  - mountPath: /certs
+                    name: traefik-certs
+            volumes:
+              - name: traefik-config
+                configMap:
+                  name: traefik-config
+              - name: traefik-certs
+                persistentVolumeClaim:
+                  claimName: traefik-certs-pv-claim
+
+- name: Wait for service ready
+  community.kubernetes.k8s_info:
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    kind: Deployment
+    namespace: '{{ project_name }}'
+    name: 'traefik'
+    label_selectors: 
+      - app = traefik
+  register: output_info
+  until: output_info | json_query('resources[*].status.readyReplicas') | select ('match','1') | list | length == 1
+  delay: 5
+  retries: 5
+
+- name: Find service
+  community.kubernetes.k8s_info:
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    kind: Service
+    name: traefik
+    namespace: '{{ project_name }}'
+  register: traefik_service
+
+- name: Get load balancer IP
+  set_fact:
+    traefik_lb_address: '{{ traefik_service.resources[0].status.loadBalancer.ingress[0].ip }}'
+
+# - name: Deploy proxy
+#   docker_container:
+#     image: 'marcnuri/port-forward'
+#     name: 'port-forward'
+#     restart_policy: 'unless-stopped'
+#     ports:
+#       - '443:443'
+#     env:
+#       LOCAL_PORT: '443'
+#       REMOTE_HOST: '{{ traefik_lb_address }}'
+#       REMOTE_PORT: '443'
+
+- name: Create dashboard route
+  community.kubernetes.k8s:
+    state: present
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    definition:
+      apiVersion: traefik.containo.us/v1alpha1
+      kind: IngressRoute
+      metadata:
+        name: traefik-dashboard-ingress
+        namespace: '{{ project_name }}'
+      spec:
+        entryPoints:
+          - web
+          - websecure
+        routes:
+          - match: Host(`traefik.{{ domain_name }}`)
+            kind: Rule
+            services:
+              - name: api@internal
+                kind: TraefikService
+        tls: {}

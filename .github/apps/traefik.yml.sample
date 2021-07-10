@@ -1,0 +1,6 @@
+---
+- hosts: homelab
+  roles:
+    - golang
+    - microk8s
+    - traefik

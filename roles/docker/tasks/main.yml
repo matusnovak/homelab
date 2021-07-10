@@ -1,0 +1,42 @@
+---
+- name: Check if docker is installed
+  shell: command -v docker >/dev/null 2>&1
+  register: docker_exist
+  ignore_errors: yes
+  changed_when: no
+
+- name: Install docker
+  when: docker_exist == false
+  block:
+    - name: Install required system packages
+      apt: '{{ item }}'
+      loop:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - gnupg
+        - lsb-release
+
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Get lsb release name
+      shell: 'lsb_release -cs'
+      register: lsb_release
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: 'deb https://download.docker.com/linux/ubuntu {{ lsb_release.stdout }} stable'
+        state: present
+
+    - name: Get user id
+      set_fact:
+        user_id: '{{ ansible_user_id }}'
+    
+    - name: Add the user to docker group
+      ansible.builtin.user:
+        name: '{{ user_id }}'
+        group: docker
+      become: yes

@@ -1,0 +1,153 @@
+---
+- name: Create folder structure
+  become: yes
+  file:
+    path: '{{ data_dir }}/postgres/{{ item }}'
+    state: directory
+    mode: '0700'
+    owner: '999'
+    group: '0'
+    recurse: false
+  loop:
+    - data
+
+- name: Create persistent volume
+  community.kubernetes.k8s:
+    state: present
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    definition:
+      apiVersion: v1
+      kind: PersistentVolume
+      metadata:
+        name: postgres-pv-volume
+        namespace: '{{ project_name }}'
+        labels:
+          app: postgres
+          type: local
+      spec:
+        storageClassName: microk8s-hostpath
+        capacity:
+          storage: 5Gi
+        accessModes:
+          - ReadWriteMany
+        persistentVolumeReclaimPolicy: Retain
+        hostPath:
+          path: '{{ data_dir }}/postgres/data'
+
+- name: Create persistent volume claim
+  community.kubernetes.k8s:
+    state: present
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    definition:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: postgres-pv-claim
+        namespace: '{{ project_name }}'
+        labels:
+          app: postgres
+          type: local
+      spec:
+        storageClassName: microk8s-hostpath
+        resources:
+          requests:
+            storage: 5Gi
+        accessModes:
+          - ReadWriteMany
+
+- name: Create service
+  community.kubernetes.k8s:
+    state: present
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: postgres
+        namespace: '{{ project_name }}'
+        labels:
+          app: postgres
+      spec:
+        ports:
+          - port: 5432
+            protocol: TCP
+        selector:
+          app: postgres
+
+- name: Create deployment
+  community.kubernetes.k8s:
+    state: present
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    definition:
+      apiVersion: v1
+      kind: StatefulSet
+      metadata:
+        name: postgres
+        namespace: '{{ project_name }}'
+        labels:
+          app: postgres
+      spec:
+        replicas: 1
+        selector:
+          matchLabels:
+            app: postgres
+        template:
+          metadata:
+            name: postgres
+            namespace: '{{ project_name }}'
+            labels:
+              app: postgres
+          spec:
+            updateStrategy:
+              type: RollingUpdate
+            containers:
+              - name: postgres
+                image: '{{ postgres_image }}'
+                imagePullPolicy: "IfNotPresent"
+                ports:
+                  - containerPort: 5432
+                env:
+                  - name: POSTGRES_PASSWORD
+                    value: '{{ postgres_password }}'
+                  - name: POSTGRES_USER
+                    value: postgres
+                  - name: POSTGRES_DB
+                    value: postgres
+                volumeMounts:
+                  - mountPath: /var/lib/postgresql/data
+                    name: postgres-data
+                readinessProbe:
+                  exec:
+                    command:
+                      - 'pg_isready'
+                      - '-U' 
+                      - 'postgres'
+                  initialDelaySeconds: 10
+                  periodSeconds: 10
+            volumes:
+              - name: postgres-data
+                persistentVolumeClaim:
+                  claimName: postgres-pv-claim
+
+- name: Wait for service ready
+  community.kubernetes.k8s_info:
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    kind: StatefulSet
+    namespace: '{{ project_name }}'
+    name: 'postgres'
+    label_selectors: 
+      - app = postgres
+  register: output_info
+  until: output_info | json_query('resources[*].status.readyReplicas') | select ('match','1') | list | length == 1
+  delay: 5
+  retries: 5

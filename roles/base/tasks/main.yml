@@ -1,0 +1,19 @@
+---
+- name: Install python dependencies
+  pip:
+    name: ["requests"]
+    state: latest
+
+- name: Check kubernetes cluster info
+  community.kubernetes.k8s_cluster_info:
+    invalidate_cache: False
+  register: k8s_status
+
+- name: Create namespace
+  community.kubernetes.k8s:
+    name: '{{ project_name }}'
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    kind: Namespace
+    state: present

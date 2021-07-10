@@ -1,0 +1,7 @@
+apiVersion: postgres.matusnovak.com/v1
+kind: PostgresDatabase
+metadata:
+  name: postgresdatabase-sample
+spec:
+  # Add fields here
+  foo: bar

@@ -1,0 +1,4 @@
+---
+- include_tasks: 'traefik.yml'
+- include_tasks: 'crd.yml'
+- include_tasks: 'rbac.yml'

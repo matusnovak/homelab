@@ -1,0 +1,56 @@
+---
+# Docker image name
+traefik_image: "docker.io/library/traefik:v2.4"
+
+# Log level
+traefik_log_level: "DEBUG"
+
+# Enable HTTP?
+traefik_http_enabled: true
+
+# Host's port at which HTTP will be available.
+# Does not affect port inside of Traefik's container.
+traefik_http_port: 80
+
+# Enable HTTPS?
+traefik_https_enabled: true
+
+# Host's port at which HTTPS will be available.
+# Does not affect port inside of Traefik's container.
+traefik_https_port: 443
+
+# A web dashboard that users can access.
+# Will show the current middlewares and routes that
+# Traefik is using. Not used for configuration.
+traefik_dashboard_enabled: true
+
+# Should Traefik ask Let's Encrypt for a SSL certificate?
+# You must own your domain specified in "domain_name" variable.
+# You also must expose port 80 & 443 to the internet with portforwarding.
+# Let's Encrypt must be able to access your Traefik for certificate validation.
+traefik_acme_enabled: false
+
+# Email to use by Let's Encrypt to generate SSL certificates for.
+# Must be your own email. You don't need a Let's Encrypt account.
+traefik_acme_email: "email@example.com"
+
+# What type of challenge to use?
+# web - Uses HTTP port, you must own the domain.
+# web-secure - Uses HTTPS port, you must own the domain.
+# dns - Use DNS challenge provider.
+# More here: https://doc.traefik.io/traefik/https/acme/#dnschallenge
+traefik_acme_challenge: "web"
+
+# Only used if traefik_acme_challenge is set to "dns"
+# Example values:
+# route53 - Use AWS Route 53 challenge. You must provide valid 
+#           AWS credentials as extra environment variables.
+traefik_dns_challenge_provider: "route53"
+
+# Enable Prometheus metrics?
+# Will be exposed at http://traefik/metrics accessible
+# only within the Docker network.
+# Will be also exposed at https://traefik.example.com/metrics 
+# accessible by anyone. You can limit outside access with Authelia.
+# Works just like the dashboard.
+traefik_metrics_enabled: true

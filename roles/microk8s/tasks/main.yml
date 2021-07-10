@@ -1,0 +1,54 @@
+---
+- name: Check if microk8s is installed
+  shell: command -v microk8s >/dev/null 2>&1
+  register: microk8s_exist
+  ignore_errors: yes
+  changed_when: no
+
+- name: Install microk8s
+  when: microk8s_exist == false
+  block:
+
+    - name: Install snap
+      apt:
+        name: snapd
+        state: present
+      become: yes
+
+    - name: Install microk8s from snap
+      snap:
+        name: microk8s
+        classic: yes
+      become: yes
+        
+    - name: Get user id
+      set_fact:
+        user_id: '{{ ansible_user_id }}'
+
+    - name: Get user home folder
+      set_fact:
+        user_home: "{{ lookup('env', 'HOME') }}"
+
+    - name: Chown kube folder
+      file:
+        path: '{{ user_home }}/.kube'
+        owner: '{{ user_id }}'
+        group: '{{ user_id }}'
+        mode: '750'
+        recurse: false
+      become: yes
+
+    - name: Add the user to microk8s group
+      ansible.builtin.user:
+        name: '{{ user_id }}'
+        group: microk8s
+      become: yes
+
+- name: Get microk8s status
+  shell: 'microk8s status --wait-ready'
+  changed_when: no
+
+- name: Enable addons
+  shell: 'microk8s enable registry dns storage metallb'
+  register: output
+  changed_when: "'created' in output.stdout"
