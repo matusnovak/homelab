@@ -6,7 +6,7 @@
   changed_when: no
 
 - name: Install microk8s
-  when: microk8s_exist == false
+  when: microk8s_exist.rc == 1
   block:
 
     - name: Install snap

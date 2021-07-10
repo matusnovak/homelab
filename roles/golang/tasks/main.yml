@@ -6,7 +6,7 @@
   changed_when: no
 
 - name: Install golang
-  when: go_exist == false
+  when: go_exist.rc == 1
   block:
 
     - name: Install snap
