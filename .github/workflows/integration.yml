@@ -28,6 +28,8 @@ jobs:
           echo "  roles:" >> site.yml
           echo "    - ${{ matrix.role }}" >> site.yml
           sudo apt-get install python3-jmespath -y
+          sudo /usr/bin/python -m pip install jmespath
+          /usr/bin/python -m pip install jmespath
           ansible-playbook -vvv -i hosts site.yml
 
       - name: Dump logs
