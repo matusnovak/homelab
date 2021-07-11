@@ -48,22 +48,22 @@
     - name: Create config
       shell: 'microk8s kubectl config view --raw > {{ user_home }}/.kube/config'
       become: yes
-      changed_when: no
       when: not config_result.stat.exists
 
     - name: Set the owner of the kube folder
       shell: 'chown -f -R {{ user_id }} {{ user_home }}/.kube'
       become: yes
-      changed_when: no
+
+    - name: Set the permissions for kube config
+      shell: 'chmod go-rx {{ user_home }}/.kube/config'
+      become: yes
 
     - name: Add the user to microk8s group
       shell: 'usermod -a -G microk8s {{ user_id }}'
       become: yes
-      changed_when: no
 
     - name: newgrp microk8s
       shell: 'newgrp microk8s'
-      changed_when: no
 
 - name: Get microk8s status
   shell: 'microk8s status --wait-ready'
