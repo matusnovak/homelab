@@ -29,21 +29,15 @@
       set_fact:
         user_home: "{{ lookup('env', 'HOME') }}"
 
-    - name: Chown kube folder
-      file:
-        path: '{{ user_home }}/.kube'
-        owner: '{{ user_id }}'
-        group: '{{ user_id }}'
-        mode: '750'
-        recurse: false
+    - name: Add the user to microk8s group
+      shell: 'chown -f -R {{ user_id }} {{ user_home }}/.kube'
       become: yes
-      ignore_errors: yes
+      changed_when: no
 
     - name: Add the user to microk8s group
-      ansible.builtin.user:
-        name: '{{ user_id }}'
-        group: microk8s
+      shell: 'usermod -a -G microk8s {{ user_id }}'
       become: yes
+      changed_when: no
 
 - name: Get microk8s status
   shell: 'microk8s status --wait-ready'
