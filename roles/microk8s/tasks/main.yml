@@ -68,8 +68,10 @@
 - name: Get microk8s status
   shell: 'microk8s status --wait-ready'
   changed_when: no
+  become: yes
 
 - name: Enable addons
   shell: 'microk8s enable registry dns storage metallb'
   register: output
+  become: yes
   changed_when: "'created' in output.stdout"
