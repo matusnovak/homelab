@@ -32,8 +32,7 @@ jobs:
       - name: Dump logs
         if: ${{ always() }}
         run: |
-          mkdir -p /tmp/microk8s/{logs,describe}
-          kubectl get all --all-namespaces 2>&1 > /tmp/microk8s/get-all.log
+          ./.github/dump.sh
 
       - name: Store logs as artifacts
         if: ${{ always() }}

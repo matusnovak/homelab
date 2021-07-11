@@ -1,7 +1,7 @@
 ---
 - name: Install python dependencies
   pip:
-    name: ['requests', 'openshift', 'PyYAML']
+    name: ['requests', 'openshift', 'PyYAML', 'jmespath']
     state: latest
 
 - name: Check kubernetes cluster info
