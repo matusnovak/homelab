@@ -1,8 +1,9 @@
 ---
 - name: Install python dependencies
   pip:
-    name: ['requests', 'openshift', 'PyYAML', 'jmespath']
+    name: ['requests', 'openshift', 'PyYAML', 'ansible', 'jmespath']
     state: latest
+    executable: pip3
 
 - name: Check kubernetes cluster info
   community.kubernetes.k8s_cluster_info:
