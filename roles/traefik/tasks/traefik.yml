@@ -31,8 +31,7 @@
         labels:
           app: traefik
       spec:
-        type: LoadBalancer
-        externalTrafficPolicy: Local
+        type: NodePort
         ports:
           - port: 443
             protocol: TCP
@@ -40,9 +39,6 @@
           - port: 80
             protocol: TCP
             name: 'http'
-          - port: 8080
-            protocol: TCP
-            name: 'admin'
         selector:
           app: traefik
 
@@ -117,8 +113,6 @@
                     containerPort: 80
                   - name: 'https'
                     containerPort: 443
-                  - name: 'admin'
-                    containerPort: 8080
                 volumeMounts:
                   - mountPath: /etc/traefik/traefik.yml
                     name: traefik-config
@@ -158,9 +152,21 @@
     namespace: '{{ project_name }}'
   register: traefik_service
 
-- name: Get load balancer IP
+- name: Get traefik http port
   set_fact:
-    traefik_lb_address: '{{ traefik_service.resources[0].status.loadBalancer.ingress[0].ip }}'
+    traefik_http_port: "{{ traefik_service | json_query('resources[0].spec.ports[?name==`http`].nodePort') | json_query('[0]') | string }}"
+  when: traefik_http_enabled
+
+- name: Get traefik https port
+  set_fact:
+    traefik_https_port: "{{ traefik_service | json_query('resources[0].spec.ports[?name==`https`].nodePort') | json_query('[0]') | string }}"
+  when: traefik_https_enabled
+
+- name: Get traefik address
+  set_fact:
+    traefik_host_port: "{{ traefik_https_enabled | ternary(443, 80) }}"
+    traefik_port: "{{ traefik_https_enabled | ternary(traefik_https_port, traefik_http_port) }}"
+    traefik_address: "{{ traefik_https_enabled | ternary('https://localhost:' + traefik_http_port, 'http://localhost:' + traefik_http_port) }}"
 
 # - name: Deploy proxy
 #   docker_container:
@@ -168,11 +174,11 @@
 #     name: 'port-forward'
 #     restart_policy: 'unless-stopped'
 #     ports:
-#       - '443:443'
+#       - '{{ traefik_host_port }}:{{ traefik_port }}'
 #     env:
-#       LOCAL_PORT: '443'
+#       LOCAL_PORT: '{{ traefik_port }}'
 #       REMOTE_HOST: '{{ traefik_lb_address }}'
-#       REMOTE_PORT: '443'
+#       REMOTE_PORT: '{{ traefik_host_port }}'
 
 - name: Create dashboard route
   community.kubernetes.k8s:

@@ -71,8 +71,7 @@
   become: yes
 
 - name: Enable addons
-  shell: 'microk8s enable registry dns storage metallb'
+  shell: 'microk8s enable registry dns storage'
   register: output
   become: yes
   changed_when: "'created' in output.stdout"
-  ignore_errors: yes # what the fuck?
