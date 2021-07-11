@@ -61,6 +61,10 @@
       become: yes
       changed_when: no
 
+    - name: newgrp microk8s
+      shell: 'newgrp microk8s'
+      changed_when: no
+
 - name: Get microk8s status
   shell: 'microk8s status --wait-ready'
   changed_when: no
