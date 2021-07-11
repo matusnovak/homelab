@@ -23,7 +23,7 @@ do
       containers=$(kubectl get pod --namespace $namespace $name -o "jsonpath={.spec.containers[*].name}")
       for container in $containers
       do
-        kubectl logs --namespace $namespace $name -c $container 2>&1 > "/tmp/microk8s/logs/$namespace-$name-$container.log"
+        kubectl logs --namespace $namespace $name -c $container 2>&1 > "/tmp/microk8s/logs/$namespace-$name-$container.log" || true
       done
     fi
   done

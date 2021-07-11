@@ -27,6 +27,7 @@ jobs:
           echo "- hosts: homelab" >> site.yml
           echo "  roles:" >> site.yml
           echo "    - ${{ matrix.role }}" >> site.yml
+          sudo apt-get install python3-jmespath -y
           ansible-playbook -vvv -i hosts site.yml
 
       - name: Dump logs
