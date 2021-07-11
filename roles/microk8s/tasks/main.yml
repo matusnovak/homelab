@@ -75,3 +75,4 @@
   register: output
   become: yes
   changed_when: "'created' in output.stdout"
+  ignore_errors: yes # what the fuck?
