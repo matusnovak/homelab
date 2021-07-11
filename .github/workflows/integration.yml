@@ -21,15 +21,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
 
+      - name: jmespath
+        run: |
+          sudo apt-get install python3-jmespath -y
+          sudo /usr/bin/python -m pip install jmespath
+          /usr/bin/python -m pip install jmespath
+          sudo pip3 install jmespath
+          pip3 install jmespath
+
       - name: Ansible
         run: |
           echo "---" >> site.yml
           echo "- hosts: homelab" >> site.yml
           echo "  roles:" >> site.yml
           echo "    - ${{ matrix.role }}" >> site.yml
-          sudo apt-get install python3-jmespath -y
-          sudo /usr/bin/python -m pip install jmespath
-          /usr/bin/python -m pip install jmespath
+
           ansible-playbook -vvv -i hosts site.yml
 
       - name: Dump logs
