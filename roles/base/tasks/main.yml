@@ -1,12 +1,12 @@
 ---
-- name: Install python3 dependencies
+- name: Install extra python dependencies
   pip:
-    name: ['requests', 'openshift', 'PyYAML']
+    name: ['requests', 'openshift', 'PyYAML', 'ansible']
     state: latest
 
-- name: Install python-jmespath
+- name: Install extra apt packages
   apt:
-    name: 'python-jmespath'
+    name: 'python3-jmespath'
     state: present
   become: yes
 
