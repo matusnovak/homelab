@@ -6,7 +6,8 @@ mkdir -p /tmp/microk8s
 kubectl get all --all-namespaces 2>&1 > /tmp/microk8s/get-all.log
 for type in pod service deployment statefulset replicaset daemonset pvc
 do
-  mkdir -p "/tmp/microk8s/$type/logs"
+  mkdir -p "/tmp/microk8s/$type"
+  mkdir -p "/tmp/microk8s/logs"
 
   items=$(kubectl get $type --all-namespaces --template "{{range .items}}{{.metadata.namespace}}/{{.metadata.name}} {{end}}")
   

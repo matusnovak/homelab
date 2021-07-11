@@ -3,13 +3,12 @@
   pip:
     name: ['requests', 'openshift', 'PyYAML']
     state: latest
-    executable: pip3
 
-- name: Install python2 dependencies
-  pip:
-    name: ['jmespath']
-    state: latest
-    executable: pip
+- name: Install python-jmespath
+  apt:
+    name: 'python-jmespath'
+    state: present
+  become: yes
 
 - name: Check kubernetes cluster info
   community.kubernetes.k8s_cluster_info:
