@@ -20,6 +20,11 @@
         name: microk8s
         classic: yes
       become: yes
+
+    - name: Get microk8s status
+      shell: 'microk8s status --wait-ready'
+      changed_when: no
+      become: yes
         
     - name: Get user id
       set_fact:
@@ -29,7 +34,24 @@
       set_fact:
         user_home: "{{ lookup('env', 'HOME') }}"
 
-    - name: Add the user to microk8s group
+    - name: Create kube folder
+      ansible.builtin.file:
+        path: '{{ user_home }}/.kube'
+        state: directory
+        mode: '0750'
+
+    - name: Check for config
+      stat:
+        path: '{{ user_home }}/.kube/config'
+      register: config_result
+
+    - name: Create config
+      shell: 'microk8s kubectl config view --raw > {{ user_home }}/.kube/config'
+      become: yes
+      changed_when: no
+      when: not config_result.stat.exists
+
+    - name: Set the owner of the kube folder
       shell: 'chown -f -R {{ user_id }} {{ user_home }}/.kube'
       become: yes
       changed_when: no
