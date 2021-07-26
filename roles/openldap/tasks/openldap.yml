@@ -2,14 +2,15 @@
 - name: Create folder structure
   become: yes
   file:
-    path: '{{ data_dir }}/postgres/{{ item }}'
+    path: '{{ data_dir }}/openldap/{{ item }}'
     state: directory
     mode: '0700'
-    owner: '999'
-    group: '0'
+    owner: '911'
+    group: '911'
     recurse: false
   loop:
-    - data
+    - 'data'
+    - 'config'
 
 - name: Create persistent volume
   community.kubernetes.k8s:
@@ -21,20 +22,23 @@
       apiVersion: v1
       kind: PersistentVolume
       metadata:
-        name: postgres-pv-volume
+        name: 'openldap-{{ item }}-pv-volume'
         namespace: '{{ project_name }}'
         labels:
-          app: postgres
+          app: openldap
           type: local
       spec:
         storageClassName: microk8s-hostpath
         capacity:
-          storage: 5Gi
+          storage: 128Mi
         accessModes:
           - ReadWriteMany
         persistentVolumeReclaimPolicy: Retain
         hostPath:
-          path: '{{ data_dir }}/postgres/data'
+          path: '{{ data_dir }}/openldap/{{ item }}'
+  loop:
+    - data
+    - config
 
 - name: Create persistent volume claim
   community.kubernetes.k8s:
@@ -46,19 +50,22 @@
       apiVersion: v1
       kind: PersistentVolumeClaim
       metadata:
-        name: postgres-pv-claim
+        name: 'openldap-{{ item }}-pv-claim'
         namespace: '{{ project_name }}'
         labels:
-          app: postgres
+          app: openldap
           type: local
       spec:
         storageClassName: microk8s-hostpath
         resources:
           requests:
-            storage: 5Gi
+            storage: 128Mi
         accessModes:
           - ReadWriteMany
-        volumeName: postgres-pv-volume
+        volumeName: 'openldap-{{ item }}-pv-volume'
+  loop:
+    - data
+    - config
 
 - name: Create service
   community.kubernetes.k8s:
@@ -70,16 +77,16 @@
       apiVersion: v1
       kind: Service
       metadata:
-        name: postgres
+        name: openldap
         namespace: '{{ project_name }}'
         labels:
-          app: postgres
+          app: openldap
       spec:
         ports:
-          - port: 5432
+          - port: 389
             protocol: TCP
         selector:
-          app: postgres
+          app: openldap
 
 - name: Create deployment
   community.kubernetes.k8s:
@@ -91,10 +98,10 @@
       apiVersion: v1
       kind: Deployment
       metadata:
-        name: postgres
+        name: openldap
         namespace: '{{ project_name }}'
         labels:
-          app: postgres
+          app: openldap
       spec:
         replicas: 1
         strategy:
@@ -102,42 +109,65 @@
         revisionHistoryLimit: 0
         selector:
           matchLabels:
-            app: postgres
+            app: openldap
         template:
           metadata:
-            name: postgres
+            name: openldap
             namespace: '{{ project_name }}'
             labels:
-              app: postgres
+              app: openldap
           spec:
             containers:
-              - name: postgres
-                image: '{{ postgres_image }}'
+              - name: openldap
+                image: '{{ ldap_image }}'
                 imagePullPolicy: "IfNotPresent"
                 ports:
-                  - containerPort: 5432
+                  - containerPort: 389
                 env:
-                  - name: POSTGRES_PASSWORD
-                    value: '{{ postgres_password }}'
-                  - name: POSTGRES_USER
-                    value: postgres
-                  - name: POSTGRES_DB
-                    value: postgres
+                  - name: LDAP_ORGANISATION
+                    value: '{{ ldap_organisation }}'
+                  - name: LDAP_BASE_DN
+                    value: '{{ domain_component }}'
+                  - name: LDAP_DOMAIN
+                    value: '{{ domain_name }}'
+                  - name: LDAP_ADMIN_PASSWORD
+                    value: '{{ ldap_admin_password }}'
+                  - name: LDAP_REMOVE_CONFIG_AFTER_SETUP
+                    value: 'false'
+                  - name: LDAP_TLS
+                    value: 'false'
+                  - name: 'LDAP_READONLY_USER'
+                    value: 'true'
+                  - name: 'LDAP_READONLY_USER_USERNAME'
+                    value: 'readonly'
+                  - name: 'LDAP_READONLY_USER_PASSWORD'
+                    value: '{{ ldap_readonly_password }}'
                 volumeMounts:
-                  - mountPath: /var/lib/postgresql/data
-                    name: postgres-data
+                  - mountPath: /var/lib/openldap
+                    name: openldap-data
+                  - mountPath: /etc/openldap/slapd.d
+                    name: openldap-config
                 readinessProbe:
                   exec:
                     command:
-                      - 'pg_isready'
-                      - '-U' 
-                      - 'postgres'
+                      - 'sh'
+                      - '-c'
+                      - 'ldapsearch -x -H ldap://127.0.0.1 -b $LDAP_BASE_DN -s sub -D cn=admin,$LDAP_BASE_DN -w $LDAP_ADMIN_PASSWORD'
                   initialDelaySeconds: 10
-                  periodSeconds: 10
+                  periodSeconds: 30
             volumes:
-              - name: postgres-data
+              - name: openldap-data
                 persistentVolumeClaim:
-                  claimName: postgres-pv-claim
+                  claimName: openldap-data-pv-claim
+              - name: openldap-config
+                persistentVolumeClaim:
+                  claimName: openldap-config-pv-claim
+
+- name: Set facts
+  set_fact:
+    ldap_admin_user: "cn=admin,{{ domain_component }}"
+    ldap_groups_dn: "ou={{ ldap_groups_name }},{{ domain_component }}"
+    ldap_users_dn: "ou={{ ldap_users_name }},{{ domain_component }}"
 
 - name: Wait for service ready
   community.kubernetes.k8s_info:
@@ -146,9 +176,9 @@
     api_key: '{{ k8s_api_key }}'
     kind: Deployment
     namespace: '{{ project_name }}'
-    name: 'postgres'
+    name: 'openldap'
     label_selectors: 
-      - app = postgres
+      - app = openldap
   register: output_info
   until: output_info | json_query('resources[*].status.readyReplicas') | select ('match','1') | list | length == 1
   delay: 10

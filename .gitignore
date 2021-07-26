@@ -3,3 +3,4 @@ temp/
 group_vars/homelab/*.yml
 deploy.sh
 site.yml
+__pycache__

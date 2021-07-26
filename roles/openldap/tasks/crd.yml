@@ -1,0 +1,41 @@
+---
+- name: Build OpenLDAP CRD controller
+  make:
+    chdir: 'resources/openldap'
+    target: 'docker-build'
+    params:
+      IMG: 'localhost:32000/matusnovak/k8s-openldap-controller:latest'
+
+- name: Push OpenLDAP CRD controller
+  make:
+    chdir: 'resources/openldap'
+    target: 'docker-push'
+    params:
+      IMG: 'localhost:32000/matusnovak/k8s-openldap-controller:latest'
+
+- name: Install OpenLDAP CRD controller
+  make:
+    chdir: 'resources/openldap'
+    target: 'install'
+    params:
+      IMG: 'localhost:32000/matusnovak/k8s-openldap-controller:latest'
+
+- name: Deploy OpenLDAP CRD controller
+  make:
+    chdir: 'resources/openldap'
+    target: 'deploy'
+    params:
+      IMG: 'localhost:32000/matusnovak/k8s-openldap-controller:latest'
+
+- name: Wait for CRD ready
+  community.kubernetes.k8s_info:
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    kind: Deployment
+    namespace: 'openldap-system'
+    name: 'openldap-controller-manager'
+  register: output_info
+  until: output_info | json_query('resources[*].status.readyReplicas') | select ('match','1') | list | length == 1
+  delay: 5
+  retries: 0

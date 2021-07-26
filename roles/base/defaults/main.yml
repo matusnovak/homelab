@@ -15,7 +15,7 @@ domain_name: homelab.lan
 # Can not be changed later!
 domain_component: dc=homelab,dc=lan
 
+# Kubernetes specific variables
 k8s_api_version: 'v1'
 k8s_api_key: null
 k8s_ssl_verify: null
-k8s_host: 'https://127.0.0.1:16443'

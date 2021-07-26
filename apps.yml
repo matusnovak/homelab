@@ -1,0 +1,17 @@
+- name: Homelab
+  hosts: homelab
+
+  roles:
+    - role: adminer
+      tags: adminer
+
+    - role: openldap
+      tags: openldap
+
+    - role: postgres
+      tags: postgres
+
+    - role: traefik
+      tags: traefik
+
+  

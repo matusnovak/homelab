@@ -1,0 +1,24 @@
+# permissions for end users to edit ldapobjects.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ldapobject-editor-role
+rules:
+- apiGroups:
+  - openldap.matusnovak.com
+  resources:
+  - ldapobjects
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - openldap.matusnovak.com
+  resources:
+  - ldapobjects/status
+  verbs:
+  - get

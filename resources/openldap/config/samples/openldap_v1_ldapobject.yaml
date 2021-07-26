@@ -1,0 +1,7 @@
+apiVersion: openldap.matusnovak.com/v1
+kind: LdapObject
+metadata:
+  name: ldapobject-sample
+spec:
+  # Add fields here
+  foo: bar

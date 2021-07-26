@@ -1,5 +1,4 @@
 ---
-
 - name: Create service
   community.kubernetes.k8s:
     state: present
@@ -38,6 +37,9 @@
           app: adminer
       spec:
         replicas: 1
+        strategy:
+          type: Recreate
+        revisionHistoryLimit: 0
         selector:
           matchLabels:
             app: adminer
@@ -48,8 +50,6 @@
             labels:
               app: adminer
           spec:
-            #updateStrategy:
-            #  type: RollingUpdate
             containers:
               - name: adminer
                 image: '{{ adminer_image }}'
@@ -75,8 +75,8 @@
       - app = adminer
   register: output_info
   until: output_info | json_query('resources[*].status.readyReplicas') | select ('match','1') | list | length == 1
-  delay: 5
-  retries: 5
+  delay: 10
+  retries: 6
 
 - name: Create ingress route
   community.kubernetes.k8s:

@@ -1,21 +1,9 @@
 ---
 - name: Install extra python3 dependencies
   pip:
-    name: ['requests', 'openshift', 'PyYAML', 'jmespath']
+    name: ['requests', 'openshift', 'PyYAML']
     state: latest
     executable: pip3
-
-- name: Install extra python2 dependencies
-  pip:
-    name: ['jmespath']
-    state: latest
-    executable: pip
-
-- name: Install extra apt packages
-  apt:
-    name: 'python3-jmespath'
-    state: present
-  become: yes
 
 - name: Check kubernetes cluster info
   community.kubernetes.k8s_cluster_info:
@@ -30,3 +18,13 @@
     api_key: '{{ k8s_api_key }}'
     kind: Namespace
     state: present
+
+- name: Create data structure
+  become: yes
+  file:
+    path: '{{ data_dir }}'
+    state: directory
+    mode: '0755'
+    owner: '0'
+    group: '0'
+    recurse: false

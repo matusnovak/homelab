@@ -94,6 +94,9 @@
           app: traefik
       spec:
         replicas: 1
+        strategy:
+          type: Recreate
+        revisionHistoryLimit: 0
         selector:
           matchLabels:
             app: traefik

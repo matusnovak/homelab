@@ -1,0 +1,16 @@
+domain: matusnovak.com
+layout:
+- go.kubebuilder.io/v3
+projectName: openldap
+repo: github.com/matusnovak/homelab/resources/openldap
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: matusnovak.com
+  group: openldap
+  kind: LdapObject
+  path: github.com/matusnovak/homelab/resources/openldap/api/v1
+  version: v1
+version: "3"

@@ -1,0 +1,20 @@
+# permissions for end users to view ldapobjects.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ldapobject-viewer-role
+rules:
+- apiGroups:
+  - openldap.matusnovak.com
+  resources:
+  - ldapobjects
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - openldap.matusnovak.com
+  resources:
+  - ldapobjects/status
+  verbs:
+  - get

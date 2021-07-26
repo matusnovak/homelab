@@ -1,0 +1,68 @@
+---
+- include_tasks: 'openldap.yml'
+- include_tasks: 'crd.yml'
+
+- name: Create LDAP groups unit
+  community.kubernetes.k8s:
+    state: present
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    definition:
+      apiVersion: v1
+      kind: LdapObject
+      metadata:
+        name: openldap-object-groups
+        namespace: '{{ project_name }}'
+        labels:
+          app: openldap
+      spec:
+        dn: '{{ ldap_groups_dn }}'
+        objectClass: 'organizationalUnit'
+        values:
+          - name: 'objectClass'
+            value: 'top'
+
+- name: Create LDAP users unit
+  community.kubernetes.k8s:
+    state: present
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    definition:
+      apiVersion: v1
+      kind: LdapObject
+      metadata:
+        name: openldap-object-users
+        namespace: '{{ project_name }}'
+        labels:
+          app: openldap
+      spec:
+        dn: '{{ ldap_users_dn }}'
+        objectClass: 'organizationalUnit'
+        values:
+          - name: 'objectClass'
+            value: 'top'
+
+- name: Create LDAP posix group
+  community.kubernetes.k8s:
+    state: present
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    definition:
+      apiVersion: v1
+      kind: LdapObject
+      metadata:
+        name: openldap-object-posix
+        namespace: '{{ project_name }}'
+        labels:
+          app: openldap
+      spec:
+        dn: 'cn=user,{{ ldap_groups_dn }}'
+        objectClass: 'posixGroup'
+        values: 
+          - name: 'objectClass'
+            value: 'top'
+          - name: 'gidNumber'
+            value: '500'

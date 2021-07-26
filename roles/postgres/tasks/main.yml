@@ -2,20 +2,20 @@
 - include_tasks: 'postgres.yml'
 - include_tasks: 'crd.yml'
 
-- name: Sample Postgres resource
-  community.kubernetes.k8s:
-    state: present
-    verify_ssl: '{{ k8s_ssl_verify }}'
-    api_version: '{{ k8s_api_version }}'
-    api_key: '{{ k8s_api_key }}'
-    definition:
-      apiVersion: v1
-      kind: PostgresUser
-      metadata:
-        name: postgresuser-sample
-        namespace: '{{ project_name }}'
-      spec:
-        name: 'sample'
-        password: 'sample'
-        superuser: False
+# - name: Sample Postgres resource
+#   community.kubernetes.k8s:
+#     state: present
+#     verify_ssl: '{{ k8s_ssl_verify }}'
+#     api_version: '{{ k8s_api_version }}'
+#     api_key: '{{ k8s_api_key }}'
+#     definition:
+#       apiVersion: v1
+#       kind: PostgresUser
+#       metadata:
+#         name: postgresuser-sample
+#         namespace: '{{ project_name }}'
+#       spec:
+#         name: 'sample'
+#         password: 'sample'
+#         superuser: False
 
