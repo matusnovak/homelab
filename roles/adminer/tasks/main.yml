@@ -101,3 +101,12 @@
               - name: adminer
                 port: 8080
         tls: {}
+
+- name: Healthcheck
+  http_wait:
+    url: '{{ traefik_address }}/'
+    status_code: '200'
+    retries: 3
+    delay: 10
+    headers:
+      - 'Host: adminer.{{ domain_name }}'

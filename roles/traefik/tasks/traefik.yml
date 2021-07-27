@@ -206,3 +206,14 @@
               - name: api@internal
                 kind: TraefikService
         tls: {}
+  when: traefik_dashboard_enabled
+
+- name: Healthcheck
+  http_wait:
+    url: '{{ traefik_address }}/'
+    status_code: '200, 304'
+    retries: 3
+    delay: 10
+    headers:
+      - 'Host: traefik.{{ domain_name }}'
+  when: traefik_dashboard_enabled

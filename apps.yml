@@ -1,3 +1,10 @@
+# How to deploy an app:
+# 1. Overwrite the default values for each app (and their dependencies) in
+#    group_vars/homelab/*.yml file (any filename)
+# 2. Deploy the app using this playbook by providing "--tags" with the app name
+#    Example:
+#      ansible-playbook --ask-become-pass -i hosts --tags adminer apps.yml
+
 - name: Homelab
   hosts: homelab
 
@@ -14,4 +21,3 @@
     - role: traefik
       tags: traefik
 
-  
