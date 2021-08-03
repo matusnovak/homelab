@@ -12,7 +12,7 @@
     - data
 
 - name: Create persistent volume
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
@@ -37,7 +37,7 @@
           path: '{{ data_dir }}/postgres/data'
 
 - name: Create persistent volume claim
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
@@ -61,7 +61,7 @@
         volumeName: postgres-pv-volume
 
 - name: Create service
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
@@ -82,7 +82,7 @@
           app: postgres
 
 - name: Create deployment
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
@@ -140,7 +140,7 @@
                   claimName: postgres-pv-claim
 
 - name: Wait for service ready
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
     api_key: '{{ k8s_api_key }}'

@@ -1,6 +1,6 @@
 ---
 - name: Create configuration
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
@@ -17,7 +17,7 @@
         'traefik.yml': "{{ lookup('template', 'roles/traefik/files/traefik.yml.j2') }}"
 
 - name: Create service
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
@@ -43,7 +43,7 @@
           app: traefik
 
 - name: Create service account
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
@@ -56,7 +56,7 @@
         name: traefik-ingress-controller
 
 - name: Create persistent volume claim
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
@@ -79,7 +79,7 @@
           - ReadWriteMany
 
 - name: Create deployment
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
@@ -131,7 +131,7 @@
                   claimName: traefik-certs-pv-claim
 
 - name: Wait for service ready
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
     api_key: '{{ k8s_api_key }}'
@@ -146,7 +146,7 @@
   retries: 5
 
 - name: Find service
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
     api_key: '{{ k8s_api_key }}'
@@ -184,7 +184,7 @@
 #       REMOTE_PORT: '{{ traefik_host_port }}'
 
 - name: Create dashboard route
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'

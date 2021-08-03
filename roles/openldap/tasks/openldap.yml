@@ -13,7 +13,7 @@
     - 'config'
 
 - name: Create persistent volume
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
@@ -41,7 +41,7 @@
     - config
 
 - name: Create persistent volume claim
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
@@ -68,7 +68,7 @@
     - config
 
 - name: Create service
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
@@ -89,7 +89,7 @@
           app: openldap
 
 - name: Create deployment
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
@@ -170,7 +170,7 @@
     ldap_users_dn: "ou={{ ldap_users_name }},{{ domain_component }}"
 
 - name: Wait for service ready
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
     api_key: '{{ k8s_api_key }}'

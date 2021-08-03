@@ -3,7 +3,7 @@
 - include_tasks: 'crd.yml'
 
 - name: Create LDAP groups unit
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
@@ -24,7 +24,7 @@
             value: 'top'
 
 - name: Create LDAP users unit
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
@@ -45,7 +45,7 @@
             value: 'top'
 
 - name: Create LDAP posix group
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'

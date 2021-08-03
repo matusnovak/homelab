@@ -1,7 +1,7 @@
 ---
 # https://doc.traefik.io/traefik/reference/dynamic-configuration/kubernetes-crd/#definitions
 - name: Create RBAC - definition
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
@@ -55,7 +55,7 @@
             - watch
 
 - name: Create RBAC - binding
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'

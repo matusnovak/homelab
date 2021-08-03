@@ -1,7 +1,7 @@
 ---
 # https://doc.traefik.io/traefik/reference/dynamic-configuration/kubernetes-crd/#definitions
 - name: Create CRD - IngressRoute
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
@@ -21,7 +21,7 @@
         scope: Namespaced
 
 - name: Create CRD - Middleware
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
@@ -41,7 +41,7 @@
         scope: Namespaced
 
 - name: Create CRD - IngressRouteTCP
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
@@ -61,7 +61,7 @@
         scope: Namespaced
 
 - name: Create CRD - IngressRouteUDP
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
@@ -81,7 +81,7 @@
         scope: Namespaced
 
 - name: Create CRD - TLSOption
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
@@ -101,7 +101,7 @@
         scope: Namespaced
   
 - name: Create CRD - TLSStore
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
@@ -121,7 +121,7 @@
         scope: Namespaced
 
 - name: Create CRD - TraefikService
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
@@ -141,7 +141,7 @@
         scope: Namespaced
 
 - name: Create CRD - ServersTransport
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'

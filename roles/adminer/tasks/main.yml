@@ -1,6 +1,6 @@
 ---
 - name: Create service
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
@@ -22,7 +22,7 @@
           app: adminer
 
 - name: Create deployment
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
@@ -64,7 +64,7 @@
                     value: 'postgres.{{ project_name }}.svc.cluster.local'
 
 - name: Wait for service ready
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
     api_key: '{{ k8s_api_key }}'
@@ -79,7 +79,7 @@
   retries: 6
 
 - name: Create ingress route
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'

@@ -28,7 +28,7 @@
       IMG: 'localhost:32000/matusnovak/k8s-postgres-controller:latest'
 
 - name: Wait for CRD ready
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     verify_ssl: '{{ k8s_ssl_verify }}'
     api_version: '{{ k8s_api_version }}'
     api_key: '{{ k8s_api_key }}'

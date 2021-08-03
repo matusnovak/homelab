@@ -20,4 +20,3 @@
 
     - role: traefik
       tags: traefik
-
