@@ -29,6 +29,7 @@ type PostgresDatabaseSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	Name string `json:"name,omitempty"`
+	Role string `json:"role,omitempty"`
 }
 
 // PostgresDatabaseStatus defines the observed state of PostgresDatabase

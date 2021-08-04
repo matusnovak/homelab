@@ -9,27 +9,43 @@
   when: docker_exist.rc != 0
   block:
     - name: Install required system packages
-      apt: '{{ item }}'
+      apt:
+        name: '{{ item }}'
+        state: present
       loop:
         - apt-transport-https
         - ca-certificates
         - curl
         - gnupg
         - lsb-release
+      become: yes
 
     - name: Add Docker GPG apt Key
       apt_key:
         url: https://download.docker.com/linux/ubuntu/gpg
         state: present
+      become: yes
 
     - name: Get lsb release name
       shell: 'lsb_release -cs'
       register: lsb_release
+      changed_when: no
 
     - name: Add Docker Repository
       apt_repository:
         repo: 'deb https://download.docker.com/linux/ubuntu {{ lsb_release.stdout }} stable'
         state: present
+      become: yes
+
+    - name: Install docker
+      apt:
+        name: '{{ item }}'
+        state: present
+      loop:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+      become: yes
 
     - name: Get user id
       set_fact:

@@ -75,3 +75,19 @@
   register: output
   become: yes
   changed_when: "'created' in output.stdout"
+
+- name: Check if kubectl is installed
+  shell: command -v kubectl >/dev/null 2>&1
+  register: kubectl_exist
+  ignore_errors: yes
+  changed_when: no
+
+- name: Install kubectl
+  when: kubectl_exist.rc != 0
+  block:
+
+    - name: Install kubectl from snap
+      snap:
+        name: kubectl
+        classic: yes
+      become: yes

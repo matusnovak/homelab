@@ -38,6 +38,8 @@ spec:
             properties:
               name:
                 type: string
+              role:
+                type: string
             type: object
           status:
             description: PostgresDatabaseStatus defines the observed state of PostgresDatabase

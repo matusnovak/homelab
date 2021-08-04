@@ -1,0 +1,127 @@
+---
+# Docker image name
+gitlab_image: "docker.io/gitlab/gitlab-ce:latest"
+gitlab_redis_image: "docker.io/library/redis:latest"
+gitlab_runner_image: "docker.io/gitlab/gitlab-runner:alpine"
+gitlab_dind_image: "docker.io/library/docker:dind"
+gitlab_minio_image: "docker.io/minio/minio:latest"
+gitlab_blockdiag_image: "docker.io/yuzutech/kroki-blockdiag:latest"
+gitlab_mermaid_image: "docker.io/yuzutech/kroki-mermaid:latest"
+gitlab_kroki_image: "docker.io/yuzutech/kroki:latest"
+gitlab_bpmn_image: "docker.io/yuzutech/kroki-bpmn:latest"
+gitlab_excalidraw_image: "docker.io/yuzutech/kroki-excalidraw:latest"
+
+# Where should the service be deployed?
+# If not constraints are defined, the service will deploy anywhere it can.
+gitlab_constraints:
+  - "node.role == manager"
+
+# Optional IPAM config. Must be an array. 
+# Example:
+#  - subnet: "10.0.1.0/24"
+#    gateway: "10.0.1.1"
+gitlab_network_ipam:
+  - subnet: "172.3.29.0/24"
+    gateway: "172.3.29.1"
+
+# Same as above, but for the S3 object store MinIO
+gitlab_minio_constraints: "{{ gitlab_constraints }}"
+
+# Same as above, but for the runner itself.
+# The runner will spawn jobs as Docker containers on the same node it has been deployed to.
+gitlab_runner_constraints: "{{ gitlab_constraints }}"
+
+# Redis password. Can be any string.
+gitlab_redis_password: "Password1!"
+
+# Password for the admin user
+gitlab_admin_passwords: "Password1!"
+
+# Name of the database role
+gitlab_postgres_role: "gitlab"
+
+# Password for the database role
+# GitLab will use database named "gitlabhq_production" and a role "gitlab"
+gitlab_postgres_password: "Password1!"
+
+# Name of the database, DO NOT CHANGE THIS!
+gitlab_postgres_database: "gitlabhq_production"
+
+# SSH port that GitLab will use for repositories
+gitlab_ssh_port: 2222
+
+# Where should the ports be exposed to? Can be either "ingress" or "host"
+# host - Container ports are exposed directly to the host.
+#        Only on the host they are running on, accessible via localhost.
+# ingress - Container ports are exposed to the overlay network.
+#           On all hosts, accessible via overlay network IP address (load balancer address!).
+# See https://docs.docker.com/engine/swarm/ingress/
+gitlab_ssh_port_mode: "host"
+
+# Enable LDAP integration?
+gitlab_ldap_enabled: true
+
+# Name of the LDAP group your users need to belong to.
+# This group will be created if it does not exist.
+gitlab_ldap_group: "gitlab"
+
+# Path on host where GitLab should store repositories (git-data).
+# Maybe this can be a USB mounted drive?
+# It is not advised to change this later.
+# 
+# Set to empty string "" if you want Ansible to create data folder in:
+#   {{ data_dir }}/gitlab/git
+# Otherwise set to some absobule path, such as: "/repositories"
+gitlab_git_data_path: ""
+
+# Git LFS
+gitlab_lfs_enabled: true
+
+# Store registry, lfs, artifacts, uploads, packages
+# via S3 (MinIO)? Otherwise they will be stored in {{ data_dir }}/gitlab/data
+gitlab_minio_enabled: true
+
+# Same as for gitlab_git_data_path but this one is for:
+# registry, lfs, artifacts, uploads, packages.
+# They will be stored via MinIO as objects
+# If set to empty string, the data will be stored in {{ data_dir }}/gitlab/objects
+gitlab_minio_path: ""
+
+# Credentials for MinIO. Can be any random string, at least 8 characters.
+gitlab_minio_access_key: "2frat8nff5dj5esx"
+gitlab_minio_secret_key: "nnri98l3243uorrt"
+
+# GitLab pages will be available at https://*.pages.homelab.lan/
+# You must set Traefik dns challenge to DNS based one,
+# for example "route53", in order for this to work!
+gitlab_pages_enabled: true
+
+# Enable GitLab's registry?
+# GitLab registry will be available at https://registry.homelab.lan/
+gitlab_registry_enabled: true
+
+# Enable GitLab's packages?
+# See https://docs.gitlab.com/ee/administration/packages/
+gitlab_packages_enabled: true
+
+# Kroki diagrams
+# See https://docs.gitlab.com/ee/administration/integration/kroki.html
+# To enable Kroki in your GitLab, go to https://gitlab.homelab.lan/admin/application_settings/general
+# and scroll to the section "Kroki". Set the URL to https://kroki.homelab.lan/ (depends on your domain_name variabl!)
+# Enable all BlockDiag, BPMN, and Excalidraw options.
+gitlab_kroki_enabled: true
+
+# To enable GitLab Runners, go to 
+# https://gitlab.homelab.lan/admin/runners
+# Copy the "registration token"
+# And add it here. 
+# Leaving this string empty will not deploy any runners
+gitlab_runner_secret: ""
+
+# Set the DNS for the container that will be created by the runner to run the job
+# See "dns" config from https://docs.gitlab.com/runner/configuration/advanced-configuration.html
+gitlab_runner_dns: "8.8.8.8"
+
+# Set extra host mappings for the container that will be created by the runner to run the job
+# See "extra_hosts" config from https://docs.gitlab.com/runner/configuration/advanced-configuration.html
+gitlab_runner_extra_hosts: ""

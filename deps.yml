@@ -1,0 +1,17 @@
+# To install dependencies, use the same method as for installing
+# applications via apps.yml
+# Example:
+#   ansible-playbook --ask-become-pass -i hosts --tags docker deps.yml
+
+- name: Homelab
+  hosts: homelab
+
+  roles:
+    - role: deps.docker
+      tags: docker
+
+    - role: deps.golang
+      tags: golang
+
+    - role: deps.microk8s
+      tags: microk8s

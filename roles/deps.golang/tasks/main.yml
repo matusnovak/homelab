@@ -15,7 +15,7 @@
         state: present
       become: yes
 
-    - name: Install microk8s
+    - name: Install go
       snap:
         name: go
         classic: yes

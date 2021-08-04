@@ -1,0 +1,7 @@
+---
+allow_duplicates: false
+
+dependencies:
+  - role: traefik
+  - role: postgres
+#  - role: openldap

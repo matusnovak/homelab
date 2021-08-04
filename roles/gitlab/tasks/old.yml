@@ -1,0 +1,525 @@
+---
+- name: Check if postgres role is included
+  fail:
+    msg: "GitLab needs the postgres role"
+  when: "'postgres' not in role_names"
+
+- name: Check if traefik role is included
+  fail:
+    msg: "GitLab needs the traefik role"
+  when: "'traefik' not in role_names"
+
+- name: Check if LDAP role is included
+  fail:
+    msg: "GitLab needs the ldap role"
+  when: "gitlab_ldap_enabled and 'ldap' not in role_names"
+
+- name: Create Gitlab folder structure
+  become: yes
+  file:
+    path: "{{ data_dir }}/gitlab/{{item}}"
+    state: directory
+    mode: 0755
+    owner: "0"
+    group: "0"
+    recurse: no
+  loop:
+    - "config"
+    - "logs"
+    - "data"
+    - "{{ (gitlab_git_data_path == '') | ternary('git', undefined) }}"
+    - "{{ gitlab_minio_enabled | ternary('objects', undefined) }}"
+  when: "item is not undefined"
+
+- name: Create git-data folder
+  become: yes
+  file:
+    path: "{{ gitlab_git_data_path }}"
+    state: directory
+    mode: 0755
+    owner: "0"
+    group: "0"
+    recurse: no
+  when: "gitlab_git_data_path != ''"
+
+- name: Create object store folder
+  become: yes
+  file:
+    path: "{{ gitlab_minio_path }}"
+    state: directory
+    mode: 0755
+    owner: "0"
+    group: "0"
+    recurse: no
+  when: "gitlab_minio_path != ''"
+
+- name: Create LDAP group
+  ldap_group:
+    container: "{{ openldap_service.tasks[0].id }}"
+    user: "{{ ldap_admin_user }}"
+    password: "{{ ldap_admin_password }}"
+    base: "{{ ldap_groups_dn }}"
+    cn: "{{ gitlab_ldap_group }}"
+    members:
+      - "{{ ldap_admin_user }}"
+  when: gitlab_ldap_enabled
+
+- name: Create database role
+  postgres_role:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    role: "gitlab"
+    role_password: "{{ gitlab_postgres_password }}"
+    superuser: true
+
+- name: Create database
+  postgres_database:
+    container: "{{ postgres_service.tasks[0].id }}"
+    password: "{{ postgres_password }}"
+    database: "gitlabhq_production"
+    role: "gitlab"
+
+- name: Set omnibus config
+  set_fact:
+    gitlab_omnibus_config: |
+      external_url '{{ traefik_protocol }}://gitlab.{{ domain_name }}'
+      git_data_dirs({ "default" => { "path" => "/git-data" } })
+      redis['enable'] = false
+      gitlab_rails['redis_host'] = 'gitlabredis'
+      gitlab_rails['redis_port'] = 6379
+      gitlab_rails['redis_password'] =  '{{ gitlab_redis_password }}'
+      nginx['listen_port'] = 80
+      nginx['listen_https'] = false
+      postgresql['enable'] = false
+      gitlab_rails['initial_root_password'] = '{{ gitlab_admin_passwords }}'
+      gitlab_rails['db_adapter'] = 'postgresql'
+      gitlab_rails['db_encoding'] = 'unicode'
+      gitlab_rails['db_host'] = '{{ postgres_service.name }}'
+      gitlab_rails['db_password'] = '{{ gitlab_postgres_password }}'
+      gitlab_rails['gitlab_shell_ssh_port'] = {{ gitlab_ssh_port }}
+      gitlab_rails['ldap_enabled'] = {{ gitlab_ldap_enabled | bool | lower }}
+      gitlab_rails['prevent_ldap_sign_in'] = false
+      gitlab_rails['packages_enabled'] = {{ gitlab_packages_enabled | bool | lower }}
+      gitlab_rails['lfs_enabled'] = {{ gitlab_lfs_enabled | bool | lower }}
+      {% if gitlab_minio_enabled %}
+      gitlab_rails['object_store']['enabled'] = true
+      gitlab_rails['object_store']['proxy_download'] = true
+      gitlab_rails['object_store']['connection'] = {
+        'aws_signature_version' => 4,
+        'provider' => 'AWS',
+        'region' => 'eu-central-1',
+        'aws_access_key_id' => '{{ gitlab_minio_access_key }}',
+        'aws_secret_access_key' => '{{ gitlab_minio_secret_key }}',
+        'host' => 'gitlabminio',
+        'endpoint' => 'http://gitlabminio:9000',
+        'path_style' => true,
+        'use_iam_profile' => false
+      }
+      gitlab_rails['object_store']['objects']['artifacts']['bucket'] = 'gitlab-artifacts-storage'
+      gitlab_rails['object_store']['objects']['external_diffs']['bucket'] = 'gitlab-diffs-storage'
+      gitlab_rails['object_store']['objects']['lfs']['bucket'] = 'gitlab-lfs-storage'
+      gitlab_rails['object_store']['objects']['uploads']['bucket'] = 'gitlab-uploads-storage'
+      gitlab_rails['object_store']['objects']['packages']['bucket'] = 'gitlab-packages-storage'
+      gitlab_rails['object_store']['objects']['dependency_proxy']['bucket'] = 'gitlab-dependency-storage'
+      gitlab_rails['object_store']['objects']['terraform_state']['bucket'] = 'gitlab-terraform-storage'
+      gitlab_rails['object_store']['objects']['pages']['bucket'] = 'gitlab-pages-storage'
+      {% endif %}
+      grafana['enable'] = false
+      prometheus['enable'] = false
+      prometheus_monitoring['enable'] = false
+      alertmanager['enable'] = false
+      pages_nginx['enable'] = {{ gitlab_pages_enabled | bool | lower }}
+      {% if gitlab_pages_enabled %}
+      pages_external_url '{{ traefik_protocol }}://pages.{{ domain_name }}'
+      pages_nginx['listen_port'] = 82
+      pages_nginx['listen_https'] = false
+      pages_nginx['proxy_set_headers'] = {
+        "X-Forwarded-Proto" => "https",
+        "X-Forwarded-Ssl" => "on"
+      }
+      gitlab_pages['inplace_chroot'] = true
+      {% endif %}
+      registry['enable'] = {{ gitlab_registry_enabled | bool | lower }}
+      {% if gitlab_registry_enabled %}
+      {% if gitlab_minio_enabled %}
+      registry['storage'] = {
+        's3' => {
+          'accesskey' => '{{ gitlab_minio_access_key }}',
+          'secretkey' => '{{ gitlab_minio_secret_key }}',
+          'bucket' => 'gitlab-registry-storage',
+          'region' => 'eu-central-1',
+          'regionendpoint' => 'http://gitlabminio:9000'
+        }
+      }
+      {% endif %}
+      registry_external_url '{{ traefik_protocol }}://registry.{{ domain_name }}'
+      registry_nginx['enable'] = true
+      registry_nginx['listen_port'] = 81
+      registry_nginx['listen_https'] = false
+      registry_nginx['proxy_set_headers'] = {
+        "X-Forwarded-Proto" => "https",
+        "X-Forwarded-Ssl" => "on",
+        "Host" => "registry.{{ domain_name }}",
+        "X-Real-IP" => "$remote_addr",
+        "X-Forwarded-For" => "$proxy_add_x_forwarded_for",
+        "Upgrade" => "$http_upgrade",
+        "Connection" => "$connection_upgrade"
+      }
+      {% endif %}
+      {% if gitlab_ldap_enabled %}
+      gitlab_rails['ldap_servers'] = {
+      'main' => {
+        'label' => 'LDAP',
+        'host' =>  '{{ openldap_service.name }}',
+        'port' => 389,
+        'uid' => 'uid',
+        'encryption' => 'plain',
+        'verify_certificates' => true,
+        'bind_dn' => '{{ ldap_admin_user }}',
+        'password' => '{{ ldap_admin_password }}',
+        'verify_certificates' => false,
+        'tls_options' => {
+          'ca_file' => '',
+          'ssl_version' => '',
+          'ciphers' => '',
+          'cert' => '',
+          'key' => ''
+        },
+        'timeout' => 10,
+        'active_directory' => false,
+        'allow_username_or_email_login' => false,
+        'block_auto_created_users' => false,
+        'base' => '{{ ldap_users_dn }}',
+        'user_filter' => '(memberOf=cn={{ gitlab_ldap_group }},{{ ldap_groups_dn }})',
+        'attributes' => {
+          'username' => ['uid', 'userid', 'sAMAccountName'],
+          'email' => ['mail', 'email', 'userPrincipalName', 'uid'],
+          'name' => 'cn',
+          'first_name' => 'givenName',
+          'last_name' => 'sn'
+        },
+        'lowercase_usernames' => false,
+        }
+      }
+      {% endif %}
+
+- name: Set MinIO networks
+  set_fact:
+    gitlab_minio_networks: >
+      {
+        "{{ docker_network_name }}": {
+          "aliases": ["gitlabminio"]
+        }
+      }
+  when: "gitlab_minio_enabled"
+
+- name: Deploy MinIO
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      gitlab_minio:
+        image: "{{ gitlab_minio_image }}"
+        restart_policy:
+          condition: "any"
+        command: "/bin/bash -c 'mkdir -p /export/{gitlab-registry-storage,gitlab-pages-storage,gitlab-terraform-storage,gitlab-dependency-storage,gitlab-diffs-storage,gitlab-lfs-storage,gitlab-artifacts-storage,gitlab-uploads-storage,gitlab-packages-storage,gitlab-backup-storage} && /usr/bin/minio server /export'"
+        deploy:
+          replicas: 1
+          placement:
+            constraints: "{{ gitlab_minio_constraints }}"
+        networks: "{{ gitlab_minio_networks }}"
+        volumes:
+          - "{{ (gitlab_minio_path == '') | ternary(data_dir + '/gitlab/objects', gitlab_minio_path) }}:/export"
+        environment:
+          MINIO_BROWSER: "off"
+          MINIO_ACCESS_KEY: "{{ gitlab_minio_access_key }}"
+          MINIO_SECRET_KEY: "{{ gitlab_minio_secret_key }}"
+  when: "gitlab_minio_enabled"
+
+- name: Create GitLab network
+  docker_network:
+    name: "{{ project_name }}_gitlab"
+    driver: overlay
+    attachable: true
+    ipam_config: "{{ gitlab_network_ipam }}"
+  register: result
+
+- name: Deploy Kroki - BlockDiag
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    timeout: 60
+    definition:
+      gitlab_blockdiag:
+        image: "{{ gitlab_blockdiag_image }}"
+        restart_policy:
+          condition: "any"
+        deploy:
+          replicas: 1
+          placement:
+            constraints: "{{ gitlab_constraints }}"
+        networks: >
+          {
+            "{{ docker_network_name }}": {
+              "aliases": ["gitlabblockdiag"]
+            }
+          }
+  when: "gitlab_kroki_enabled"
+
+- name: Deploy Kroki - Mermaid
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    timeout: 60
+    definition:
+      gitlab_mermaid:
+        image: "{{ gitlab_mermaid_image }}"
+        restart_policy:
+          condition: "any"
+        deploy:
+          replicas: 1
+          placement:
+            constraints: "{{ gitlab_constraints }}"
+        networks: >
+          {
+            "{{ docker_network_name }}": {
+              "aliases": ["gitlabmermaid"]
+            }
+          }
+  when: "gitlab_kroki_enabled"
+
+- name: Deploy Kroki - BPMN
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    timeout: 60
+    definition:
+      gitlab_bpmn:
+        image: "{{ gitlab_bpmn_image }}"
+        restart_policy:
+          condition: "any"
+        deploy:
+          replicas: 1
+          placement:
+            constraints: "{{ gitlab_constraints }}"
+        networks: >
+          {
+            "{{ docker_network_name }}": {
+              "aliases": ["gitlabbpmn"]
+            }
+          }
+  when: "gitlab_kroki_enabled"
+
+- name: Deploy Kroki - Excalidraw
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    timeout: 60
+    definition:
+      gitlab_excalidraw:
+        image: "{{ gitlab_excalidraw_image }}"
+        restart_policy:
+          condition: "any"
+        deploy:
+          replicas: 1
+          placement:
+            constraints: "{{ gitlab_constraints }}"
+        networks: >
+          {
+            "{{ docker_network_name }}": {
+              "aliases": ["gitlabexcalidraw"]
+            }
+          }
+  when: "gitlab_kroki_enabled"
+
+- name: Deploy Kroki
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    timeout: 60
+    definition:
+      gitlab_kroki:
+        image: "{{ gitlab_kroki_image }}"
+        restart_policy:
+          condition: "any"
+        deploy:
+          replicas: 1
+          placement:
+            constraints: "{{ gitlab_constraints }}"
+          labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.gitlab-kroki.rule=Host(`kroki.{{ domain_name }}`)"
+            - "traefik.http.services.gitlab-kroki.loadbalancer.server.port=8000"
+            - "traefik.http.routers.gitlab-kroki.entrypoints={{ traefik_entrypoints }}"
+            - "traefik.http.routers.gitlab-kroki.tls={{ traefik_tls }}"
+            - "traefik.http.routers.gitlab-kroki.tls.certresolver={{ traefik_certresolver }}"
+            - "traefik.http.routers.gitlab-kroki.service=gitlab-kroki"
+        networks: >
+          {
+            "{{ docker_network_name }}": {
+              "aliases": ["gitlabkroki"]
+            }
+          }
+        environment:
+          KROKI_BLOCKDIAG_HOST: "gitlabblockdiag"
+          KROKI_MERMAID_HOST: "gitlabmermaid"
+          KROKI_BPMN_HOST: "gitlabbpmn"
+          KROKI_EXCALIDRAW_HOST: "gitlabexcalidraw"
+  when: "gitlab_kroki_enabled"
+
+- name: Deploy Redis
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      gitlab_redis:
+        image: "{{ gitlab_redis_image }}"
+        restart_policy:
+          condition: "any"
+        command: "redis-server --requirepass {{ gitlab_redis_password }}"
+        deploy:
+          replicas: 1
+          placement:
+            constraints: "{{ gitlab_constraints }}"
+        networks: >
+          {
+            "{{ docker_network_name }}": {
+              "aliases": ["gitlabredis"]
+            }
+          }
+  register: result
+
+- name: Deploy service
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    timeout: 360
+    definition:
+      gitlab:
+        image: "{{ gitlab_image }}"
+        restart_policy:
+          condition: "any"
+        deploy:
+          replicas: 1
+          placement:
+            constraints: "{{ gitlab_constraints }}"
+          labels:
+            - "traefik.enable=true"
+            # Web
+            - "traefik.http.routers.gitlab.rule=Host(`gitlab.{{ domain_name }}`)"
+            - "traefik.http.services.gitlab.loadbalancer.server.port=80"
+            - "traefik.http.routers.gitlab.entrypoints={{ traefik_entrypoints }}"
+            - "traefik.http.routers.gitlab.tls={{ traefik_tls }}"
+            - "traefik.http.routers.gitlab.tls.certresolver={{ traefik_certresolver }}"
+            - "traefik.http.routers.gitlab.service=gitlab"
+            # Registry
+            - "traefik.http.routers.gitlab-registry.rule=Host(`registry.{{ domain_name }}`)"
+            - "traefik.http.services.gitlab-registry.loadbalancer.server.port=81"
+            - "traefik.http.routers.gitlab-registry.entrypoints={{ traefik_entrypoints }}"
+            - "traefik.http.routers.gitlab-registry.tls={{ traefik_tls }}"
+            - "traefik.http.routers.gitlab-registry.tls.certresolver={{ traefik_certresolver }}"
+            - "traefik.http.routers.gitlab-pages.service=gitlab-registry"
+            # Pages
+            - "traefik.http.routers.gitlab-pages.rule=HostRegexp(`pages.{{ domain_name }}`, `{subdomain:[a-z0-9_-]+}.pages.{{ domain_name }}`)"
+            - "traefik.http.services.gitlab-pages.loadbalancer.server.port=82"
+            - "traefik.http.routers.gitlab-pages.entrypoints={{ traefik_entrypoints }}"
+            - "traefik.http.routers.gitlab-pages.tls={{ traefik_tls }}"
+            - "traefik.http.routers.gitlab-pages.tls.certresolver={{ traefik_certresolver }}"
+            - "traefik.http.routers.gitlab-pages.tls.domains[0].main=pages.{{ domain_name }}"
+            - "traefik.http.routers.gitlab-pages.tls.domains[0].sans=*.pages.{{ domain_name }}"
+            - "traefik.http.routers.gitlab-pages.service=gitlab-pages"
+        networks:
+          - "{{ docker_network_name }}"
+          - "{{ project_name }}_gitlab"
+        ports:
+          - target: "{{ gitlab_ssh_port }}"
+            published: "{{ gitlab_ssh_port }}"
+            protocol: "tcp"
+            mode: "{{ gitlab_ssh_port_mode }}"
+        environment:
+          GITLAB_OMNIBUS_CONFIG: "{{ gitlab_omnibus_config }}"
+        volumes:
+          - "{{ data_dir }}/gitlab/config:/etc/gitlab"
+          - "{{ data_dir }}/gitlab/logs:/var/log/gitlab"
+          - "{{ data_dir }}/gitlab/data:/var/opt/gitlab"
+          - "{{ (gitlab_git_data_path == '') | ternary(data_dir + '/gitlab/git', gitlab_git_data_path) }}:/git-data"
+  register: result
+
+- name: Set facts
+  set_fact:
+    gitlab_service: "{{ result.services.gitlab }}"
+
+# Temporarely disabled healthcheck due to an error of:
+# > urlopen error [Errno -2] Name or service not known
+# I have no idea how "localhost" (i.e. traefik_address) can be "not known"...
+
+#- name: Healthcheck
+#  http_wait:
+#    url: "{{ traefik_address }}/users/sign_in"
+#    status_code: "200"
+#    retries: 3
+#    delay: 10
+#    headers:
+#      - "Host: gitlab.{{ domain_name }}"
+
+# Source: https://medium.com/@tonywooster/docker-in-docker-in-gitlab-runners-220caeb708ca
+- name: Deploy Docker-in-Docker
+  docker_container:
+    name: "{{ project_name }}_gitlab_dind"
+    image: "{{ gitlab_dind_image }}"
+    restart_policy: "unless-stopped"
+    privileged: true
+    volumes:
+      - "/var/lib/docker"
+      - "{{ data_dir }}/gitlab/dind/certs:/certs"
+    networks:
+      - name: "{{ project_name }}_gitlab"
+        aliases: ["docker"]
+    env:
+      DOCKER_TLS_CERTDIR: "/certs"
+    command:
+      - --storage-driver=overlay2
+  when: "gitlab_runner_secret != ''"
+
+# Implemented based on https://gist.github.com/MetalArend/38db0f86f71a220d101f2a5ae49fc78c
+- name: Deploy Runner
+  docker_swarm_service:
+    project_name: "{{ project_name }}"
+    definition:
+      gitlab_runner:
+        image: "{{ gitlab_runner_image }}"
+        deploy:
+          replicas: 1
+          placement:
+            constraints: "{{ gitlab_runner_constraints }}"
+        restart_policy:
+          condition: "any"
+          delay: "30s"
+          max_attempts: 10
+        command: |
+          /bin/bash -c '
+            set -e
+            echo "gitlab gitlab.homelab.lan" >> /etc/hosts
+            gitlab-runner register --non-interactive
+            sed -i "s/^concurrent = .*/concurrent = ${CONCURRENT}/" /etc/gitlab-runner/config.toml
+            gitlab-runner list
+            gitlab-runner run --user=gitlab-runner
+          '
+        networks: >
+          {
+            "{{ project_name }}_gitlab": {
+              "aliases": ["gitlabrunner"]
+            }
+          }
+        volumes:
+          - "{{ data_dir }}/gitlab/dind/certs/client:/certs:ro"
+        environment:
+          CONCURRENT: "4"
+          REGISTER_LOCKED: "1"
+          REGISTER_NON_INTERACTIVE: "1"
+          RUNNER_EXECUTOR: "docker"
+          DOCKER_CERT_PATH: "/certs"
+          DOCKER_TLS_VERIFY: "true"
+          DOCKER_IMAGE: "docker"
+          DOCKER_VOLUMES: "/var/run/docker.sock:/var/run/docker.sock"
+          RUNNER_NAME: "docker"
+          DOCKER_DNS: "{{ gitlab_runner_dns }}"
+          DOCKER_EXTRA_HOSTS: "{{ gitlab_runner_extra_hosts }}"
+          DOCKER_HOST: "tcp://docker:2376"
+          CLONE_URL: "{{ traefik_protocol }}://gitlab.{{ domain_name }}"
+          CI_SERVER_URL: "{{ traefik_protocol }}://gitlab.{{ domain_name }}"
+          REGISTRATION_TOKEN: "{{ gitlab_runner_secret }}"
+          DOCKER_DISABLE_CACHE: "true"
+  when: "gitlab_runner_secret != ''"

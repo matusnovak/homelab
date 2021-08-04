@@ -5,10 +5,10 @@
     state: latest
     executable: pip3
 
-- name: Check kubernetes cluster info
-  kubernetes.core.k8s_cluster_info:
-    invalidate_cache: False
-  register: k8s_status
+#- name: Check kubernetes cluster info
+#  kubernetes.core.k8s_cluster_info:
+#    invalidate_cache: False
+#  register: k8s_status
 
 - name: Create namespace
   kubernetes.core.k8s:

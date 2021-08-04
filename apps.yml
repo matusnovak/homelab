@@ -12,6 +12,9 @@
     - role: adminer
       tags: adminer
 
+    - role: gitlab
+      tags: gitlab
+
     - role: openldap
       tags: openldap
 

@@ -20,6 +20,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -136,6 +137,13 @@ func (r *PostgresUserReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 	if exists {
 		r.Recorder.Event(instance, "Normal", "Created", "PostgreSQL user already exists")
+
+		instance.Status.Ready = true
+		err = r.Status().Update(context.Background(), instance)
+		if err != nil {
+			return reconcile.Result{}, err
+		}
+
 		return ctrl.Result{}, nil
 	}
 
