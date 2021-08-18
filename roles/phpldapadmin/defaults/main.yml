@@ -1,0 +1,3 @@
+---
+# Docker image name
+phpldapadmin_image: "docker.io/osixia/phpldapadmin:latest"

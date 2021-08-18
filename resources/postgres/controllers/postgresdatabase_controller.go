@@ -110,7 +110,7 @@ func (r *PostgresDatabaseReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	db, err := GetPostgresConnection(r.Client, logger, req.Namespace)
 	if err != nil {
 		logger.Error(err, "Failed to get PostgreSQL connection")
-		r.Recorder.Event(instance, "Error", "Failed", err.Error())
+		r.Recorder.Event(instance, "Normal", "Failed", err.Error())
 		return ctrl.Result{}, err
 	}
 	defer db.Close()
@@ -141,7 +141,7 @@ func (r *PostgresDatabaseReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	err = pgDatabaseCreate(db, instance.Spec.Name, instance.Spec.Role)
 	if err != nil {
 		logger.Error(err, "Failed to create new database")
-		r.Recorder.Event(instance, "Error", "Failed", err.Error())
+		r.Recorder.Event(instance, "Normal", "Failed", err.Error())
 		return ctrl.Result{}, err
 	}
 

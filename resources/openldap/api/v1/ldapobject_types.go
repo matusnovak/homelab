@@ -33,9 +33,8 @@ type LdapObjectSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	Dn          string         `json:"dn,omitempty"`
-	ObjectClass string         `json:"objectClass,omitempty"`
-	Values      []LdapProperty `json:"values,omitempty"`
+	Dn     string         `json:"dn,omitempty"`
+	Values []LdapProperty `json:"values,omitempty"`
 }
 
 // LdapObjectStatus defines the observed state of LdapObject

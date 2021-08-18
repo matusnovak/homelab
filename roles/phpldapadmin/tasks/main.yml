@@ -1,9 +1,9 @@
 ---
 - name: Pull image
   docker_pull_push:
-    image: '{{ adminer_image }}'
+    image: '{{ phpldapadmin_image }}'
     address: '{{ registry_address }}'
-  register: registry_adminer_image
+  register: registry_phpldapadmin_image
 
 - name: Create service
   kubernetes.core.k8s:
@@ -15,17 +15,17 @@
       apiVersion: v1
       kind: Service
       metadata:
-        name: adminer
+        name: phpldapadmin
         namespace: '{{ project_name }}'
         labels:
-          app: adminer
+          app: phpldapadmin
       spec:
         ports:
-          - port: 8080
+          - port: 80
             name: web
             protocol: TCP
         selector:
-          app: adminer
+          app: phpldapadmin
 
 - name: Create deployment
   kubernetes.core.k8s:
@@ -37,10 +37,10 @@
       apiVersion: v1
       kind: Deployment
       metadata:
-        name: adminer
+        name: phpldapadmin
         namespace: '{{ project_name }}'
         labels:
-          app: adminer
+          app: phpldapadmin
       spec:
         replicas: 1
         strategy:
@@ -48,26 +48,26 @@
         revisionHistoryLimit: 0
         selector:
           matchLabels:
-            app: adminer
+            app: phpldapadmin
         template:
           metadata:
-            name: adminer
+            name: phpldapadmin
             namespace: '{{ project_name }}'
             labels:
-              app: adminer
+              app: phpldapadmin
           spec:
             containers:
-              - name: adminer
-                image: '{{ registry_adminer_image.name }}'
+              - name: phpldapadmin
+                image: '{{ registry_phpldapadmin_image.name }}'
                 imagePullPolicy: "IfNotPresent"
                 ports:
                   - name: web
-                    containerPort: 8080
+                    containerPort: 80
                 env:
-                  - name: ADMINER_DESIGN
-                    value: nette
-                  - name: ADMINER_DEFAULT_SERVER
-                    value: 'postgres.{{ project_name }}.svc.cluster.local'
+                  - name: PHPLDAPADMIN_LDAP_HOSTS
+                    value: 'openldap.{{ project_name }}.svc.cluster.local'
+                  - name: PHPLDAPADMIN_HTTPS
+                    value: "{{ 'false' | string | lower }}"
 
 - name: Wait for service ready
   kubernetes.core.k8s_info:
@@ -76,9 +76,9 @@
     api_key: '{{ k8s_api_key }}'
     kind: Deployment
     namespace: '{{ project_name }}'
-    name: 'adminer'
+    name: 'phpldapadmin'
     label_selectors: 
-      - app = adminer
+      - app = phpldapadmin
   register: output_info
   until: output_info | json_query('resources[*].status.readyReplicas') | select ('match','1') | list | length == 1
   delay: 10
@@ -94,18 +94,18 @@
       apiVersion: traefik.containo.us/v1alpha1
       kind: IngressRoute
       metadata:
-        name: adminer-ingress
+        name: phpldapadmin-ingress
         namespace: '{{ project_name }}'
       spec:
         entryPoints:
           - web
           - websecure
         routes:
-          - match: Host(`adminer.{{ domain_name }}`)
+          - match: Host(`ldap.{{ domain_name }}`)
             kind: Rule
             services:
-              - name: adminer
-                port: 8080
+              - name: phpldapadmin
+                port: 80
         tls: {}
 
 - name: Healthcheck
@@ -115,4 +115,4 @@
     retries: 3
     delay: 10
     headers:
-      - 'Host: adminer.{{ domain_name }}'
+      - 'Host: ldap.{{ domain_name }}'

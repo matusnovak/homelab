@@ -38,8 +38,6 @@ spec:
             properties:
               dn:
                 type: string
-              objectClass:
-                type: string
               values:
                 items:
                   properties:

@@ -1,2 +1,4 @@
 ---
+- include_tasks: 'folders.yml'
+- include_tasks: 'redis.yml'
 - include_tasks: 'gitlab.yml'

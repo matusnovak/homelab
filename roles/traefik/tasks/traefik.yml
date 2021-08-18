@@ -1,4 +1,10 @@
 ---
+- name: Pull image
+  docker_pull_push:
+    image: '{{ traefik_image }}'
+    address: '{{ registry_address }}'
+  register: registry_traefik_image
+
 - name: Create configuration
   kubernetes.core.k8s:
     state: present
@@ -109,7 +115,7 @@
           spec:
             containers:
               - name: traefik
-                image: '{{ traefik_image }}'
+                image: '{{ registry_traefik_image.name }}'
                 imagePullPolicy: "IfNotPresent"
                 ports:
                   - name: 'http'

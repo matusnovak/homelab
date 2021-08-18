@@ -1,12 +1,12 @@
 ---
 - name: Install extra python3 dependencies
   pip:
-    name: ['requests', 'openshift', 'PyYAML']
+    name: ['requests', 'openshift', 'PyYAML', 'docker', 'requests']
     state: latest
     executable: pip3
 
 #- name: Check kubernetes cluster info
-#  kubernetes.core.k8s_cluster_info:
+#  community.kubernetes.k8s_cluster_info:
 #    invalidate_cache: False
 #  register: k8s_status
 
@@ -28,3 +28,30 @@
     owner: '0'
     group: '0'
     recurse: false
+
+- name: Find master kubernetes node
+  kubernetes.core.k8s_info:
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    kind: Node
+    label_selectors:
+      - 'node-role.kubernetes.io/master'
+  register: k8s_master_nodes
+
+- name: Find first kubernetes node if no master found
+  when: k8s_master_nodes.resources | length == 0
+  kubernetes.core.k8s_info:
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    kind: Node
+  register: k8s_master_nodes
+
+- name: Get kubernetes master node IP address
+  set_fact:
+    k8s_master_address: "{{ k8s_master_nodes | json_query('resources[0].status.addresses[?type==`InternalIP`].address')  | json_query('[0]') }}"
+
+- name: Set docker registry address
+  set_fact:
+    registry_address: "{{ (registry_address_override == None) | ternary(k8s_master_address + ':32000', registry_address_override) }}"

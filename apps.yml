@@ -9,6 +9,9 @@
   hosts: homelab
 
   roles:
+    - role: base
+      tags: base
+
     - role: adminer
       tags: adminer
 
@@ -20,6 +23,9 @@
 
     - role: postgres
       tags: postgres
+
+    - role: phpldapadmin
+      tags: phpldapadmin
 
     - role: traefik
       tags: traefik

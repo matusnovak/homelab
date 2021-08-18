@@ -1,6 +1,6 @@
 ---
 # Docker image name
-ldap_image: "docker.io/osixia/openldap:latest"
+openldap_image: "docker.io/osixia/openldap:latest"
 
 # Name of the organization for LDAP.
 # This does not affect things, it's for information only.

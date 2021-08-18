@@ -1,11 +1,11 @@
 ---
-- name: Pull image
+- name: Pull redis image
   docker_pull_push:
-    image: '{{ adminer_image }}'
+    image: '{{ gitlab_redis_image }}'
     address: '{{ registry_address }}'
-  register: registry_adminer_image
+  register: registry_gitlab_redis_image
 
-- name: Create service
+- name: Create redis service
   kubernetes.core.k8s:
     state: present
     verify_ssl: '{{ k8s_ssl_verify }}'
@@ -15,17 +15,18 @@
       apiVersion: v1
       kind: Service
       metadata:
-        name: adminer
+        name: gitlab-redis
         namespace: '{{ project_name }}'
         labels:
-          app: adminer
+          app: gitlab-redis
       spec:
+        type: ClusterIP
         ports:
-          - port: 8080
+          - port: 6379
             name: web
             protocol: TCP
         selector:
-          app: adminer
+          app: gitlab-redis
 
 - name: Create deployment
   kubernetes.core.k8s:
@@ -37,10 +38,10 @@
       apiVersion: v1
       kind: Deployment
       metadata:
-        name: adminer
+        name: gitlab-redis
         namespace: '{{ project_name }}'
         labels:
-          app: adminer
+          app: gitlab-redis
       spec:
         replicas: 1
         strategy:
@@ -48,26 +49,25 @@
         revisionHistoryLimit: 0
         selector:
           matchLabels:
-            app: adminer
+            app: gitlab-redis
         template:
           metadata:
-            name: adminer
+            name: gitlab-redis
             namespace: '{{ project_name }}'
             labels:
-              app: adminer
+              app: gitlab-redis
           spec:
             containers:
-              - name: adminer
-                image: '{{ registry_adminer_image.name }}'
+              - name: gitlab-redis
+                image: '{{ registry_gitlab_redis_image.name }}'
                 imagePullPolicy: "IfNotPresent"
+                command: 'redis-server'
+                args:
+                  - '--requirepass'
+                  - '{{ gitlab_redis_password }}'
                 ports:
                   - name: web
-                    containerPort: 8080
-                env:
-                  - name: ADMINER_DESIGN
-                    value: nette
-                  - name: ADMINER_DEFAULT_SERVER
-                    value: 'postgres.{{ project_name }}.svc.cluster.local'
+                    containerPort: 6379
 
 - name: Wait for service ready
   kubernetes.core.k8s_info:
@@ -76,43 +76,10 @@
     api_key: '{{ k8s_api_key }}'
     kind: Deployment
     namespace: '{{ project_name }}'
-    name: 'adminer'
+    name: 'gitlab-redis'
     label_selectors: 
-      - app = adminer
+      - app = gitlab-redis
   register: output_info
   until: output_info | json_query('resources[*].status.readyReplicas') | select ('match','1') | list | length == 1
   delay: 10
   retries: 6
-
-- name: Create ingress route
-  kubernetes.core.k8s:
-    state: present
-    verify_ssl: '{{ k8s_ssl_verify }}'
-    api_version: '{{ k8s_api_version }}'
-    api_key: '{{ k8s_api_key }}'
-    definition:
-      apiVersion: traefik.containo.us/v1alpha1
-      kind: IngressRoute
-      metadata:
-        name: adminer-ingress
-        namespace: '{{ project_name }}'
-      spec:
-        entryPoints:
-          - web
-          - websecure
-        routes:
-          - match: Host(`adminer.{{ domain_name }}`)
-            kind: Rule
-            services:
-              - name: adminer
-                port: 8080
-        tls: {}
-
-- name: Healthcheck
-  http_wait:
-    url: '{{ traefik_address }}/'
-    status_code: '200'
-    retries: 3
-    delay: 10
-    headers:
-      - 'Host: adminer.{{ domain_name }}'

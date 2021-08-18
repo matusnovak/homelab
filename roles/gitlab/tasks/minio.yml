@@ -1,0 +1,78 @@
+---
+- name: Pull minio image
+  docker_pull_push:
+    image: '{{ gitlab_minio_image }}'
+    address: '{{ registry_address }}'
+  register: registry_gitlab_minio_image
+
+- name: Create minio persistent volume
+  kubernetes.core.k8s:
+    state: present
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    definition:
+      apiVersion: v1
+      kind: PersistentVolume
+      metadata:
+        name: gitlab-minio-pv-volume
+        namespace: '{{ project_name }}'
+        labels:
+          app: gitlab-minio
+          type: local
+      spec:
+        storageClassName: microk8s-hostpath
+        capacity:
+          storage: 100Gi
+        accessModes:
+          - ReadWriteMany
+        persistentVolumeReclaimPolicy: Retain
+        hostPath:
+          path: '{{ (gitlab_minio_path == '') | ternary(data_dir + '/gitlab/objects', gitlab_minio_path) }}'
+
+- name: Create minio persistent volume claim
+  kubernetes.core.k8s:
+    state: present
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    definition:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: gitlab-minio-pv-claim
+        namespace: '{{ project_name }}'
+        labels:
+          app: gitlab-minio
+          type: local
+      spec:
+        storageClassName: microk8s-hostpath
+        resources:
+          requests:
+            storage: 100Gi
+        accessModes:
+          - ReadWriteMany
+        volumeName: gitlab-minio-pv-volume
+
+- name: Create minio service
+  kubernetes.core.k8s:
+    state: present
+    verify_ssl: '{{ k8s_ssl_verify }}'
+    api_version: '{{ k8s_api_version }}'
+    api_key: '{{ k8s_api_key }}'
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: gitlab-minio
+        namespace: '{{ project_name }}'
+        labels:
+          app: gitlab-minio
+      spec:
+        type: ClusterIP
+        ports:
+          - port: 9000
+            name: web
+            protocol: TCP
+        selector:
+          app: gitlab-minio

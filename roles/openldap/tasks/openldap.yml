@@ -1,4 +1,10 @@
 ---
+- name: Pull image
+  docker_pull_push:
+    image: '{{ openldap_image }}'
+    address: '{{ registry_address }}'
+  register: registry_openldap_image
+
 - name: Create folder structure
   become: yes
   file:
@@ -119,7 +125,7 @@
           spec:
             containers:
               - name: openldap
-                image: '{{ ldap_image }}'
+                image: '{{ registry_openldap_image.name }}'
                 imagePullPolicy: "IfNotPresent"
                 ports:
                   - containerPort: 389

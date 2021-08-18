@@ -2,7 +2,7 @@
 
 set -e
 
-mkdir -p /tmp/microk8s
+mkdir -p /tmp/microkubernetes.core.k8s:
 kubectl get all --all-namespaces 2>&1 > /tmp/microk8s/get-all.log
 for type in pod service deployment statefulset replicaset daemonset pvc
 do

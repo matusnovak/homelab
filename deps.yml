@@ -13,5 +13,5 @@
     - role: deps.golang
       tags: golang
 
-    - role: deps.microk8s
-      tags: microk8s
+    - role: deps.microkubernetes.core.k8s:
+      tags: microkubernetes.core.k8s:

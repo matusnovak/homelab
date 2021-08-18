@@ -1,0 +1,39 @@
+---
+- name: Create Gitlab folder structure
+  become: yes
+  file:
+    path: "{{ data_dir }}/gitlab/{{item}}"
+    state: directory
+    mode: 0755
+    owner: "0"
+    group: "0"
+    recurse: no
+  loop:
+    - "config"
+    - "logs"
+    - "data"
+    - "{{ (gitlab_git_data_path == '') | ternary('git', undefined) }}"
+    - "{{ gitlab_minio_enabled | ternary('objects', undefined) }}"
+  when: "item is not undefined"
+
+- name: Create git-data folder
+  become: yes
+  file:
+    path: "{{ gitlab_git_data_path }}"
+    state: directory
+    mode: 0755
+    owner: "0"
+    group: "0"
+    recurse: no
+  when: "gitlab_git_data_path != ''"
+
+- name: Create object store folder
+  become: yes
+  file:
+    path: "{{ gitlab_minio_path }}"
+    state: directory
+    mode: 0755
+    owner: "0"
+    group: "0"
+    recurse: no
+  when: "gitlab_minio_path != ''"

@@ -18,8 +18,9 @@
           app: openldap
       spec:
         dn: '{{ ldap_groups_dn }}'
-        objectClass: 'organizationalUnit'
         values:
+          - name: 'objectClass'
+            value: 'organizationalUnit'
           - name: 'objectClass'
             value: 'top'
 
@@ -39,8 +40,9 @@
           app: openldap
       spec:
         dn: '{{ ldap_users_dn }}'
-        objectClass: 'organizationalUnit'
         values:
+          - name: 'objectClass'
+            value: 'organizationalUnit'
           - name: 'objectClass'
             value: 'top'
 
@@ -60,8 +62,9 @@
           app: openldap
       spec:
         dn: 'cn=user,{{ ldap_groups_dn }}'
-        objectClass: 'posixGroup'
         values: 
+          - name: 'objectClass'
+            value: 'posixGroup'
           - name: 'objectClass'
             value: 'top'
           - name: 'gidNumber'

@@ -1,4 +1,10 @@
 ---
+- name: Pull image
+  docker_pull_push:
+    image: '{{ postgres_image }}'
+    address: '{{ registry_address }}'
+  register: registry_postgres_image
+
 - name: Create folder structure
   become: yes
   file:
@@ -75,6 +81,7 @@
         labels:
           app: postgres
       spec:
+        type: ClusterIP
         ports:
           - port: 5432
             protocol: TCP
@@ -112,7 +119,7 @@
           spec:
             containers:
               - name: postgres
-                image: '{{ postgres_image }}'
+                image: '{{ registry_postgres_image.name }}'
                 imagePullPolicy: "IfNotPresent"
                 ports:
                   - containerPort: 5432

@@ -19,3 +19,13 @@ domain_component: dc=homelab,dc=lan
 k8s_api_version: 'v1'
 k8s_api_key: null
 k8s_ssl_verify: null
+
+# Override the registry address for docker images.
+# This is NOT the address to download the images from.
+# This address will be used as a prefix for all docker images 
+# for all pods. If set to null, the master kubernetes node IP
+# address will be used. It is expected that the master node 
+# will have a registry enabled and accessible from all
+# worker nodes. You can use this variable to override the 
+# registry address, in case you have some third party one.
+registry_address_override: null
