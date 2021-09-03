@@ -1,10 +1,10 @@
 entryPoints:
 {% if traefik_http_enabled %}
   web:
-    address: ":{{ traefik_http_port}}"
+    address: ":80"
 {% endif %}{% if traefik_https_enabled %}
   websecure:
-    address: ":{{ traefik_https_port}}"
+    address: ":443"
 {% endif %}
 
 accessLog: {}
