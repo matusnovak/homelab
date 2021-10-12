@@ -1,0 +1,12 @@
+apiVersion: homelab.local/v1alpha1
+kind: PostgresDatabase
+metadata:
+  name: {{ include "matrix.synapse.fullname" . }}
+  labels:
+    {{- include "matrix.synapse.labels" . | nindent 4 }}
+spec:
+  name: {{ .Values.synapse.postgres.database }}
+  role: {{ .Values.synapse.postgres.role }}
+  password: '{{ .Values.synapse.postgres.password }}'
+  collate: 'C'
+  ctype: 'C'

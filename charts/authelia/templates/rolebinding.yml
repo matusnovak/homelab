@@ -1,0 +1,43 @@
+{{- if .Values.server.role.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "authelia.server.roleName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "authelia.server.labels" . | nindent 4 }}
+  {{- with .Values.server.role.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+subjects:
+  - kind: ServiceAccount
+    namespace: {{ .Release.Namespace }}
+    name: {{ include "authelia.server.serviceAccountName" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "authelia.server.roleName" . }}
+{{- end }}
+{{- if .Values.redis.role.create }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "authelia.redis.roleName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "authelia.redis.labels" . | nindent 4 }}
+  {{- with .Values.redis.role.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+subjects:
+  - kind: ServiceAccount
+    namespace: {{ .Release.Namespace }}
+    name: {{ include "authelia.redis.serviceAccountName" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "authelia.redis.roleName" . }}
+{{- end }}

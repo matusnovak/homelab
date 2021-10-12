@@ -1,0 +1,44 @@
+{{- if .Values.persistentVolumeClaim.data.create }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "openldap.persistentVolumeClaimName.data" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "openldap.labels" . | nindent 4 }}
+  {{- with .Values.persistentVolumeClaim.data.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.persistentVolumeClaim.data.storageClass }}
+  resources:
+    requests:
+      storage: 100Mi
+  accessModes:
+    - ReadWriteMany
+  volumeName: {{ include "openldap.persistentVolumeName.data" . }}
+{{- end -}}
+{{- if .Values.persistentVolumeClaim.config.create }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "openldap.persistentVolumeClaimName.config" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "openldap.labels" . | nindent 4 }}
+  {{- with .Values.persistentVolumeClaim.config.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.persistentVolumeClaim.config.storageClass }}
+  resources:
+    requests:
+      storage: 100Mi
+  accessModes:
+    - ReadWriteMany
+  volumeName: {{ include "openldap.persistentVolumeName.config" . }}
+{{- end -}}

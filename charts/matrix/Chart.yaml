@@ -1,0 +1,6 @@
+apiVersion: v2
+name: matrix
+description: Matrix is really a decentralised conversation store rather than a messaging protocol.
+type: application
+version: 0.1.0
+appVersion: "latest"

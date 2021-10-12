@@ -1,0 +1,79 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "authelia.server.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "authelia.server.labels" . | nindent 4 }}
+data:
+  configuration.yml: |
+    host: 0.0.0.0
+    port: 9091
+
+    jwt_secret: "{{ .Values.server.jwtSecret }}"
+
+    log_level: debug
+
+    session:
+      name: authelia_session
+      secret: "{{ .Values.server.jwtSecret }}"
+      expiration: 3600
+      inactivity: 300
+      domain: "{{ .Values.global.domainName }}"
+
+      redis:
+        host: "{{ include "authelia.redis.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local"
+        port: 6379
+        password: "{{ .Values.redis.password }}"
+
+    storage:
+      postgres:
+        host: "{{ include "postgres.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local"
+        port: 5432
+        database: "{{ .Values.server.postgres.database }}"
+        username: "{{ .Values.server.postgres.role }}"
+        password: "{{ .Values.server.postgres.password }}"
+        sslmode: disable
+
+    regulation:
+      max_retries: 3
+      find_time: 120
+      ban_time: 300
+
+    notifier:
+      disable_startup_check: false
+
+      filesystem:
+        filename: /config/notification.txt
+
+    access_control:
+      default_policy: deny
+
+      rules:
+      {{- range .Values.server.rules }}
+        - domain: {{ .subdomain }}.{{ $.Values.global.domainName }}
+          subject: 'group:{{ .ldapGroup }}'
+          policy: one_factor
+      {{ end }}
+
+    authentication_backend:
+      disable_reset_password: false
+
+      ldap:
+        url: ldap://{{ include "openldap.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+        start_tls: false
+        implementation: "custom"
+        tls:
+          skip_verify: false
+        base_dn: {{ .Values.global.domainComponent }}
+        username_attribute: uid
+        additional_users_dn: ou={{ .Values.server.openldap.users }}
+        users_filter: (&({username_attribute}={input})(objectClass=person))
+        additional_groups_dn: ou={{ .Values.server.openldap.groups }}
+        groups_filter: (&(uniqueMember={dn})(objectclass=groupOfUniqueNames))
+        group_name_attribute: cn
+        mail_attribute: uid
+        display_name_attribute: cn
+        user: cn=readonly,{{ .Values.global.domainComponent }}
+        password: '{{ .Values.server.openldap.readonlyPassword }}'
+

@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "loki.promtail.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "loki.promtail.labels" . | nindent 4 }}
+spec:
+  updateStrategy:
+    type: RollingUpdate
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      {{- include "loki.promtail.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.promtail.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "loki.promtail.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.promtail.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "loki.promtail.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.promtail.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.promtail.securityContext | nindent 12 }}
+          image: "{{ .Values.promtail.image.repository }}:{{ .Values.promtail.image.tag }}"
+          imagePullPolicy: {{ .Values.promtail.image.pullPolicy }}
+          env:
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: 'spec.nodeName'
+          {{- with .Values.promtail.env }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          args:
+            - '-config.file=/etc/promtail/config.yml'
+          ports:
+            - name: metrics
+              containerPort: 3101
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.promtail.resources | nindent 12 }}
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/promtail/config.yml
+              subPath: config.yml
+            - name: pods-volume
+              mountPath: /var/log/pods
+              readOnly: true
+            - name: run
+              mountPath: /run/promtail
+      {{- with .Values.promtail.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.promtail.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.promtail.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ include "loki.promtail.fullname" . }}
+        - name: pods-volume
+          hostPath:
+            path: /var/log/pods
+        - name: run
+          hostPath:
+            path: /run/promtail

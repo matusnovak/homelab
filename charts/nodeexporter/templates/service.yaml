@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "nodeexporter.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nodeexporter.labels" . | nindent 4 }}
+  annotations:
+    prometheus.io/scrape: 'true'
+    prometheus.io/port: '9100'
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: 9100
+      protocol: TCP
+      name: metrics
+  selector:
+    {{- include "nodeexporter.selectorLabels" . | nindent 4 }}

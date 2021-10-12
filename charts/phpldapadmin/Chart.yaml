@@ -1,0 +1,6 @@
+apiVersion: v2
+name: phpldapadmin
+description: phpLDAPadmin is a web app for administering Lightweight Directory Access Protocol servers. 
+type: application
+version: 0.1.0
+appVersion: "latest"

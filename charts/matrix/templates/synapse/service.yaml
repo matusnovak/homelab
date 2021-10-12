@@ -1,0 +1,29 @@
+{{ $fullname := include "matrix.synapse.fullname" . }}
+{{ $labels := include "matrix.synapse.labels" . }}
+{{ $selectorLabels := include "matrix.synapse.selectorLabels" . }}
+{{ range $type, $config := .Values.workers -}}
+{{ if $config.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ printf "%s-%s" $fullname ( $type | replace "_" "-" ) }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- $labels | nindent 4 }}
+spec:
+  type: {{ $.Values.synapse.service.type }}
+  ports:
+    - port: 8008
+      protocol: TCP
+      name: synapse
+    {{- if eq $type "homeserver" }}
+    - port: 9093
+      protocol: TCP
+      name: replication
+    {{- end }}
+  selector:
+    {{- $selectorLabels | nindent 4 }}
+    matrix.org/worker: {{ $type }}
+{{ end -}}
+{{- end }}

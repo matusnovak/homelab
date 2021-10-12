@@ -1,0 +1,15 @@
+apiVersion: homelab.local/v1alpha1
+kind: LdapObject
+metadata:
+  name: {{ printf "%s-group-%s" (include "openldap.fullname" .) .Values.synapse.openldap.group }}
+  labels:
+    {{- (include "matrix.synapse.labels" .) | nindent 4 }}
+spec:
+  dn: {{ printf "cn=%s,ou=%s,%s" .Values.synapse.openldap.group .Values.synapse.openldap.groups .Values.global.domainComponent }}
+  attributes:
+    - name: 'objectClass'
+      value: 'groupOfUniqueNames'
+    - name: 'objectClass'
+      value: 'top'
+    - name: 'uniqueMember'
+      value: '{{ printf "cn=admin,%s" .Values.global.domainComponent }}'

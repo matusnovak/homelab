@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "openldap.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "openldap.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      {{- include "openldap.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "openldap.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "openldap.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: {{ printf "%s-init" .Chart.Name }}
+          image: "{{ .Values.global.busybox.repository }}:{{ .Values.global.busybox.tag }}"
+          command:
+            - 'sh'
+            - '-c'
+            - 'chmod 700 /var/lib/openldap && chown 911:911 /var/lib/openldap && chmod 700 /etc/openldap/slapd.d && chown 911:911 /etc/openldap/slapd.d'
+          volumeMounts:
+            - name: data-volume
+              mountPath: /var/lib/openldap
+            - name: config-volume
+              mountPath: /etc/openldap/slapd.d
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: LDAP_ORGANISATION
+              value: '{{ .Values.organisation }}'
+            - name: LDAP_BASE_DN
+              value: '{{ .Values.global.domainComponent }}'
+            - name: LDAP_DOMAIN
+              value: '{{ .Values.global.domainName }}'
+            - name: LDAP_ADMIN_PASSWORD
+              value: '{{ .Values.admin.password }}'
+            - name: LDAP_REMOVE_CONFIG_AFTER_SETUP
+              value: 'false'
+            - name: LDAP_TLS
+              value: 'false'
+            - name: LDAP_READONLY_USER
+              value: 'true'
+            - name: LDAP_READONLY_USER_USERNAME
+              value: 'readonly'
+            - name: LDAP_READONLY_USER_PASSWORD
+              value: '{{ .Values.readonly.password }}'
+          {{- with .Values.env }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: openldap
+              containerPort: 389
+              protocol: TCP
+          readinessProbe:
+            exec:
+              command:
+                - 'sh'
+                - '-c'
+                - 'ldapsearch -x -H ldap://127.0.0.1 -b $LDAP_BASE_DN -s sub -D cn=admin,$LDAP_BASE_DN -w $LDAP_ADMIN_PASSWORD'
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: data-volume
+              mountPath: /var/lib/openldap
+            - name: config-volume
+              mountPath: /etc/openldap/slapd.d
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: {{ include "openldap.persistentVolumeClaimName.data" . }}
+        - name: config-volume
+          persistentVolumeClaim:
+            claimName: {{ include "openldap.persistentVolumeClaimName.config" . }}

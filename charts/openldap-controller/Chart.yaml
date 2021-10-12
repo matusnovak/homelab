@@ -1,0 +1,6 @@
+apiVersion: v2
+name: openldap-controller
+description: A custom controller to manage OpenLDAP resources
+type: application
+version: 0.1.0
+appVersion: "latest"

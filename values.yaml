@@ -1,0 +1,59 @@
+global:
+  domainName: 'homelab.lan'
+  domainComponent: 'dc=homelab,dc=lan'
+  dataDir: '/homelab'
+  ingress:
+    acme: false
+    entryPoints:
+      - web
+      - websecure
+
+  busybox:
+    repository: docker.io/library/busybox
+    pullPolicy: IfNotPresent
+    tag: latest
+
+  postgresCheck:
+    repository: docker.io/library/postgres
+    pullPolicy: IfNotPresent
+    tag: '13'
+
+  openldapCheck:
+    repository: docker.io/osixia/openldap
+    pullPolicy: IfNotPresent
+    tag: latest
+
+  curlCheck:
+    repository: docker.io/curlimages/curl
+    pullPolicy: IfNotPresent
+    tag: latest
+
+  fullname:
+    authelia: authelia
+    openldap: openldap
+    openldapController: openldap-controller
+    postgres: postgres
+    postgresController: postgres-controller
+    traefik: traefik
+    loki: loki
+    nodeexporter: nodeexporter
+    prometheus: prometheus
+    phpldapadmin: phpldapadmin
+    grafana: grafana
+    adminer: adminer
+    matrix: matrix
+
+deploy:
+  traefik: false
+  openldap: false
+  openldapController: false
+  postgres: false
+  postgresController: false
+  authelia: false
+  loki: false
+  nodeexporter: false
+  prometheus: false
+  phpldapadmin: false
+  grafana: false
+  adminer: false
+  matrix: false

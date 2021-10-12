@@ -1,0 +1,22 @@
+{{- if .Values.nginx.role.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "matrix.nginx.roleName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "matrix.nginx.labels" . | nindent 4 }}
+  {{- with .Values.nginx.role.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+rules:
+  - apiGroups:
+      - 'extensions'
+    resources:
+      - 'podsecuritypolicies'
+    verbs:
+      - 'use'
+    resourceNames:
+      - {{ include "matrix.nginx.fullname" . }}
+{{- end }}

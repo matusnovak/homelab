@@ -1,0 +1,44 @@
+{{- if .Values.persistentVolume.data.create }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "openldap.persistentVolumeName.data" . }}
+  labels:
+    {{- include "openldap.labels" . | nindent 4 }}
+  {{- with .Values.persistentVolume.data.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.persistentVolume.data.storageClass }}
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.global.dataDir }}/openldap/data
+{{- end -}}
+{{- if .Values.persistentVolume.config.create }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "openldap.persistentVolumeName.config" . }}
+  labels:
+    {{- include "openldap.labels" . | nindent 4 }}
+  {{- with .Values.persistentVolume.config.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.persistentVolume.config.storageClass }}
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.global.dataDir }}/openldap/config
+{{- end -}}

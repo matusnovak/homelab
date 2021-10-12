@@ -1,0 +1,22 @@
+{{- if .Values.nginx.role.create }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "matrix.nginx.roleName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "matrix.nginx.labels" . | nindent 4 }}
+  {{- with .Values.nginx.role.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+subjects:
+  - kind: ServiceAccount
+    namespace: {{ .Release.Namespace }}
+    name: {{ include "matrix.nginx.serviceAccountName" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "matrix.nginx.roleName" . }}
+{{- end }}

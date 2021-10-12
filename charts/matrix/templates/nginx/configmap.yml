@@ -1,0 +1,57 @@
+{{ $fullname := include "matrix.synapse.fullname" . }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "matrix.nginx.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "matrix.nginx.labels" . | nindent 4 }}
+data:
+  matrix.conf: |
+    server {
+      listen         80 default_server;
+      server_name    {{ .Values.synapse.subdomain }}.{{ .Values.global.domainName }};
+
+    {{ range $type, $config := .Values.workers -}}
+    {{- if $config.enabled -}}
+    {{- if $config.paths -}}
+    {{- range $path := $config.paths }}
+      location {{ eq $type "homeserver" | ternary "" "~*" }} {{ $path }} {
+        resolver 127.0.0.11 valid=10s ipv6=off;
+        proxy_pass {{ printf "http://%s-%s.%s.svc.cluster.local:8008" $fullname ( $type | replace "_" "-" ) $.Release.Namespace }};
+        proxy_set_header X-Forwarded-For {{ "$remote_addr" }};
+        client_max_body_size 128m;
+      }
+    {{ end -}}
+    {{- end -}}
+    {{- end -}}
+    {{- end }}
+      location /.well-known/matrix/ {
+        root /var/www/;
+        default_type application/json;
+        add_header Access-Control-Allow-Origin  *;
+      }
+    }
+
+    server {
+      listen         80;
+      server_name    {{ .Values.global.domainName }};
+
+      location /.well-known/matrix/ {
+        root /var/www/;
+        default_type application/json;
+        add_header Access-Control-Allow-Origin  *;
+      }
+    }
+
+  client: |
+    {
+      "m.homeserver": {
+        "base_url": "https://{{ .Values.synapse.subdomain }}.{{ .Values.global.domainName }}"
+      }
+    }
+
+  server: |
+    {
+      "m.server": "{{ .Values.synapse.subdomain }}.{{ .Values.global.domainName }}:443"
+    }

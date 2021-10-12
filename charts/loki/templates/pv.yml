@@ -1,0 +1,43 @@
+{{- if .Values.cassandra.persistentVolume.create -}}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "loki.cassandra.persistentVolumeName" . }}
+  labels:
+    {{- include "loki.cassandra.labels" . | nindent 4 }}
+  {{- with .Values.cassandra.persistentVolume.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.cassandra.persistentVolume.storageClass }}
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.global.dataDir }}/loki/cassandra
+{{- end -}}
+{{- if .Values.server.persistentVolume.create }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "loki.server.persistentVolumeName" . }}
+  labels:
+    {{- include "loki.server.labels" . | nindent 4 }}
+  {{- with .Values.server.persistentVolume.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.server.persistentVolume.storageClass }}
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.global.dataDir }}/loki/data
+{{- end -}}

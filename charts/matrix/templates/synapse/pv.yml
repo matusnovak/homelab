@@ -1,0 +1,21 @@
+{{- if .Values.synapse.persistentVolume.create }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "matrix.synapse.persistentVolumeName" . }}
+  labels:
+    {{- include "matrix.synapse.labels" . | nindent 4 }}
+  {{- with .Values.synapse.persistentVolume.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.synapse.persistentVolume.storageClass }}
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.global.dataDir }}/matrix/data
+{{- end -}}

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: authelia
+description: Forward auth via LDAP for applications that do not have their own authentication method
+type: application
+version: 0.1.0
+appVersion: "latest"

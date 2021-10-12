@@ -1,0 +1,21 @@
+{{- if .Values.persistentVolume.create -}}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "prometheus.persistentVolumeName" . }}
+  labels:
+    {{- include "prometheus.labels" . | nindent 4 }}
+  {{- with .Values.persistentVolume.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.persistentVolume.storageClass }}
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.global.dataDir }}/prometheus/data
+{{- end -}}

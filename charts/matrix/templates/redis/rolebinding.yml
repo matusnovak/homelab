@@ -1,0 +1,22 @@
+{{- if .Values.redis.role.create }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "matrix.redis.roleName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "matrix.redis.labels" . | nindent 4 }}
+  {{- with .Values.redis.role.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+subjects:
+  - kind: ServiceAccount
+    namespace: {{ .Release.Namespace }}
+    name: {{ include "matrix.redis.serviceAccountName" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "matrix.redis.roleName" . }}
+{{- end }}

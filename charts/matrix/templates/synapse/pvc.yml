@@ -1,0 +1,21 @@
+{{- if .Values.synapse.persistentVolumeClaim.create }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "matrix.synapse.persistentVolumeClaimName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "matrix.synapse.labels" . | nindent 4 }}
+  {{- with .Values.synapse.persistentVolumeClaim.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.synapse.persistentVolumeClaim.storageClass }}
+  resources:
+    requests:
+      storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  volumeName: {{ include "matrix.synapse.persistentVolumeName" . }}
+{{- end -}}

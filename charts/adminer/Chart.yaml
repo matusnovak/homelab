@@ -1,0 +1,6 @@
+apiVersion: v2
+name: adminer
+description: Adminer (formerly phpMinAdmin) is a full-featured database management tool written in PHP. 
+type: application
+version: 0.1.0
+appVersion: "latest"

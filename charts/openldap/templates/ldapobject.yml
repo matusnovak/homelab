@@ -1,0 +1,44 @@
+---
+apiVersion: homelab.local/v1alpha1
+kind: LdapObject
+metadata:
+  name: {{ printf "%s-posix-user" (include "openldap.fullname" .) }}
+  labels:
+    {{- include "openldap.labels" . | nindent 4 }}
+spec:
+  dn: {{ printf "cn=user,%s" .Values.global.domainComponent }}
+  attributes:
+    - name: 'objectClass'
+      value: 'posixGroup'
+    - name: 'objectClass'
+      value: 'top'
+    - name: 'gidNumber'
+      value: '500'
+---
+apiVersion: homelab.local/v1alpha1
+kind: LdapObject
+metadata:
+  name: {{ printf "%s-groups-unit" (include "openldap.fullname" .) }}
+  labels:
+    {{- include "openldap.labels" . | nindent 4 }}
+spec:
+  dn: {{ printf "ou=%s,%s" .Values.organisationalUnits.groups .Values.global.domainComponent }}
+  attributes:
+    - name: 'objectClass'
+      value: 'organizationalUnit'
+    - name: 'objectClass'
+      value: 'top'
+---
+apiVersion: homelab.local/v1alpha1
+kind: LdapObject
+metadata:
+  name: {{ printf "%s-users-unit" (include "openldap.fullname" .) }}
+  labels:
+    {{- include "openldap.labels" . | nindent 4 }}
+spec:
+  dn: {{ printf "ou=%s,%s" .Values.organisationalUnits.users .Values.global.domainComponent }}
+  attributes:
+    - name: 'objectClass'
+      value: 'organizationalUnit'
+    - name: 'objectClass'
+      value: 'top'

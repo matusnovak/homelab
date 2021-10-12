@@ -1,0 +1,25 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ printf "%s-ingress" (include "matrix.element.fullname" .) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "matrix.element.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    {{ .Values.global.ingress.entryPoints | toYaml | nindent 4 }}
+  routes: 
+    - kind: Rule
+      match: {{ printf "Host(`%s.%s`)" .Values.element.subdomain .Values.global.domainName }}
+      services:
+        - name: {{ include "matrix.element.fullname" .}}
+          port: 80
+      {{- if .Values.auth }}
+      middlewares:
+        - name: {{ printf "%s-forward-auth" (include "traefik.fullname" .) }}
+          namespace: {{ .Release.Namespace }}
+      {{- end }}
+  {{- if .Values.global.ingress.acme }}
+  tls:
+    certResolver: letsencrypt
+  {{- end }}

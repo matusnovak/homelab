@@ -1,0 +1,20 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ printf "%s-ingress" (include "phpldapadmin.fullname" .) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "phpldapadmin.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    {{ .Values.global.ingress.entryPoints | toYaml | nindent 4 }}
+  routes: 
+    - kind: Rule
+      match: {{ printf "Host(`%s.%s`)" .Values.subdomain .Values.global.domainName }}
+      services:
+        - name: {{ include "phpldapadmin.fullname" .}}
+          port: 80
+  {{- if .Values.global.ingress.acme }}
+  tls:
+    certResolver: letsencrypt
+  {{- end }}

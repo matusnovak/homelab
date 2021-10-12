@@ -1,0 +1,199 @@
+{{ $configMapHash := include (print $.Template.BasePath "/synapse/configmap.yml") . | sha256sum }}
+{{ $fullname := include "matrix.synapse.fullname" . }}
+{{ $labels := include "matrix.synapse.labels" . }}
+{{ $selectorLabels := include "matrix.synapse.selectorLabels" . }}
+{{ $serviceAccountName := include "matrix.synapse.serviceAccountName" . }}
+{{ $persistentVolumeClaimName := include "matrix.synapse.persistentVolumeClaimName" . }}
+{{ $openldapHost := printf "%s.%s.svc.cluster.local" (include "openldap.fullname" .) .Release.Namespace }}
+{{ $postgresHost := printf "%s.%s.svc.cluster.local" (include "postgres.fullname" .) .Release.Namespace }}
+{{ range $type, $config := .Values.workers -}}
+{{- if $config.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ printf "%s-%s" $fullname ( $type | replace "_" "-" ) }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- $labels | nindent 4 }}
+    matrix.org/worker: {{ $type }}
+spec:
+  replicas: {{ $config.replicaCount | default 1 }}
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      {{- $selectorLabels | nindent 6 }}
+      matrix.org/worker: {{ $type }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ $configMapHash }}
+      {{- with ($config.podAnnotations | default $.Values.synapse.podAnnotations) }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- $selectorLabels | nindent 8 }}
+        matrix.org/worker: {{ $type }}
+    spec:
+      {{- with $.Values.synapse.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ $serviceAccountName }}
+      securityContext:
+        {{- toYaml $.Values.synapse.podSecurityContext | nindent 8 }}
+      initContainers:
+        {{ if eq $type "homeserver" }}
+        - name: {{ printf "%s-init" $.Chart.Name }}
+          image: "{{ $.Values.global.busybox.repository }}:{{ $.Values.global.busybox.tag }}"
+          command:
+            - 'sh'
+            - '-c'
+            - 'chmod 755 /data && chown 991:991 /data'
+          volumeMounts:
+            - name: data-volume
+              mountPath: /data
+        - name: {{ printf "%s-ldap" $.Chart.Name }}
+          image: "{{ $.Values.global.openldapCheck.repository }}:{{ $.Values.global.openldapCheck.tag }}"
+          imagePullPolicy: {{ $.Values.global.openldapCheck.pullPolicy }}
+          command:
+            - 'sh'
+            - '-c'
+            - 'until ldapsearch -x -H "ldap://$LDAP_HOST:389" -D "$LDAP_USER" -w "$LDAP_PASSWORD" -b "$LDAP_BASE"; do echo "waiting for openldap"; sleep 2; done;'
+          env:
+            - name: LDAP_HOST
+              value: {{ $openldapHost }}
+            - name: LDAP_USER
+              value: '{{ printf "cn=readonly,%s" $.Values.global.domainComponent }}'
+            - name: LDAP_PASSWORD
+              value: '{{ $.Values.synapse.openldap.readonlyPassword }}'
+            - name: LDAP_BASE
+              value: '{{ printf "ou=%s,%s" $.Values.synapse.openldap.users $.Values.global.domainComponent }}'
+        - name: {{ printf "%s-psql" $.Chart.Name }}
+          image: "{{ $.Values.global.postgresCheck.repository }}:{{ $.Values.global.postgresCheck.tag }}"
+          imagePullPolicy: {{ $.Values.global.postgresCheck.pullPolicy }}
+          command:
+            - 'sh'
+            - '-c'
+            - 'until psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_ROLE -d $POSTGRES_DB -c "select 1"; do echo "waiting for database"; sleep 2; done;'
+          env:
+            - name: POSTGRES_HOST
+              value: {{ $postgresHost }}
+            - name: POSTGRES_DB
+              value: {{ $.Values.synapse.postgres.database }}
+            - name: POSTGRES_ROLE
+              value: {{ $.Values.synapse.postgres.role }}
+            - name: POSTGRES_PORT
+              value: '5432'
+            - name: PGPASSWORD
+              value: '{{ $.Values.synapse.postgres.password }}'
+        {{ else }}
+        - name: {{ printf "%s-init" $.Chart.Name }}
+          image: "{{ $.Values.global.curlCheck.repository }}:{{ $.Values.global.curlCheck.tag }}"
+          command:
+            - 'sh'
+            - '-c'
+            - 'until curl -f {{ printf "\"http://%s-homeserver.%s.svc.cluster.local:8008/health\"" $fullname $.Release.Namespace}}; do echo "waiting for homeserver"; sleep 2; done;'
+          volumeMounts:
+            - name: data-volume
+              mountPath: /data
+        {{ end }}
+      containers:
+        - name: {{ $.Chart.Name }}
+          securityContext:
+            {{- toYaml $.Values.synapse.securityContext | nindent 12 }}
+          image: "{{ $.Values.synapse.image.repository }}:{{ $.Values.synapse.image.tag }}"
+          imagePullPolicy: {{ $.Values.synapse.image.pullPolicy }}
+          command:
+            - 'python'
+          args:
+            - '-m'
+            - '{{ $config.app }}'
+            - '-c'
+            - '/config/homeserver.yaml'
+            - '-c'
+            - '/config/conf.d/'
+          {{ if not (eq $type "homeserver") }}
+            - '-c'
+            - '{{ printf "/config/%s.yaml" $type }}'
+          {{ end }}
+          {{ with $.Values.synapse.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: synapse
+              containerPort: 8008
+              protocol: TCP
+            {{- if eq $type "homeserver" }}
+            - name: replication
+              containerPort: 9093
+              protocol: TCP
+            {{- end }}
+          resources:
+            {{- toYaml ($config.resources | default $.Values.synapse.resources) | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: synapse
+              scheme: HTTP
+            initialDelaySeconds: 30
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: synapse
+              scheme: HTTP
+            initialDelaySeconds: 30
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config/homeserver.yaml
+              subPath: homeserver.yaml
+              readOnly: true
+            - name: config-volume
+              mountPath: /config/homeserver.log.config
+              subPath: homeserver.log.config
+              readOnly: true
+            {{ if not (eq $type "homeserver") -}}
+            - name: config-volume
+              mountPath: {{ printf "/config/%s.yaml" $type }}
+              subPath: {{ printf "%s.yaml" $type }}
+              readOnly: true
+            {{- end }}
+            - name: data-volume
+              mountPath: /data
+            - name: signingkey
+              mountPath: /secrets
+              readOnly: true
+            - name: temp-config
+              mountPath: /config/conf.d
+      {{- with ($config.nodeSelector | default $.Values.synapse.nodeSelector) }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with ($config.affinity | default $.Values.synapse.affinity) }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with ($config.tolerations | default $.Values.synapse.tolerations) }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ $fullname }}
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: {{ $persistentVolumeClaimName }}
+        - name: signingkey
+          secret:
+            secretName: {{ printf "%s-signing-key" $fullname }}
+            items:
+              - key: {{ printf "%s.signing.key" $.Values.global.domainName }}
+                path: {{ printf "%s.signing.key" $.Values.global.domainName }}
+        - name: temp-config
+          emptyDir: {}
+{{ end -}}
+{{- end }}

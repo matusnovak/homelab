@@ -1,0 +1,20 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ printf "%s-ingress" (include "grafana.fullname" .) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "grafana.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    {{ .Values.global.ingress.entryPoints | toYaml | nindent 4 }}
+  routes: 
+    - kind: Rule
+      match: {{ printf "Host(`%s.%s`)" .Values.subdomain .Values.global.domainName }}
+      services:
+        - name: {{ include "grafana.fullname" .}}
+          port: 3000
+  {{- if .Values.global.ingress.acme }}
+  tls:
+    certResolver: letsencrypt
+  {{- end }}

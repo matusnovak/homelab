@@ -1,0 +1,68 @@
+{{- if .Values.cassandra.role.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "loki.cassandra.roleName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "loki.cassandra.labels" . | nindent 4 }}
+  {{- with .Values.cassandra.role.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+rules:
+  - apiGroups:
+      - 'extensions'
+    resources:
+      - 'podsecuritypolicies'
+    verbs:
+      - 'use'
+    resourceNames:
+      - {{ include "loki.cassandra.fullname" . }}
+{{- end }}
+{{- if .Values.server.role.create }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "loki.server.roleName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "loki.server.labels" . | nindent 4 }}
+  {{- with .Values.server.role.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+rules:
+  - apiGroups:
+      - 'extensions'
+    resources:
+      - 'podsecuritypolicies'
+    verbs:
+      - 'use'
+    resourceNames:
+      - {{ include "loki.server.fullname" . }}
+{{- end }}
+{{- if .Values.promtail.role.create }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "loki.promtail.roleName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "loki.promtail.labels" . | nindent 4 }}
+  {{- with .Values.promtail.role.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+rules:
+  - apiGroups:
+      - 'extensions'
+    resources:
+      - 'podsecuritypolicies'
+    verbs:
+      - 'use'
+    resourceNames:
+      - {{ include "loki.promtail.fullname" . }}
+{{- end }}

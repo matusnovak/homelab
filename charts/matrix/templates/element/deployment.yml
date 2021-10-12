@@ -1,0 +1,82 @@
+{{ $configMapHash := include (print $.Template.BasePath "/element/configmap.yml") . | sha256sum }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "matrix.element.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "matrix.element.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.element.replicaCount }}
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      {{- include "matrix.element.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ $configMapHash }}
+      {{- with .Values.element.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "matrix.element.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.element.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "matrix.element.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.element.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.element.securityContext | nindent 12 }}
+          image: "{{ .Values.element.image.repository }}:{{ .Values.element.image.tag }}"
+          imagePullPolicy: {{ .Values.element.image.pullPolicy }}
+          {{- with .Values.element.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: web
+              containerPort: 80
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.element.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: web
+              scheme: HTTP
+            initialDelaySeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: web
+              scheme: HTTP
+            initialDelaySeconds: 10
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config.json
+              subPath: config.json
+              readOnly: true
+      {{- with .Values.element.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.element.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.element.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ include "matrix.element.fullname" . }}

@@ -1,0 +1,55 @@
+{{- if .Values.clusterRole.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ printf "%s-%s" .Release.Namespace (include "traefik.clusterRoleName" .) }}
+  labels:
+    {{- include "traefik.labels" . | nindent 4 }}
+  {{- with .Values.clusterRole.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+rules:
+  - apiGroups:
+      - ''
+    resources:
+      - 'services'
+      - 'endpoints'
+      - 'secrets'
+    verbs:
+      - 'get'
+      - 'list'
+      - 'watch'
+  - apiGroups:
+      - 'extensions'
+      - 'networking.k8s.io'
+    resources:
+      - 'ingresses'
+      - 'ingressclasses'
+    verbs:
+      - 'get'
+      - 'list'
+      - 'watch'
+  - apiGroups:
+      - 'extensions'
+    resources:
+      - 'ingresses/status'
+    verbs:
+      - 'update'
+  - apiGroups:
+      - 'traefik.containo.us'
+    resources:
+      - 'middlewares'
+      - 'middlewaretcps'
+      - 'ingressroutes'
+      - 'traefikservices'
+      - 'ingressroutetcps'
+      - 'ingressrouteudps'
+      - 'tlsoptions'
+      - 'tlsstores'
+      - 'serverstransports'
+    verbs:
+      - 'get'
+      - 'list'
+      - 'watch'
+{{- end }}

@@ -1,0 +1,46 @@
+apiVersion: v2
+name: homelab
+description: Your own private cloud
+type: application
+version: 0.1.0
+dependencies:
+  - name: traefik
+    repository: file://charts/traefik
+    version: 0.1.0
+    condition: deploy.traefik
+  - name: openldap
+    repository: file://charts/openldap
+    version: 0.1.0
+    condition: deploy.openldap
+  - name: openldap-controller
+    repository: file://charts/openldap-controller
+    version: 0.1.0
+    condition: deploy.openldapController
+  - name: postgres
+    repository: file://charts/postgres
+    version: 0.1.0
+    condition: deploy.postgres
+  - name: postgres-controller
+    repository: file://charts/postgres-controller
+    version: 0.1.0
+    condition: deploy.postgresController
+  - name: authelia
+    repository: file://charts/authelia
+    version: 0.1.0
+    condition: deploy.authelia
+  - name: nodeexporter
+    repository: file://charts/nodeexporter
+    version: 0.1.0
+    condition: deploy.nodeexporter
+  - name: prometheus
+    repository: file://charts/prometheus
+    version: 0.1.0
+    condition: deploy.prometheus
+  - name: phpldapadmin
+    repository: file://charts/phpldapadmin
+    version: 0.1.0
+    condition: deploy.phpldapadmin
+  - name: adminer
+    repository: file://charts/adminer
+    version: 0.1.0
+    condition: deploy.adminer

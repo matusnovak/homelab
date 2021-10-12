@@ -1,0 +1,186 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "matrix.synapse.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "matrix.synapse.labels" . | nindent 4 }}
+data:
+  homeserver.yaml: |
+    server_name: "{{ .Values.global.domainName }}"
+    
+    pid_file: /data/homeserver.pid
+    
+    web_client_location: "https://{{ .Values.element.subdomain }}.{{ .Values.global.domainName }}/"
+    
+    public_baseurl: "https://{{ .Values.synapse.subdomain }}.{{ .Values.global.domainName }}/"
+    
+    listeners:
+      - port: 8008
+        tls: false
+        type: http
+        x_forwarded: true
+        bind_addresses: ['0.0.0.0']
+
+        resources:
+          - names: [metrics, client, federation]
+            compress: false
+
+      - port: 9093
+        tls: false
+        bind_addresses: ['0.0.0.0']
+        type: http
+
+        resources:
+          - names: [replication]
+            compress: false
+
+    acme:
+      enabled: false
+
+    database:
+      name: "psycopg2"
+      args:
+        user: "{{ .Values.synapse.postgres.role }}"
+        password: "{{ .Values.synapse.postgres.password }}"
+        database: "{{ .Values.synapse.postgres.database }}"
+        host: "{{ printf "%s.%s.svc.cluster.local" (include "postgres.fullname" .) .Release.Namespace }}"   
+        cp_min: 5
+        cp_max: 10
+
+    media_store_path: "/data/media"
+
+    uploads_path: "/data/uploads"
+    
+    log_config: "/config/homeserver.log.config"
+
+    enable_search: {{ .Values.synapse.search.enabled | ternary "true" "false" }}
+
+    enable_registration:  {{ .Values.synapse.registration.enabled | ternary "true" "false" }}
+  
+    use_presence: {{ .Values.workers.frontend_proxy.enabled | ternary "false" "true" }}
+
+    max_upload_size: 50M
+
+    max_image_pixels: 32M
+
+    url_preview_enabled: {{ .Values.synapse.urlPreview.enabled | ternary "true" "false" }}
+
+    {{ if .Values.synapse.urlPreview.enabled -}}
+    url_preview_ip_range_blacklist: 
+      {{ .Values.synapse.urlPreview.blacklist | toYaml  | nindent 6 }}
+
+    max_spider_size: {{ .Values.synapse.urlPreview.maxSize }}
+    {{- end }}
+
+    enable_metrics: {{ .Values.synapse.metrics.enabled | ternary "true" "false" }}
+
+    report_stats: {{ .Values.synapse.reportStats.enabled | ternary "true" "false" }}
+
+    macaroon_secret_key: "{{ .Values.synapse.secrets.macaroon }}"
+    form_secret: "{{ .Values.synapse.secrets.form }}"
+    registration_shared_secret: "{{ .Values.synapse.secrets.registration }}"
+
+    signing_key_path: "/secrets/{{ printf "%s.signing.key" .Values.global.domainName }}"
+    
+    trusted_key_servers:
+      {{ .Values.synapse.trustedKeyServers | toYaml | nindent 6 }}
+
+    password_providers:
+      - module: "ldap_auth_provider.LdapAuthProvider"
+        config:
+          enabled: true
+          uri: "ldap://{{ printf "%s.%s.svc.cluster.local" (include "openldap.fullname" .) .Release.Namespace }}:389"
+          start_tls: false
+          base: "{{ printf "ou=%s,%s" .Values.synapse.openldap.users .Values.global.domainComponent }}"
+          attributes:
+            uid: "uid"
+            mail: "email"
+            name: "cn"
+          bind_dn: "{{ printf "cn=readonly,%s" .Values.global.domainComponent }}"
+          bind_password: "{{ .Values.synapse.openldap.readonlyPassword }}"
+          filter: "(memberOf={{ printf "cn=%s,ou=%s,%s" .Values.synapse.openldap.group .Values.synapse.openldap.groups .Values.global.domainComponent }})"
+
+    stats:
+      enabled: true
+
+    redis:
+      enabled: true
+      host: "{{ printf "%s.%s.svc.cluster.local" (include "matrix.redis.fullname" .) .Release.Namespace }}"
+      port: 6379
+      password: "{{ .Values.redis.password }}"
+
+    {{ range $type, $config := .Values.workers }}
+    {{- if $config.enabled }}
+    {{- if eq $type "appservice" }}
+    notify_appservices: false
+    {{- else if eq $type "federation_sender" }}
+    send_federation: false
+    {{- else if eq $type "media_repository" }}
+    enable_media_repo: false
+    {{- else if eq $type "pusher" }}
+    start_pushers: false
+    {{- else if eq $type "user_dir" }}
+    update_user_directory: false
+    {{- end }}
+    {{- end -}}
+    {{- end }}
+
+  homeserver.log.config: |
+    version: 1
+
+    formatters:
+      precise:
+        format: '%(asctime)s - %(name)s - %(lineno)d - %(levelname)s - %(request)s - %(message)s'
+
+    filters:
+      context:
+        (): synapse.logging.context.LoggingContextFilter
+        request: ""
+
+    handlers:
+      console:
+        class: logging.StreamHandler
+        formatter: precise
+        filters: [context]
+
+    loggers:
+      synapse.storage.SQL:
+        # beware: increasing this to DEBUG will make synapse log sensitive
+        # information such as access tokens.
+        level: INFO
+
+    root:
+      level: INFO
+      handlers: [console]
+
+    disable_existing_loggers: false
+
+  {{ $synapseHost := printf "%s-homeserver.%s.svc.cluster.local" (include "matrix.synapse.fullname" .) $.Release.Namespace }}
+  {{ range $type, $config := .Values.workers -}}
+  {{ if $config.enabled -}}
+  {{ if not (eq $type "homeserver") -}}
+  {{ printf "%s.yaml" $type }}: |
+    worker_app: "{{ $config.app }}"
+
+    worker_main_http_uri: "{{ printf "http://%s:8008" $synapseHost }}"
+    worker_replication_host: "{{ $synapseHost }}"
+    worker_replication_http_port: 9093
+
+    worker_listeners:
+      - port: 8008
+        tls: false
+        bind_addresses: ['0.0.0.0']
+        type: http
+        x_forwarded: true
+
+        resources:
+          - names:
+              {{- $config.listeners | toYaml | nindent 14 }}
+            compress: false
+
+    worker_log_config: "/config/homeserver.log.config"
+  
+  {{ end -}}
+  {{- end -}}
+  {{- end }}

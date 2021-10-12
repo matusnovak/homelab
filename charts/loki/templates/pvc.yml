@@ -1,0 +1,43 @@
+{{- if .Values.cassandra.persistentVolumeClaim.create -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "loki.cassandra.persistentVolumeClaimName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "loki.cassandra.labels" . | nindent 4 }}
+  {{- with .Values.cassandra.persistentVolumeClaim.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.cassandra.persistentVolumeClaim.storageClass }}
+  resources:
+    requests:
+      storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  volumeName: {{ include "loki.cassandra.persistentVolumeName" . }}
+{{- end -}}
+{{- if .Values.server.persistentVolumeClaim.create }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "loki.server.persistentVolumeClaimName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "loki.server.labels" . | nindent 4 }}
+  {{- with .Values.server.persistentVolumeClaim.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.server.persistentVolumeClaim.storageClass }}
+  resources:
+    requests:
+      storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  volumeName: {{ include "loki.server.persistentVolumeName" . }}
+{{- end -}}

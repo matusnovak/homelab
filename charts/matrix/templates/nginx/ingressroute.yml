@@ -1,0 +1,25 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ printf "%s-ingress" (include "matrix.nginx.fullname" .) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "matrix.nginx.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    {{ .Values.global.ingress.entryPoints | toYaml | nindent 4 }}
+  routes: 
+    - kind: Rule
+      match: {{ printf "Host(`%s.%s`) || (Host(`%s`) && PathPrefix(`/.well-known/matrix/`))" .Values.synapse.subdomain .Values.global.domainName .Values.global.domainName }}
+      services:
+        - name: {{ include "matrix.nginx.fullname" .}}
+          port: 80
+      {{- if .Values.auth }}
+      middlewares:
+        - name: {{ printf "%s-forward-auth" (include "traefik.fullname" .) }}
+          namespace: {{ .Release.Namespace }}
+      {{- end }}
+  {{- if .Values.global.ingress.acme }}
+  tls:
+    certResolver: letsencrypt
+  {{- end }}

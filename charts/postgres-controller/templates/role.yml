@@ -1,0 +1,52 @@
+{{- if .Values.role.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "postgres-controller.roleName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "postgres-controller.labels" . | nindent 4 }}
+  {{- with .Values.role.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+rules:
+  # Framework: knowing which other operators are running (i.e. peering).
+  - apiGroups:
+      - 'kopf.dev'
+    resources:
+      - 'kopfpeerings'
+    verbs:
+      - 'list'
+      - 'watch'
+      - 'patch'
+      - 'get'
+  
+  # Framework: posting the events about the handlers progress/errors.
+  - apiGroups:
+      - ''
+    resources:
+      - 'events'
+    verbs:
+      - 'create'
+  
+  # Application: watching & handling for the custom resource we declare.
+  - apiGroups:
+      - 'homelab.local'
+    resources:
+      - 'postgresdatabases'
+    verbs:
+      - 'list'
+      - 'watch'
+      - 'patch'
+
+  # Other
+  - apiGroups:
+      - 'extensions'
+    resources:
+      - 'podsecuritypolicies'
+    verbs:
+      - 'use'
+    resourceNames:
+      - {{ include "postgres-controller.fullname" . }}
+{{- end }}

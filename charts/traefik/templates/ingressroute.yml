@@ -1,0 +1,32 @@
+{{- if .Values.dashboard.enabled }}
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ printf "%s-dashboard-ingress" (include "traefik.fullname" .) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "traefik.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    {{- if .Values.http.enabled }}
+    - web
+    {{- end }}
+    {{- if .Values.http.enabled }}
+    - websecure
+    {{- end }}
+  routes: 
+    - kind: Rule
+      match: {{ printf "Host(`%s.%s`)" .Values.subdomain .Values.global.domainName }}
+      services:
+        - kind: TraefikService
+          name: api@internal
+      {{- if .Values.dashboard.auth }}
+      middlewares:
+        - name: {{ printf "%s-forward-auth" (include "traefik.fullname" .) }}
+          namespace: {{ .Release.Namespace }}
+      {{- end }}
+  {{- if .Values.acme.enabled }}
+  tls:
+    certResolver: letsencrypt
+  {{- end }}
+{{- end -}}

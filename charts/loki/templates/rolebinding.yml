@@ -1,0 +1,65 @@
+{{- if .Values.cassandra.role.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "loki.cassandra.roleName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "loki.cassandra.labels" . | nindent 4 }}
+  {{- with .Values.cassandra.role.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+subjects:
+  - kind: ServiceAccount
+    namespace: {{ .Release.Namespace }}
+    name: {{ include "loki.cassandra.serviceAccountName" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "loki.cassandra.roleName" . }}
+{{- end }}
+{{- if .Values.server.role.create }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "loki.server.roleName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "loki.server.labels" . | nindent 4 }}
+  {{- with .Values.server.role.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+subjects:
+  - kind: ServiceAccount
+    namespace: {{ .Release.Namespace }}
+    name: {{ include "loki.server.serviceAccountName" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "loki.server.roleName" . }}
+{{- end }}
+{{- if .Values.promtail.role.create }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "loki.promtail.roleName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "loki.promtail.labels" . | nindent 4 }}
+  {{- with .Values.promtail.role.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+subjects:
+  - kind: ServiceAccount
+    namespace: {{ .Release.Namespace }}
+    name: {{ include "loki.promtail.serviceAccountName" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "loki.promtail.roleName" . }}
+{{- end }}

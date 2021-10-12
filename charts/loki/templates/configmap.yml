@@ -1,0 +1,174 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "loki.server.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "loki.server.labels" . | nindent 4 }}
+data:
+  config.yml: |
+    auth_enabled: false
+    ingester:
+      chunk_idle_period: 3m
+      chunk_block_size: 262144
+      chunk_retain_period: 1m
+      max_transfer_retries: 0
+      lifecycler:
+        ring:
+          kvstore:
+            store: inmemory
+          replication_factor: 1
+
+    server:
+      http_listen_port: 3100
+
+    chunk_store_config:
+      max_look_back_period: 0s
+
+    table_manager:
+      retention_deletes_enabled: false
+      retention_period: 0s
+
+    limits_config:
+      enforce_metric_name: false
+      reject_old_samples: true
+      reject_old_samples_max_age: 168h
+
+    schema_config:
+      configs:
+      - from: 2020-05-15
+        store: cassandra
+        object_store: filesystem
+        schema: v11
+        index:
+          prefix: cassandra_table
+          period: 168h
+
+    storage_config:
+      cassandra:
+        username: cassandra
+        password: {{ .Values.cassandra.password }}
+        consistency: LOCAL_ONE
+        addresses: {{ include "loki.cassandra.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+        auth: true
+        keyspace: lokiindex
+
+      filesystem:
+        directory: /data/chunks
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "loki.promtail.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "loki.promtail.labels" . | nindent 4 }}
+data:
+  config.yml: |
+    client:
+      url: http://{{ include "loki.server.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:3100/loki/api/v1/push
+      batchwait: 1s
+      batchsize: 1048576
+      follow_redirects: false
+      backoff_config:
+        min_period: 500ms
+        max_period: 5m0s
+        max_retries: 10
+      timeout: 10s
+      tenant_id: ""
+
+    server:
+      http_listen_address: ""
+      http_listen_port: 3101
+      http_listen_conn_limit: 0
+      grpc_listen_address: ""
+      grpc_listen_port: 9095
+      grpc_listen_conn_limit: 0
+      log_format: logfmt
+      log_level: info
+      http_path_prefix: ""
+      external_url: ""
+      health_check_target: null
+
+    positions:
+      sync_period: 10s
+      filename: /run/promtail/positions.yaml
+      ignore_invalid_yaml: false
+
+    scrape_configs:
+    - job_name: kubernetes-pods
+      pipeline_stages:
+      - cri: {}
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_controller_name]
+        separator: ;
+        regex: ([0-9a-z-.]+?)(-[0-9a-f]{8,10})?
+        target_label: __tmp_controller_name
+        replacement: $1
+        action: replace
+      - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name, __meta_kubernetes_pod_label_app,
+          __tmp_controller_name, __meta_kubernetes_pod_name]
+        separator: ;
+        regex: ^;*([^;]+)(;.*)?$
+        target_label: app
+        replacement: $1
+        action: replace
+      - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_component, __meta_kubernetes_pod_label_component]
+        separator: ;
+        regex: ^;*([^;]+)(;.*)?$
+        target_label: component
+        replacement: $1
+        action: replace
+      - source_labels: [__meta_kubernetes_pod_node_name]
+        separator: ;
+        regex: (.*)
+        target_label: node_name
+        replacement: $1
+        action: replace
+      - source_labels: [__meta_kubernetes_namespace]
+        separator: ;
+        regex: (.*)
+        target_label: namespace
+        replacement: $1
+        action: replace
+      - source_labels: [namespace, app]
+        separator: /
+        regex: (.*)
+        target_label: job
+        replacement: $1
+        action: replace
+      - source_labels: [__meta_kubernetes_pod_name]
+        separator: ;
+        regex: (.*)
+        target_label: pod
+        replacement: $1
+        action: replace
+      - source_labels: [__meta_kubernetes_pod_container_name]
+        separator: ;
+        regex: (.*)
+        target_label: container
+        replacement: $1
+        action: replace
+      - source_labels: [__meta_kubernetes_pod_uid, __meta_kubernetes_pod_container_name]
+        separator: /
+        regex: (.*)
+        target_label: __path__
+        replacement: /var/log/pods/*$1/*.log
+        action: replace
+      - source_labels: [__meta_kubernetes_pod_annotationpresent_kubernetes_io_config_hash,
+          __meta_kubernetes_pod_annotation_kubernetes_io_config_hash, __meta_kubernetes_pod_container_name]
+        separator: /
+        regex: true/(.*)
+        target_label: __path__
+        replacement: /var/log/pods/*$1/*.log
+        action: replace
+      static_configs: []
+      kubernetes_sd_configs:
+      - role: pod
+        kubeconfig_file: ""
+        follow_redirects: true
+        selectors:
+        - role: pod
+    target_config:
+      sync_period: 10s
+      stdin: false
