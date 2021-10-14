@@ -1,0 +1,6 @@
+apiVersion: v2
+name: zfsprom
+description: Exporter for ZFS metrics 
+type: application
+version: 0.1.0
+appVersion: "latest"

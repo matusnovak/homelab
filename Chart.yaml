@@ -44,3 +44,15 @@ dependencies:
     repository: file://charts/adminer
     version: 0.1.0
     condition: deploy.adminer
+  - name: matrix
+    repository: file://charts/matrix
+    version: 0.1.0
+    condition: deploy.matrix
+  - name: zfsprom
+    repository: file://charts/zfsprom
+    version: 0.1.0
+    condition: deploy.zfsprom
+  - name: smartprom
+    repository: file://charts/smartprom
+    version: 0.1.0
+    condition: deploy.smartprom

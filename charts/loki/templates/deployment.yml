@@ -54,6 +54,10 @@ spec:
               value: 'yes'
             - name: CASSANDRA_PASSWORD
               value: '{{ .Values.cassandra.password }}'
+            - name: HEAP_NEWSIZE
+              value: '128M'
+            - name: MAX_HEAP_SIZE
+              value: '1024M'
           {{- with .Values.cassandra.env }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
