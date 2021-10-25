@@ -1,3 +1,4 @@
+{{ $configMapHash := include (print $.Template.BasePath "/configmap.yml") . | sha256sum }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,8 +16,9 @@ spec:
       {{- include "grafana.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
+        checksum/config: {{ $configMapHash }}
+      {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:

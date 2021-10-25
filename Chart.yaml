@@ -56,3 +56,7 @@ dependencies:
     repository: file://charts/smartprom
     version: 0.1.0
     condition: deploy.smartprom
+  - name: gitlab
+    repository: file://charts/gitlab
+    version: 0.1.0
+    condition: deploy.gitlab

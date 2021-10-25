@@ -1,0 +1,6 @@
+apiVersion: v2
+name: gitlab
+description: GitLab is a web-based DevOps lifecycle tool that provides a Git repository manager providing wiki, issue-tracking and continuous integration and deployment pipeline features, using an open-source license, developed by GitLab Inc.
+type: application
+version: 0.1.0
+appVersion: "latest"

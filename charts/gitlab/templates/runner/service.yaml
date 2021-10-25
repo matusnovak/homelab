@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "gitlab.runner.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gitlab.runner.labels" . | nindent 4 }}
+  annotations:
+    prometheus.io/scrape: 'true'
+    prometheus.io/port: '9252'
+spec:
+  type: {{ .Values.runner.service.type }}
+  ports:
+    - port: 9252
+      protocol: TCP
+      name: metrics
+  selector:
+    {{- include "gitlab.runner.selectorLabels" . | nindent 4 }}

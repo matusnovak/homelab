@@ -172,7 +172,7 @@ data:
     ;admin_user = admin
 
     # default admin password, can be changed before first start of grafana,  or in profile settings
-    ;admin_password = admin
+    admin_password = {{ .Values.admin.password }}
 
     # used for signing
     ;secret_key = SW2YcwTIb9zpOOhoPsMm
@@ -465,7 +465,7 @@ data:
     [auth.ldap]
     enabled = true
     config_file = /etc/grafana/ldap.toml
-    ;allow_sign_up = true
+    allow_sign_up = false
 
     # LDAP backround sync (Enterprise only)
     # At 1 am every day

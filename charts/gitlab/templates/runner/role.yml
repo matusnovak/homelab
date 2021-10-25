@@ -1,0 +1,66 @@
+{{- if .Values.runner.role.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "gitlab.runner.roleName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gitlab.runner.labels" . | nindent 4 }}
+  {{- with .Values.runner.role.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+rules:
+  - apiGroups:
+      - 'extensions'
+    resources:
+      - 'podsecuritypolicies'
+    verbs:
+      - 'use'
+    resourceNames:
+      - {{ include "gitlab.runner.fullname" . }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ printf "%s-jobs" (include "gitlab.runner.roleName" .) }}
+  namespace: {{ .Values.runner.jobNamespace }}
+  labels:
+    {{- include "gitlab.runner.labels" . | nindent 4 }}
+  {{- with .Values.runner.role.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+rules:
+  - apiGroups:
+      - ''
+    resources:
+      - 'pods/log'
+    verbs:
+      - 'get'
+  - apiGroups:
+      - ''
+    resources:
+      - 'pods/attach'
+    verbs:
+      - 'get'
+      - 'create'
+      - 'patch'
+      - 'delete'
+  - apiGroups:
+      - ''
+    resources:
+      - 'pods/exec'
+    verbs:
+      - 'create'
+      - 'patch'
+      - 'delete'
+  - apiGroups:
+      - ''
+    resources:
+      - 'pods'
+      - 'secrets'
+      - 'configmaps'
+    verbs:
+      - '*'
+{{- end }}

@@ -1,0 +1,66 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ printf "%s-web-ingress" (include "gitlab.server.fullname" .) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gitlab.server.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    {{ .Values.global.ingress.entryPoints | toYaml | nindent 4 }}
+  routes: 
+    - kind: Rule
+      match: {{ printf "Host(`%s.%s`)" .Values.server.subdomain .Values.global.domainName }}
+      services:
+        - name: {{ include "gitlab.server.fullname" .}}
+          port: 80
+  {{- if .Values.global.ingress.acme }}
+  tls:
+    certResolver: letsencrypt
+  {{- end }}
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ printf "%s-registry-ingress" (include "gitlab.server.fullname" .) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gitlab.server.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    {{ .Values.global.ingress.entryPoints | toYaml | nindent 4 }}
+  routes: 
+    - kind: Rule
+      match: {{ printf "Host(`%s.%s`)" .Values.server.subdomainRegistry .Values.global.domainName }}
+      services:
+        - name: {{ include "gitlab.server.fullname" .}}
+          port: 81
+  {{- if .Values.global.ingress.acme }}
+  tls:
+    certResolver: letsencrypt
+  {{- end }}
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ printf "%s-pages-ingress" (include "gitlab.server.fullname" .) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gitlab.server.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    {{ .Values.global.ingress.entryPoints | toYaml | nindent 4 }}
+  routes: 
+    - kind: Rule
+      match: {{ printf "HostRegexp(`%s.%s`, `{subdomain:[a-z0-9_-]+}.%s.%s`)" .Values.server.subdomainPages .Values.global.domainName .Values.server.subdomainPages .Values.global.domainName }}
+      services:
+        - name: {{ include "gitlab.server.fullname" .}}
+          port: 82
+  {{- if .Values.global.ingress.acme }}
+  tls:
+    certResolver: letsencrypt
+    domains:
+      - main: '{{ printf "%s.%s" .Values.server.subdomainPages .Values.global.domainName }}'
+        sans: 
+          - '{{ printf "*.%s.%s" .Values.server.subdomainPages .Values.global.domainName }}'
+  {{- end }}

@@ -1,0 +1,80 @@
+{{- if .Values.runner.token -}}
+{{ $configMapHash := include (print $.Template.BasePath "/runner/configmap.yml") . | sha256sum }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "gitlab.runner.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gitlab.runner.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.runner.replicaCount }}
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      {{- include "gitlab.runner.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ $configMapHash }}
+      {{- with .Values.runner.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "gitlab.runner.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.runner.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "gitlab.runner.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.runner.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.runner.securityContext | nindent 12 }}
+          image: "{{ .Values.runner.image.repository }}:{{ .Values.runner.image.tag }}"
+          imagePullPolicy: {{ .Values.runner.image.pullPolicy }}
+          env:
+            - name: KUBERNETES_NAMESPACE
+              value: {{ .Values.runner.jobNamespace }}
+          {{- with .Values.runner.env }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          command:
+            - '/bin/bash'
+          args:
+            - '/scripts/entrypoint.sh'
+          ports:
+            - name: metrics
+              containerPort: 9252
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.runner.resources | nindent 12 }}
+          volumeMounts:
+            - name: config-volume
+              mountPath: /scripts/entrypoint.sh
+              subPath: entrypoint.sh
+            - name: config-volume
+              mountPath: /scripts/config.toml
+              subPath: config.toml
+      {{- with .Values.runner.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.runner.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.runner.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ include "gitlab.runner.fullname" . }}
+{{- end -}}

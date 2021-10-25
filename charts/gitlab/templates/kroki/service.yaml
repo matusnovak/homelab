@@ -1,0 +1,22 @@
+{{ $fullname := (include "gitlab.kroki.fullname" .) }}
+{{ $selector := (include "gitlab.kroki.selectorLabels" .) }}
+{{ $labels := (include "gitlab.kroki.labels" .) }}
+{{ range $type, $config := .Values.kroki.images }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ printf "%s-%s" $fullname $type }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- $labels | nindent 4 }}
+spec:
+  type: {{ $.Values.kroki.service.type }}
+  ports:
+    - port: {{ $config.port }}
+      protocol: TCP
+      name: kroki
+  selector:
+    yuzutech.kroki/type: '{{ $type }}'
+    {{- $selector | nindent 4 }}
+{{- end }}

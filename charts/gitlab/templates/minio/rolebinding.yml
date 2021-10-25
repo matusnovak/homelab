@@ -1,0 +1,22 @@
+{{- if .Values.minio.role.create }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "gitlab.minio.roleName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gitlab.minio.labels" . | nindent 4 }}
+  {{- with .Values.minio.role.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+subjects:
+  - kind: ServiceAccount
+    namespace: {{ .Release.Namespace }}
+    name: {{ include "gitlab.minio.serviceAccountName" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "gitlab.minio.roleName" . }}
+{{- end }}

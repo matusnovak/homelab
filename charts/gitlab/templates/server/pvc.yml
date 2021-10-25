@@ -1,0 +1,87 @@
+{{- if .Values.server.persistentVolumeClaim.logs.create -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "gitlab.server.persistentVolumeClaimName.logs" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gitlab.server.labels" . | nindent 4 }}
+  {{- with .Values.server.persistentVolumeClaim.logs.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.server.persistentVolumeClaim.logs.storageClass }}
+  resources:
+    requests:
+      storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  volumeName: {{ include "gitlab.server.persistentVolumeName.logs" . }}
+{{- end -}}
+{{- if .Values.server.persistentVolumeClaim.config.create }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "gitlab.server.persistentVolumeClaimName.config" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gitlab.server.labels" . | nindent 4 }}
+  {{- with .Values.server.persistentVolumeClaim.config.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.server.persistentVolumeClaim.config.storageClass }}
+  resources:
+    requests:
+      storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  volumeName: {{ include "gitlab.server.persistentVolumeName.config" . }}
+{{- end -}}
+{{- if .Values.server.persistentVolumeClaim.data.create }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "gitlab.server.persistentVolumeClaimName.data" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gitlab.server.labels" . | nindent 4 }}
+  {{- with .Values.server.persistentVolumeClaim.data.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.server.persistentVolumeClaim.data.storageClass }}
+  resources:
+    requests:
+      storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  volumeName: {{ include "gitlab.server.persistentVolumeName.data" . }}
+{{- end -}}
+{{- if .Values.server.persistentVolumeClaim.git.create }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "gitlab.server.persistentVolumeClaimName.git" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gitlab.server.labels" . | nindent 4 }}
+  {{- with .Values.server.persistentVolumeClaim.git.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.server.persistentVolumeClaim.git.storageClass }}
+  resources:
+    requests:
+      storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  volumeName: {{ include "gitlab.server.persistentVolumeName.git" . }}
+{{- end -}}

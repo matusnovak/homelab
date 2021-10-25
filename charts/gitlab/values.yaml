@@ -1,0 +1,436 @@
+# Default values for authelia.
+
+redis:
+  image:
+    repository: docker.io/library/redis
+    pullPolicy: IfNotPresent
+    tag: latest
+
+  imagePullSecrets: []
+  nameOverride: ""
+
+  password: 'Password1!'
+
+  env: []
+
+  service:
+    type: ClusterIP
+
+  role:
+    create: true
+    annotations: {}
+    # The name of the cluster role to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  serviceAccount:
+    create: true
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+minio:
+  image:
+    repository: docker.io/minio/minio
+    pullPolicy: IfNotPresent
+    tag: latest
+
+  imagePullSecrets: []
+  nameOverride: ""
+
+  accessKey: 'somerandomstring'
+  secretKey: 'somerandomstring'
+
+  env: []
+
+  service:
+    type: ClusterIP
+
+  role:
+    create: true
+    annotations: {}
+    # The name of the cluster role to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  serviceAccount:
+    create: true
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  persistentVolume:
+    storageClass: default
+    create: true
+    annotations: {}
+    # The name of the persistent volume to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  persistentVolumeClaim:
+    storageClass: default
+    create: true
+    annotations: {}
+    # The name of the persistent volume to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+server:
+  image:
+    repository: docker.io/gitlab/gitlab-ce
+    pullPolicy: IfNotPresent
+    tag: latest
+
+  subdomain: gitlab
+  subdomainRegistry: registry
+  subdomainPages: pages
+  imagePullSecrets: []
+  nameOverride: ""
+
+  admin:
+    password: 'Password!1'
+
+  sshPort: 2222
+
+  postgres:
+    database: gitlabhq_production
+    role: gitlab
+    password: 'Password1!'
+
+  openldap:
+    groups: groups
+    users: users
+    readonlyPassword: 'Password1!'
+    group: gitlab
+
+  env: []
+
+  service:
+    type: ClusterIP
+
+  sshService:
+    type: NodePort
+
+  role:
+    create: true
+    annotations: {}
+    # The name of the cluster role to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  serviceAccount:
+    create: true
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  persistentVolume:
+    logs:
+      storageClass: default
+      create: true
+      annotations: {}
+      # The name of the persistent volume to use.
+      # If not set and create is true, a name is generated using the fullname template
+      name: ""
+
+    config:
+      storageClass: default
+      create: true
+      annotations: {}
+      # The name of the persistent volume to use.
+      # If not set and create is true, a name is generated using the fullname template
+      name: ""
+
+    data:
+      storageClass: default
+      create: true
+      annotations: {}
+      # The name of the persistent volume to use.
+      # If not set and create is true, a name is generated using the fullname template
+      name: ""
+
+    git:
+      storageClass: default
+      create: true
+      annotations: {}
+      # The name of the persistent volume to use.
+      # If not set and create is true, a name is generated using the fullname template
+      name: ""
+
+  persistentVolumeClaim:
+    logs:
+      storageClass: default
+      create: true
+      annotations: {}
+      # The name of the persistent volume to use.
+      # If not set and create is true, a name is generated using the fullname template
+      name: ""
+
+    config:
+      storageClass: default
+      create: true
+      annotations: {}
+      # The name of the persistent volume to use.
+      # If not set and create is true, a name is generated using the fullname template
+      name: ""
+
+    data:
+      storageClass: default
+      create: true
+      annotations: {}
+      # The name of the persistent volume to use.
+      # If not set and create is true, a name is generated using the fullname template
+      name: ""
+
+    git:
+      storageClass: default
+      create: true
+      annotations: {}
+      # The name of the persistent volume to use.
+      # If not set and create is true, a name is generated using the fullname template
+      name: ""
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+runner:
+  image:
+    repository: docker.io/gitlab/gitlab-runner
+    pullPolicy: IfNotPresent
+    tag: latest
+
+  imagePullSecrets: []
+  nameOverride: ""
+  
+  token: ''
+  tags: 'linux,amd64'
+  runUntagged: true
+  concurrent: 4
+  defaultImage: ubuntu:20.04
+  jobNodeSelector: 'kubernetes.io/arch:amd64'
+  jobNamespace: 'gitlab-runner'
+
+  env: []
+
+  service:
+    type: ClusterIP
+
+  role:
+    create: true
+    annotations: {}
+    # The name of the cluster role to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  serviceAccount:
+    create: true
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+kroki:
+  images:
+    kroki:
+      repository: docker.io/yuzutech/kroki
+      pullPolicy: IfNotPresent
+      tag: latest
+      port: 8000
+    blockdiag:
+      repository: docker.io/yuzutech/kroki-blockdiag
+      pullPolicy: IfNotPresent
+      tag: latest
+      port: 8001
+    mermaid:
+      repository: docker.io/yuzutech/kroki-mermaid
+      pullPolicy: IfNotPresent
+      tag: latest
+      port: 8002
+    bpmn:
+      repository: docker.io/yuzutech/kroki-bpmn
+      pullPolicy: IfNotPresent
+      tag: latest
+      port: 8003
+    excalidraw:
+      repository: docker.io/yuzutech/kroki-excalidraw
+      pullPolicy: IfNotPresent
+      tag: latest
+      port: 8004
+
+  subdomain: kroki
+  imagePullSecrets: []
+  nameOverride: ""
+
+  env: []
+
+  service:
+    type: ClusterIP
+
+  role:
+    create: true
+    annotations: {}
+    # The name of the cluster role to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  serviceAccount:
+    create: true
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}

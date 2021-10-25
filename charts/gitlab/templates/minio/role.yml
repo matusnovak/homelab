@@ -1,0 +1,22 @@
+{{- if .Values.minio.role.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "gitlab.minio.roleName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gitlab.minio.labels" . | nindent 4 }}
+  {{- with .Values.minio.role.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+rules:
+  - apiGroups:
+      - 'extensions'
+    resources:
+      - 'podsecuritypolicies'
+    verbs:
+      - 'use'
+    resourceNames:
+      - {{ include "gitlab.minio.fullname" . }}
+{{- end }}

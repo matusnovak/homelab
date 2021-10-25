@@ -1,0 +1,21 @@
+{{- if .Values.minio.persistentVolumeClaim.create -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "gitlab.minio.persistentVolumeClaimName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gitlab.minio.labels" . | nindent 4 }}
+  {{- with .Values.minio.persistentVolumeClaim.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.minio.persistentVolumeClaim.storageClass }}
+  resources:
+    requests:
+      storage: 20Gi
+  accessModes:
+    - ReadWriteMany
+  volumeName: {{ include "gitlab.minio.persistentVolumeName" . }}
+{{- end -}}

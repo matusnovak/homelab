@@ -1,0 +1,41 @@
+{{- if .Values.runner.role.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "gitlab.runner.roleName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gitlab.runner.labels" . | nindent 4 }}
+  {{- with .Values.runner.role.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+subjects:
+  - kind: ServiceAccount
+    namespace: {{ .Release.Namespace }}
+    name: {{ include "gitlab.runner.serviceAccountName" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "gitlab.runner.roleName" . }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "gitlab.runner.roleName" . }}
+  namespace: {{ .Values.runner.jobNamespace }}
+  labels:
+    {{- include "gitlab.runner.labels" . | nindent 4 }}
+  {{- with .Values.runner.role.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+subjects:
+  - kind: ServiceAccount
+    namespace: {{ .Release.Namespace }}
+    name: {{ include "gitlab.runner.serviceAccountName" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ printf "%s-jobs" (include "gitlab.runner.roleName" .) }}
+{{- end }}

@@ -1,0 +1,87 @@
+{{- if .Values.server.persistentVolume.logs.create -}}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "gitlab.server.persistentVolumeName.logs" . }}
+  labels:
+    {{- include "gitlab.server.labels" . | nindent 4 }}
+  {{- with .Values.server.persistentVolume.logs.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.server.persistentVolume.logs.storageClass }}
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.global.dataDir }}/gitlab/logs
+{{- end -}}
+{{- if .Values.server.persistentVolume.config.create }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "gitlab.server.persistentVolumeName.config" . }}
+  labels:
+    {{- include "gitlab.server.labels" . | nindent 4 }}
+  {{- with .Values.server.persistentVolume.config.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.server.persistentVolume.config.storageClass }}
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.global.dataDir }}/gitlab/config
+{{- end -}}
+{{- if .Values.server.persistentVolume.data.create }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "gitlab.server.persistentVolumeName.data" . }}
+  labels:
+    {{- include "gitlab.server.labels" . | nindent 4 }}
+  {{- with .Values.server.persistentVolume.data.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.server.persistentVolume.data.storageClass }}
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.global.dataDir }}/gitlab/data
+{{- end -}}
+{{- if .Values.server.persistentVolume.git.create }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "gitlab.server.persistentVolumeName.git" . }}
+  labels:
+    {{- include "gitlab.server.labels" . | nindent 4 }}
+  {{- with .Values.server.persistentVolume.git.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.server.persistentVolume.git.storageClass }}
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.global.dataDir }}/gitlab/git
+{{- end -}}

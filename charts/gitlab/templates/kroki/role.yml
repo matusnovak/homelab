@@ -1,0 +1,22 @@
+{{- if .Values.kroki.role.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "gitlab.kroki.roleName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gitlab.kroki.labels" . | nindent 4 }}
+  {{- with .Values.kroki.role.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+rules:
+  - apiGroups:
+      - 'extensions'
+    resources:
+      - 'podsecuritypolicies'
+    verbs:
+      - 'use'
+    resourceNames:
+      - {{ include "gitlab.kroki.fullname" . }}
+{{- end }}

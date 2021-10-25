@@ -1,0 +1,21 @@
+{{- if .Values.minio.persistentVolume.create -}}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "gitlab.minio.persistentVolumeName" . }}
+  labels:
+    {{- include "gitlab.minio.labels" . | nindent 4 }}
+  {{- with .Values.minio.persistentVolume.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.minio.persistentVolume.storageClass }}
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.global.dataDir }}/gitlab/objects
+{{- end -}}

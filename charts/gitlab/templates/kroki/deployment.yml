@@ -1,0 +1,78 @@
+{{ $fullname := (include "gitlab.kroki.fullname" .) }}
+{{ $selector := (include "gitlab.kroki.selectorLabels" .) }}
+{{ $labels := (include "gitlab.kroki.labels" .) }}
+{{ $serviceAccountName := (include "gitlab.kroki.serviceAccountName" .) }}
+{{ range $type, $config := .Values.kroki.images }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ printf "%s-%s" $fullname $type }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- $labels | nindent 4 }}
+spec:
+  replicas: {{ $.Values.kroki.replicaCount }}
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      yuzutech.kroki/type: '{{ $type }}'
+      {{- $selector | nindent 6 }}
+  template:
+    metadata:
+      {{- with $.Values.kroki.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        yuzutech.kroki/type: '{{ $type }}'
+        {{- $selector | nindent 8 }}
+    spec:
+      {{- with $.Values.kroki.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ $serviceAccountName }}
+      securityContext:
+        {{- toYaml $.Values.kroki.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ $.Chart.Name }}
+          securityContext:
+            {{- toYaml $.Values.kroki.securityContext | nindent 12 }}
+          image: "{{ $config.repository }}:{{ $config.tag }}"
+          imagePullPolicy: {{ $config.pullPolicy }}
+          env:
+          {{- if eq $type "kroki" }}
+            - name: KROKI_BLOCKDIAG_HOST
+              value: '{{ printf "%s-blockdiag.%.svc.cluster.local" $fullname $.Release.Namespace }}'
+            - name: KROKI_MERMAID_HOST
+              value: '{{ printf "%s-mermaid.%.svc.cluster.local" $fullname $.Release.Namespace }}'
+            - name: KROKI_BPMN_HOST
+              value: '{{ printf "%s-bpmn.%.svc.cluster.local" $fullname $.Release.Namespace }}'
+            - name: KROKI_EXCALIDRAW_HOST
+              value: '{{ printf "%s-excalidraw.%.svc.cluster.local" $fullname $.Release.Namespace }}'
+          {{ end -}}
+          {{- with $.Values.kroki.env }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: kroki
+              containerPort: {{ $config.port }}
+              protocol: TCP
+          resources:
+            {{- toYaml $.Values.kroki.resources | nindent 12 }}
+      {{- with $.Values.kroki.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.kroki.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.kroki.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

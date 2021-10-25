@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "gitlab.minio.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gitlab.minio.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.minio.replicaCount }}
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      {{- include "gitlab.minio.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.minio.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "gitlab.minio.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.minio.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "gitlab.minio.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.minio.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: {{ printf "%s-init" .Chart.Name }}
+          image: "{{ .Values.global.busybox.repository }}:{{ .Values.global.busybox.tag }}"
+          command:
+            - 'sh'
+            - '-c'
+            - 'mkdir -p /export/gitlab-registry-storage && mkdir -p /export/gitlab-pages-storage && mkdir -p /export/gitlab-terraform-storage && mkdir -p /export/gitlab-dependency-storage && mkdir -p /export/gitlab-diffs-storage && mkdir -p /export/gitlab-lfs-storage && mkdir -p /export/gitlab-artifacts-storage && mkdir -p /export/gitlab-uploads-storage && mkdir -p /export/gitlab-packages-storage && mkdir -p /export/gitlab-backup-storage'
+          volumeMounts:
+            - name: data-volume
+              mountPath: /export
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.minio.securityContext | nindent 12 }}
+          image: "{{ .Values.minio.image.repository }}:{{ .Values.minio.image.tag }}"
+          imagePullPolicy: {{ .Values.minio.image.pullPolicy }}
+          env:
+            - name: MINIO_BROWSER
+              value: 'off'
+            - name: MINIO_ACCESS_KEY
+              value: '{{ .Values.minio.accessKey }}'
+            - name: MINIO_SECRET_KEY
+              value: '{{ .Values.minio.secretKey }}'
+          {{- with .Values.minio.env }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          command:
+            - 'minio'
+          args:
+            - 'server'
+            - '/export'
+          ports:
+            - name: s3
+              containerPort: 9000
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.minio.resources | nindent 12 }}
+          volumeMounts:
+            - name: data-volume
+              mountPath: /export
+      {{- with .Values.minio.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.minio.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.minio.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: {{ include "gitlab.minio.persistentVolumeClaimName" . }}

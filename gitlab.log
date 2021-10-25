@@ -1,0 +1,1825 @@
+Thank you for using GitLab Docker Image!
+Current version: gitlab-ce=14.3.3-ce.0
+
+Configure GitLab for your system by editing /etc/gitlab/gitlab.rb file
+And restart this container to reload settings.
+To do it use docker exec:
+
+  docker exec -it gitlab editor /etc/gitlab/gitlab.rb
+  docker restart gitlab
+
+For a comprehensive list of configuration options please see the Omnibus GitLab readme
+https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/README.md
+
+If this container fails to start due to permission problems try to fix it by executing:
+
+  docker exec -it gitlab update-permissions
+  docker restart gitlab
+
+Cleaning stale PIDs & sockets
+Preparing services...
+Starting services...
+Configuring GitLab...
+/opt/gitlab/embedded/bin/runsvdir-start: line 34: ulimit: max user processes: cannot modify limit: Operation not permitted
+/opt/gitlab/embedded/bin/runsvdir-start: line 37: /proc/sys/fs/file-max: Read-only file system
+Starting Chef Infra Client, version 15.17.4[0m
+resolving cookbooks for run list: ["gitlab"][0m
+Synchronizing Cookbooks:[0m
+  - gitlab (0.0.1)[0m
+  - package (0.1.0)[0m
+  - logrotate (0.1.0)[0m
+  - postgresql (0.1.0)[0m
+  - redis (0.1.0)[0m
+  - monitoring (0.1.0)[0m
+  - registry (0.1.0)[0m
+  - mattermost (0.1.0)[0m
+  - consul (0.1.0)[0m
+  - gitaly (0.1.0)[0m
+  - praefect (0.1.0)[0m
+  - gitlab-kas (0.1.0)[0m
+  - gitlab-pages (0.1.0)[0m
+  - nginx (0.1.0)[0m
+  - letsencrypt (0.1.0)[0m
+  - runit (5.1.3)[0m
+  - acme (4.1.3)[0m
+  - crond (0.1.0)[0m
+Installing Cookbook Gems:[0m
+Compiling Cookbooks...[0m
+(eval):85: warning: key "verify_certificates" is duplicated and overwritten on line 88
+Recipe: gitlab::default[0m
+  * directory[/etc/gitlab] action create (up to date)
+  Converging 220 resources[0m
+  * directory[/etc/gitlab] action create (up to date)
+  * directory[Create /var/opt/gitlab] action create (up to date)
+  * directory[Create /var/log/gitlab] action create (up to date)
+  * directory[/opt/gitlab/embedded/etc] action create
+    [32m- create new directory /opt/gitlab/embedded/etc[0m
+    [32m- change mode from '' to '0755'[0m
+    [32m- change owner from '' to 'root'[0m
+    [32m- change group from '' to 'root'[0m
+[0m  * template[/opt/gitlab/embedded/etc/gitconfig] action create
+    [32m- create new file /opt/gitlab/embedded/etc/gitconfig[0m
+    [32m- update content in file /opt/gitlab/embedded/etc/gitconfig from none to 5a725a[0m
+    [37m--- /opt/gitlab/embedded/etc/gitconfig	2021-10-22 15:33:32.416182012 +0000[0m
+    [37m+++ /opt/gitlab/embedded/etc/.chef-gitconfig20211022-27-13u3mgu	2021-10-22 15:33:32.416182012 +0000[0m
+    [37m@@ -1 +1,17 @@[0m
+    [37m+[pack][0m
+    [37m+  threads = 1[0m
+    [37m+[receive][0m
+    [37m+  fsckObjects = true[0m
+    [37m+advertisePushOptions = true[0m
+    [37m+[repack][0m
+    [37m+  writeBitmaps = true[0m
+    [37m+[transfer][0m
+    [37m+  hideRefs=^refs/tmp/[0m
+    [37m+hideRefs=^refs/keep-around/[0m
+    [37m+hideRefs=^refs/remotes/[0m
+    [37m+[core][0m
+    [37m+  alternateRefsCommand="exit 0 #"[0m
+    [37m+fsyncObjectFiles = true[0m
+    [37m+[fetch][0m
+    [37m+  writeCommitGraph = true[0m
+    [32m- change mode from '' to '0755'[0m
+[0mRecipe: gitlab::web-server[0m
+  * account[Webserver user and group] action create (up to date)
+Recipe: gitlab::users[0m
+  * directory[/var/opt/gitlab] action create (up to date)
+  * account[GitLab user and group] action create (up to date)
+  * template[/var/opt/gitlab/.gitconfig] action create (up to date)
+  * directory[/var/opt/gitlab/.bundle] action create (up to date)
+Recipe: gitlab::gitlab-shell[0m
+  * storage_directory[/var/opt/gitlab/.ssh] action create
+    * ruby_block[directory resource: /var/opt/gitlab/.ssh] action run (skipped due to not_if)
+     (up to date)
+  * directory[/var/log/gitlab/gitlab-shell/] action create (up to date)
+  * directory[/var/opt/gitlab/gitlab-shell] action create (up to date)
+  * templatesymlink[Create a config.yml and create a symlink to Rails root] action create
+    * template[/var/opt/gitlab/gitlab-shell/config.yml] action create (up to date)
+    * link[Link /opt/gitlab/embedded/service/gitlab-shell/config.yml to /var/opt/gitlab/gitlab-shell/config.yml] action create
+      [32m- create symlink at /opt/gitlab/embedded/service/gitlab-shell/config.yml to /var/opt/gitlab/gitlab-shell/config.yml[0m
+[0m  
+[0m  * link[/opt/gitlab/embedded/service/gitlab-shell/.gitlab_shell_secret] action create
+    [32m- create symlink at /opt/gitlab/embedded/service/gitlab-shell/.gitlab_shell_secret to /opt/gitlab/embedded/service/gitlab-rails/.gitlab_shell_secret[0m
+[0m  * file[/var/opt/gitlab/.ssh/authorized_keys] action create_if_missing (up to date)
+Recipe: gitlab::gitlab-rails[0m
+  * storage_directory[/git-data] action create
+    * ruby_block[directory resource: /git-data] action run (skipped due to not_if)
+     (up to date)
+  * storage_directory[/git-data/repositories] action create
+    * ruby_block[directory resource: /git-data/repositories] action run (skipped due to not_if)
+     (up to date)
+Recipe: gitlab::rails_pages_shared_path[0m
+  * storage_directory[/var/opt/gitlab/gitlab-rails/shared] action create
+    * ruby_block[directory resource: /var/opt/gitlab/gitlab-rails/shared] action run (skipped due to not_if)
+     (up to date)
+  * storage_directory[/var/opt/gitlab/gitlab-rails/shared/pages] action create
+    * ruby_block[directory resource: /var/opt/gitlab/gitlab-rails/shared/pages] action run (skipped due to not_if)
+     (up to date)
+Recipe: gitlab::gitlab-rails[0m
+  * storage_directory[/var/opt/gitlab/gitlab-rails/shared/artifacts] action create
+    * ruby_block[directory resource: /var/opt/gitlab/gitlab-rails/shared/artifacts] action run (skipped due to not_if)
+     (up to date)
+  * storage_directory[/var/opt/gitlab/gitlab-rails/shared/external-diffs] action create
+    * ruby_block[directory resource: /var/opt/gitlab/gitlab-rails/shared/external-diffs] action run (skipped due to not_if)
+     (up to date)
+  * storage_directory[/var/opt/gitlab/gitlab-rails/shared/lfs-objects] action create
+    * ruby_block[directory resource: /var/opt/gitlab/gitlab-rails/shared/lfs-objects] action run (skipped due to not_if)
+     (up to date)
+  * storage_directory[/var/opt/gitlab/gitlab-rails/shared/packages] action create
+    * ruby_block[directory resource: /var/opt/gitlab/gitlab-rails/shared/packages] action run (skipped due to not_if)
+     (up to date)
+  * storage_directory[/var/opt/gitlab/gitlab-rails/shared/dependency_proxy] action create
+    * ruby_block[directory resource: /var/opt/gitlab/gitlab-rails/shared/dependency_proxy] action run (skipped due to not_if)
+     (up to date)
+  * storage_directory[/var/opt/gitlab/gitlab-rails/shared/terraform_state] action create
+    * ruby_block[directory resource: /var/opt/gitlab/gitlab-rails/shared/terraform_state] action run (skipped due to not_if)
+     (up to date)
+  * storage_directory[/var/opt/gitlab/gitlab-rails/shared/encrypted_settings] action create
+    * ruby_block[directory resource: /var/opt/gitlab/gitlab-rails/shared/encrypted_settings] action run (skipped due to not_if)
+     (up to date)
+  * storage_directory[/var/opt/gitlab/gitlab-rails/uploads] action create
+    * ruby_block[directory resource: /var/opt/gitlab/gitlab-rails/uploads] action run (skipped due to not_if)
+     (up to date)
+  * storage_directory[/var/opt/gitlab/gitlab-ci/builds] action create
+    * ruby_block[directory resource: /var/opt/gitlab/gitlab-ci/builds] action run (skipped due to not_if)
+     (up to date)
+  * storage_directory[/var/opt/gitlab/gitlab-rails/shared/cache] action create
+    * ruby_block[directory resource: /var/opt/gitlab/gitlab-rails/shared/cache] action run (skipped due to not_if)
+     (up to date)
+  * storage_directory[/var/opt/gitlab/gitlab-rails/shared/tmp] action create
+    * ruby_block[directory resource: /var/opt/gitlab/gitlab-rails/shared/tmp] action run (skipped due to not_if)
+     (up to date)
+  * storage_directory[/opt/gitlab/embedded/service/gitlab-rails/public] action create (skipped due to only_if)
+  * directory[create /var/opt/gitlab/gitlab-rails/etc] action create (up to date)
+  * directory[create /opt/gitlab/etc/gitlab-rails] action create
+    [32m- create new directory /opt/gitlab/etc/gitlab-rails[0m
+    [32m- change mode from '' to '0700'[0m
+    [32m- change owner from '' to 'git'[0m
+[0m  * directory[create /var/opt/gitlab/gitlab-rails/working] action create (up to date)
+  * directory[create /var/opt/gitlab/gitlab-rails/tmp] action create (up to date)
+  * directory[create /var/opt/gitlab/gitlab-rails/upgrade-status] action create (up to date)
+  * directory[create /var/log/gitlab/gitlab-rails] action create (up to date)
+  * storage_directory[/var/opt/gitlab/backups] action create
+    * ruby_block[directory resource: /var/opt/gitlab/backups] action run (skipped due to not_if)
+     (up to date)
+  * directory[/var/opt/gitlab/gitlab-rails] action create (up to date)
+  * directory[/var/opt/gitlab/gitlab-ci] action create (up to date)
+  * file[/var/opt/gitlab/gitlab-rails/etc/gitlab-registry.key] action create (up to date)
+  * template[/opt/gitlab/etc/gitlab-rails-rc] action create
+    [32m- create new file /opt/gitlab/etc/gitlab-rails-rc[0m
+    [32m- update content in file /opt/gitlab/etc/gitlab-rails-rc from none to 000a09[0m
+    [37m--- /opt/gitlab/etc/gitlab-rails-rc	2021-10-22 15:33:33.620171754 +0000[0m
+    [37m+++ /opt/gitlab/etc/.chef-gitlab-rails-rc20211022-27-1n69eqo	2021-10-22 15:33:33.620171754 +0000[0m
+    [37m@@ -1 +1,6 @@[0m
+    [37m+gitlab_user='git'[0m
+    [37m+gitlab_group='git'[0m
+    [37m+registry_dir='/var/opt/gitlab/gitlab-rails/shared/registry'[0m
+    [37m+registry_user='registry'[0m
+    [37m+registry_group='registry'[0m
+    [32m- change mode from '' to '0644'[0m
+    [32m- change owner from '' to 'root'[0m
+    [32m- change group from '' to 'root'[0m
+[0m  * file[/opt/gitlab/etc/gitlab-rails/gitlab-rails-rc] action delete (up to date)
+  * file[/opt/gitlab/embedded/service/gitlab-rails/.secret] action delete (up to date)
+  * file[/var/opt/gitlab/gitlab-rails/etc/secret] action delete (up to date)
+  * templatesymlink[Create a database.yml and create a symlink to Rails root] action create
+    * template[/var/opt/gitlab/gitlab-rails/etc/database.yml] action create (up to date)
+    * link[Link /opt/gitlab/embedded/service/gitlab-rails/config/database.yml to /var/opt/gitlab/gitlab-rails/etc/database.yml] action create
+      [32m- create symlink at /opt/gitlab/embedded/service/gitlab-rails/config/database.yml to /var/opt/gitlab/gitlab-rails/etc/database.yml[0m
+[0m  
+[0m  * templatesymlink[Create a secrets.yml and create a symlink to Rails root] action create
+    * template[/var/opt/gitlab/gitlab-rails/etc/secrets.yml] action create (up to date)
+    * link[Link /opt/gitlab/embedded/service/gitlab-rails/config/secrets.yml to /var/opt/gitlab/gitlab-rails/etc/secrets.yml] action create
+      [32m- create symlink at /opt/gitlab/embedded/service/gitlab-rails/config/secrets.yml to /var/opt/gitlab/gitlab-rails/etc/secrets.yml[0m
+[0m  
+[0m  * templatesymlink[Create a resque.yml and create a symlink to Rails root] action create
+    * template[/var/opt/gitlab/gitlab-rails/etc/resque.yml] action create (up to date)
+    * link[Link /opt/gitlab/embedded/service/gitlab-rails/config/resque.yml to /var/opt/gitlab/gitlab-rails/etc/resque.yml] action create
+      [32m- create symlink at /opt/gitlab/embedded/service/gitlab-rails/config/resque.yml to /var/opt/gitlab/gitlab-rails/etc/resque.yml[0m
+[0m  
+[0m  * templatesymlink[Create a cable.yml and create a symlink to Rails root] action create
+    * template[/var/opt/gitlab/gitlab-rails/etc/cable.yml] action create (up to date)
+    * link[Link /opt/gitlab/embedded/service/gitlab-rails/config/cable.yml to /var/opt/gitlab/gitlab-rails/etc/cable.yml] action create
+      [32m- create symlink at /opt/gitlab/embedded/service/gitlab-rails/config/cable.yml to /var/opt/gitlab/gitlab-rails/etc/cable.yml[0m
+[0m  
+[0m  * templatesymlink[Create a redis.cache.yml and create a symlink to Rails root] action create (skipped due to not_if)
+  * file[/opt/gitlab/embedded/service/gitlab-rails/config/redis.cache.yml] action delete (up to date)
+  * file[/var/opt/gitlab/gitlab-rails/etc/redis.cache.yml] action delete (up to date)
+  * templatesymlink[Create a redis.queues.yml and create a symlink to Rails root] action create (skipped due to not_if)
+  * file[/opt/gitlab/embedded/service/gitlab-rails/config/redis.queues.yml] action delete (up to date)
+  * file[/var/opt/gitlab/gitlab-rails/etc/redis.queues.yml] action delete (up to date)
+  * templatesymlink[Create a redis.shared_state.yml and create a symlink to Rails root] action create (skipped due to not_if)
+  * file[/opt/gitlab/embedded/service/gitlab-rails/config/redis.shared_state.yml] action delete (up to date)
+  * file[/var/opt/gitlab/gitlab-rails/etc/redis.shared_state.yml] action delete (up to date)
+  * templatesymlink[Create a redis.trace_chunks.yml and create a symlink to Rails root] action create (skipped due to not_if)
+  * file[/opt/gitlab/embedded/service/gitlab-rails/config/redis.trace_chunks.yml] action delete (up to date)
+  * file[/var/opt/gitlab/gitlab-rails/etc/redis.trace_chunks.yml] action delete (up to date)
+  * templatesymlink[Create a smtp_settings.rb and create a symlink to Rails root] action delete
+    * file[/var/opt/gitlab/gitlab-rails/etc/smtp_settings.rb] action delete (up to date)
+    * link[/opt/gitlab/embedded/service/gitlab-rails/config/initializers/smtp_settings.rb] action delete (up to date)
+     (up to date)
+  * templatesymlink[Create a gitlab.yml and create a symlink to Rails root] action create
+    * template[/var/opt/gitlab/gitlab-rails/etc/gitlab.yml] action create (up to date)
+    * link[Link /opt/gitlab/embedded/service/gitlab-rails/config/gitlab.yml to /var/opt/gitlab/gitlab-rails/etc/gitlab.yml] action create
+      [32m- create symlink at /opt/gitlab/embedded/service/gitlab-rails/config/gitlab.yml to /var/opt/gitlab/gitlab-rails/etc/gitlab.yml[0m
+[0m  
+[0m  * templatesymlink[Create a gitlab_workhorse_secret and create a symlink to Rails root] action create
+    * template[/var/opt/gitlab/gitlab-rails/etc/gitlab_workhorse_secret] action create (up to date)
+    * link[Link /opt/gitlab/embedded/service/gitlab-rails/.gitlab_workhorse_secret to /var/opt/gitlab/gitlab-rails/etc/gitlab_workhorse_secret] action create
+      [32m- create symlink at /opt/gitlab/embedded/service/gitlab-rails/.gitlab_workhorse_secret to /var/opt/gitlab/gitlab-rails/etc/gitlab_workhorse_secret[0m
+[0m  
+[0m  * templatesymlink[Create a gitlab_shell_secret and create a symlink to Rails root] action create
+    * template[/var/opt/gitlab/gitlab-rails/etc/gitlab_shell_secret] action create (up to date)
+    * link[Link /opt/gitlab/embedded/service/gitlab-rails/.gitlab_shell_secret to /var/opt/gitlab/gitlab-rails/etc/gitlab_shell_secret] action create
+      [32m- create symlink at /opt/gitlab/embedded/service/gitlab-rails/.gitlab_shell_secret to /var/opt/gitlab/gitlab-rails/etc/gitlab_shell_secret[0m
+[0m  
+[0m  * templatesymlink[Create a gitlab_pages_secret and create a symlink to Rails root] action create
+    * template[/var/opt/gitlab/gitlab-rails/etc/gitlab_pages_secret] action create (up to date)
+    * link[Link /opt/gitlab/embedded/service/gitlab-rails/.gitlab_pages_secret to /var/opt/gitlab/gitlab-rails/etc/gitlab_pages_secret] action create
+      [32m- create symlink at /opt/gitlab/embedded/service/gitlab-rails/.gitlab_pages_secret to /var/opt/gitlab/gitlab-rails/etc/gitlab_pages_secret[0m
+[0m  
+[0m  * templatesymlink[Create a gitlab_kas_secret and create a symlink to Rails root] action create
+    * template[/var/opt/gitlab/gitlab-rails/etc/gitlab_kas_secret] action create (up to date)
+    * link[Link /opt/gitlab/embedded/service/gitlab-rails/.gitlab_kas_secret to /var/opt/gitlab/gitlab-rails/etc/gitlab_kas_secret] action create
+      [32m- unlink existing symlink to file at /opt/gitlab/embedded/service/gitlab-rails/.gitlab_kas_secret[0m
+      [32m- create symlink at /opt/gitlab/embedded/service/gitlab-rails/.gitlab_kas_secret to /var/opt/gitlab/gitlab-rails/etc/gitlab_kas_secret[0m
+[0m  
+[0m  * link[/opt/gitlab/embedded/service/gitlab-rails/config/initializers/relative_url.rb] action delete (up to date)
+  * file[/var/opt/gitlab/gitlab-rails/etc/relative_url.rb] action delete (up to date)
+  * env_dir[/opt/gitlab/etc/gitlab-rails/env] action create
+    * directory[/opt/gitlab/etc/gitlab-rails/env] action create
+      [32m- create new directory /opt/gitlab/etc/gitlab-rails/env[0m
+[0m    * file[/opt/gitlab/etc/gitlab-rails/env/HOME] action create
+      [32m- create new file /opt/gitlab/etc/gitlab-rails/env/HOME[0m
+      [32m- update content in file /opt/gitlab/etc/gitlab-rails/env/HOME from none to 205bb9[0m
+      [32m- suppressed sensitive resource[0m
+[0m    * file[/opt/gitlab/etc/gitlab-rails/env/RAILS_ENV] action create
+      [32m- create new file /opt/gitlab/etc/gitlab-rails/env/RAILS_ENV[0m
+      [32m- update content in file /opt/gitlab/etc/gitlab-rails/env/RAILS_ENV from none to ab8e18[0m
+      [32m- suppressed sensitive resource[0m
+[0m    * file[/opt/gitlab/etc/gitlab-rails/env/LD_PRELOAD] action create
+      [32m- create new file /opt/gitlab/etc/gitlab-rails/env/LD_PRELOAD[0m
+      [32m- update content in file /opt/gitlab/etc/gitlab-rails/env/LD_PRELOAD from none to f79114[0m
+      [32m- suppressed sensitive resource[0m
+[0m    * file[/opt/gitlab/etc/gitlab-rails/env/BUNDLE_GEMFILE] action create
+      [32m- create new file /opt/gitlab/etc/gitlab-rails/env/BUNDLE_GEMFILE[0m
+      [32m- update content in file /opt/gitlab/etc/gitlab-rails/env/BUNDLE_GEMFILE from none to 28d586[0m
+      [32m- suppressed sensitive resource[0m
+[0m    * file[/opt/gitlab/etc/gitlab-rails/env/SIDEKIQ_MEMORY_KILLER_MAX_RSS] action create
+      [32m- create new file /opt/gitlab/etc/gitlab-rails/env/SIDEKIQ_MEMORY_KILLER_MAX_RSS[0m
+      [32m- update content in file /opt/gitlab/etc/gitlab-rails/env/SIDEKIQ_MEMORY_KILLER_MAX_RSS from none to dd80d7[0m
+      [32m- suppressed sensitive resource[0m
+[0m    * file[/opt/gitlab/etc/gitlab-rails/env/PATH] action create
+      [32m- create new file /opt/gitlab/etc/gitlab-rails/env/PATH[0m
+      [32m- update content in file /opt/gitlab/etc/gitlab-rails/env/PATH from none to d5dc07[0m
+      [32m- suppressed sensitive resource[0m
+[0m    * file[/opt/gitlab/etc/gitlab-rails/env/ICU_DATA] action create
+      [32m- create new file /opt/gitlab/etc/gitlab-rails/env/ICU_DATA[0m
+      [32m- update content in file /opt/gitlab/etc/gitlab-rails/env/ICU_DATA from none to a04260[0m
+      [32m- suppressed sensitive resource[0m
+[0m    * file[/opt/gitlab/etc/gitlab-rails/env/PYTHONPATH] action create
+      [32m- create new file /opt/gitlab/etc/gitlab-rails/env/PYTHONPATH[0m
+      [32m- update content in file /opt/gitlab/etc/gitlab-rails/env/PYTHONPATH from none to 98c9f4[0m
+      [32m- suppressed sensitive resource[0m
+[0m    * file[/opt/gitlab/etc/gitlab-rails/env/EXECJS_RUNTIME] action create
+      [32m- create new file /opt/gitlab/etc/gitlab-rails/env/EXECJS_RUNTIME[0m
+      [32m- update content in file /opt/gitlab/etc/gitlab-rails/env/EXECJS_RUNTIME from none to 75081b[0m
+      [32m- suppressed sensitive resource[0m
+[0m    * file[/opt/gitlab/etc/gitlab-rails/env/TZ] action create
+      [32m- create new file /opt/gitlab/etc/gitlab-rails/env/TZ[0m
+      [32m- update content in file /opt/gitlab/etc/gitlab-rails/env/TZ from none to 983a95[0m
+      [32m- suppressed sensitive resource[0m
+[0m  
+[0m  * link[/opt/gitlab/embedded/service/gitlab-rails/tmp] action create
+    [32m- create symlink at /opt/gitlab/embedded/service/gitlab-rails/tmp to /var/opt/gitlab/gitlab-rails/tmp[0m
+[0m  * link[/opt/gitlab/embedded/service/gitlab-rails/public/uploads] action create
+    [32m- create symlink at /opt/gitlab/embedded/service/gitlab-rails/public/uploads to /var/opt/gitlab/gitlab-rails/uploads[0m
+[0m  * link[/opt/gitlab/embedded/service/gitlab-rails/log] action create
+    [32m- create symlink at /opt/gitlab/embedded/service/gitlab-rails/log to /var/log/gitlab/gitlab-rails[0m
+[0m  * link[/var/log/gitlab/gitlab-rails/sidekiq.log] action delete (skipped due to only_if)
+  * file[/opt/gitlab/embedded/service/gitlab-rails/db/structure.sql] action create
+    [32m- change owner from 'root' to 'git'[0m
+/opt/gitlab/embedded/lib/ruby/gems/2.7.0/gems/chef-15.17.4/lib/chef/provider/remote_file/local_file.rb:43: warning: URI.unescape is obsolete
+[0m  * remote_file[/var/opt/gitlab/gitlab-rails/VERSION] action create (up to date)
+/opt/gitlab/embedded/lib/ruby/gems/2.7.0/gems/chef-15.17.4/lib/chef/provider/remote_file/local_file.rb:43: warning: URI.unescape is obsolete
+  * remote_file[/var/opt/gitlab/gitlab-rails/REVISION] action create (up to date)
+  * version_file[Create version file for Rails] action create
+    * file[/var/opt/gitlab/gitlab-rails/RUBY_VERSION] action create (up to date)
+     (up to date)
+  * execute[clear the gitlab-rails cache] action nothing (skipped due to action :nothing)
+  * file[/var/opt/gitlab/gitlab-rails/config.ru] action delete (up to date)
+Recipe: gitlab::selinux[0m
+  * bash[Set proper security context on ssh files for selinux] action nothing (skipped due to action :nothing)
+Recipe: gitlab::add_trusted_certs[0m
+  * directory[/etc/gitlab/trusted-certs] action create (up to date)
+  * directory[/opt/gitlab/embedded/ssl/certs] action create (up to date)
+  * file[/opt/gitlab/embedded/ssl/certs/README] action create
+    [32m- create new file /opt/gitlab/embedded/ssl/certs/README[0m
+    [32m- update content in file /opt/gitlab/embedded/ssl/certs/README from none to 623059[0m
+    [37m--- /opt/gitlab/embedded/ssl/certs/README	2021-10-22 15:33:34.264166266 +0000[0m
+    [37m+++ /opt/gitlab/embedded/ssl/certs/.chef-README20211022-27-c7k0pc	2021-10-22 15:33:34.264166266 +0000[0m
+    [37m@@ -1 +1,4 @@[0m
+    [37m+This directory is managed by omnibus-gitlab.[0m
+    [37m+ Any file placed in this directory will be ignored[0m
+    [37m+. Place certificates in /etc/gitlab/trusted-certs.[0m
+    [32m- change mode from '' to '0644'[0m
+[0m  * ruby_block[Move existing certs and link to /opt/gitlab/embedded/ssl/certs] action run
+
+  * Moving existing certificates found in /opt/gitlab/embedded/ssl/certs
+
+  * Symlinking existing certificates found in /etc/gitlab/trusted-certs
+
+    [32m- execute the ruby block Move existing certs and link to /opt/gitlab/embedded/ssl/certs[0m
+[0mRecipe: gitlab::default[0m
+  * service[create a temporary puma service] action nothing (skipped due to action :nothing)
+  * service[create a temporary sidekiq service] action nothing (skipped due to action :nothing)
+  * service[create a temporary mailroom service] action nothing (skipped due to action :nothing)
+Recipe: package::sysctl[0m
+  * execute[reload all sysctl conf] action nothing (skipped due to action :nothing)
+Recipe: logrotate::folders_and_configs[0m
+  * directory[/var/opt/gitlab/logrotate] action create (up to date)
+  * directory[/var/opt/gitlab/logrotate/logrotate.d] action create (up to date)
+  * directory[/var/log/gitlab/logrotate] action create (up to date)
+  * template[/var/opt/gitlab/logrotate/logrotate.conf] action create (up to date)
+  * template[/var/opt/gitlab/logrotate/logrotate.d/nginx] action create (up to date)
+  * template[/var/opt/gitlab/logrotate/logrotate.d/puma] action create (up to date)
+  * template[/var/opt/gitlab/logrotate/logrotate.d/gitlab-rails] action create (up to date)
+  * template[/var/opt/gitlab/logrotate/logrotate.d/gitlab-shell] action create (up to date)
+  * template[/var/opt/gitlab/logrotate/logrotate.d/gitlab-workhorse] action create (up to date)
+  * template[/var/opt/gitlab/logrotate/logrotate.d/gitlab-pages] action create (up to date)
+  * template[/var/opt/gitlab/logrotate/logrotate.d/gitlab-kas] action create (up to date)
+  * template[/var/opt/gitlab/logrotate/logrotate.d/gitaly] action create (up to date)
+  * template[/var/opt/gitlab/logrotate/logrotate.d/mailroom] action create (up to date)
+Recipe: logrotate::enable[0m
+  * service[logrotate] action nothing (skipped due to action :nothing)
+  * runit_service[logrotate] action enable
+    * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+    * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+    * ruby_block[reload_log_service] action nothing (skipped due to action :nothing)
+    * directory[/opt/gitlab/sv/logrotate] action create
+      [32m- create new directory /opt/gitlab/sv/logrotate[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * template[/opt/gitlab/sv/logrotate/run] action create
+      [32m- create new file /opt/gitlab/sv/logrotate/run[0m
+      [32m- update content in file /opt/gitlab/sv/logrotate/run from none to 07f1b6[0m
+      [37m--- /opt/gitlab/sv/logrotate/run	2021-10-22 15:33:34.472164493 +0000[0m
+      [37m+++ /opt/gitlab/sv/logrotate/.chef-run20211022-27-16vgarq	2021-10-22 15:33:34.472164493 +0000[0m
+      [37m@@ -1 +1,11 @@[0m
+      [37m+#!/bin/sh[0m
+      [37m+exec 2>&1[0m
+      [37m+[0m
+      [37m+cd /var/opt/gitlab/logrotate[0m
+      [37m+[0m
+      [37m+exec /opt/gitlab/embedded/bin/chpst -P /usr/bin/env \[0m
+      [37m+  dir=/var/opt/gitlab/logrotate \[0m
+      [37m+  pre_sleep=600 \[0m
+      [37m+  post_sleep=3000 \[0m
+      [37m+  /opt/gitlab/embedded/bin/gitlab-logrotate-wrapper[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * directory[/opt/gitlab/sv/logrotate/log] action create
+      [32m- create new directory /opt/gitlab/sv/logrotate/log[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * directory[/opt/gitlab/sv/logrotate/log/main] action create
+      [32m- create new directory /opt/gitlab/sv/logrotate/log/main[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * template[/opt/gitlab/sv/logrotate/log/config] action create
+      [32m- create new file /opt/gitlab/sv/logrotate/log/config[0m
+      [32m- update content in file /opt/gitlab/sv/logrotate/log/config from none to 623c00[0m
+      [37m--- /opt/gitlab/sv/logrotate/log/config	2021-10-22 15:33:34.496164289 +0000[0m
+      [37m+++ /opt/gitlab/sv/logrotate/log/.chef-config20211022-27-16ig2j9	2021-10-22 15:33:34.496164289 +0000[0m
+      [37m@@ -1 +1,7 @@[0m
+      [37m+s209715200[0m
+      [37m+n30[0m
+      [37m+t86400[0m
+      [37m+!gzip[0m
+      [37m+[0m
+      [37m+[0m
+      [32m- change mode from '' to '0644'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * ruby_block[verify_chown_persisted_on_logrotate] action create
+      [32m- execute the ruby block verify_chown_persisted_on_logrotate[0m
+[0m    * ruby_block[verify_chown_persisted_on_logrotate] action nothing (skipped due to action :nothing)
+    * link[/var/log/gitlab/logrotate/config] action create (up to date)
+    * template[/opt/gitlab/sv/logrotate/log/run] action create
+      [32m- create new file /opt/gitlab/sv/logrotate/log/run[0m
+      [32m- update content in file /opt/gitlab/sv/logrotate/log/run from none to 94afe6[0m
+      [37m--- /opt/gitlab/sv/logrotate/log/run	2021-10-22 15:33:34.516164118 +0000[0m
+      [37m+++ /opt/gitlab/sv/logrotate/log/.chef-run20211022-27-1h5gqy3	2021-10-22 15:33:34.516164118 +0000[0m
+      [37m@@ -1 +1,3 @@[0m
+      [37m+#!/bin/sh[0m
+      [37m+exec svlogd -tt /var/log/gitlab/logrotate[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * directory[/opt/gitlab/sv/logrotate/env] action create
+      [32m- create new directory /opt/gitlab/sv/logrotate/env[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * ruby_block[Delete unmanaged env files for logrotate service] action run (skipped due to only_if)
+    * template[/opt/gitlab/sv/logrotate/check] action create (skipped due to only_if)
+    * template[/opt/gitlab/sv/logrotate/finish] action create (skipped due to only_if)
+    * directory[/opt/gitlab/sv/logrotate/control] action create
+      [32m- create new directory /opt/gitlab/sv/logrotate/control[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * template[/opt/gitlab/sv/logrotate/control/t] action create
+      [32m- create new file /opt/gitlab/sv/logrotate/control/t[0m
+      [32m- update content in file /opt/gitlab/sv/logrotate/control/t from none to 8fa3fa[0m
+      [37m--- /opt/gitlab/sv/logrotate/control/t	2021-10-22 15:33:34.536163948 +0000[0m
+      [37m+++ /opt/gitlab/sv/logrotate/control/.chef-t20211022-27-3icnlj	2021-10-22 15:33:34.536163948 +0000[0m
+      [37m@@ -1 +1,4 @@[0m
+      [37m+#!/bin/sh[0m
+      [37m+echo "Received TERM from runit, sending to process group (-PID)"[0m
+      [37m+kill -- -$(cat /opt/gitlab/service/logrotate/supervise/pid)[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * link[/opt/gitlab/init/logrotate] action create
+      [32m- create symlink at /opt/gitlab/init/logrotate to /opt/gitlab/embedded/bin/sv[0m
+[0m    * file[/opt/gitlab/sv/logrotate/down] action nothing (skipped due to action :nothing)
+    * ruby_block[restart_service] action run (skipped due to only_if)
+    * ruby_block[reload_log_service] action create
+      * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+      * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+      * ruby_block[reload_log_service] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/sv/logrotate] action create (up to date)
+      * template[/opt/gitlab/sv/logrotate/run] action create (up to date)
+      * directory[/opt/gitlab/sv/logrotate/log] action create (up to date)
+      * directory[/opt/gitlab/sv/logrotate/log/main] action create (up to date)
+      * template[/opt/gitlab/sv/logrotate/log/config] action create (up to date)
+      * ruby_block[verify_chown_persisted_on_logrotate] action nothing (skipped due to action :nothing)
+      * link[/var/log/gitlab/logrotate/config] action create (up to date)
+      * template[/opt/gitlab/sv/logrotate/log/run] action create (up to date)
+      * directory[/opt/gitlab/sv/logrotate/env] action create (up to date)
+      * ruby_block[Delete unmanaged env files for logrotate service] action run (skipped due to only_if)
+      * template[/opt/gitlab/sv/logrotate/check] action create (skipped due to only_if)
+      * template[/opt/gitlab/sv/logrotate/finish] action create (skipped due to only_if)
+      * directory[/opt/gitlab/sv/logrotate/control] action create (up to date)
+      * template[/opt/gitlab/sv/logrotate/control/t] action create (up to date)
+      * link[/opt/gitlab/init/logrotate] action create (up to date)
+      * file[/opt/gitlab/sv/logrotate/down] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/service] action create (up to date)
+      * link[/opt/gitlab/service/logrotate] action create
+        [32m- create symlink at /opt/gitlab/service/logrotate to /opt/gitlab/sv/logrotate[0m
+[0m      * ruby_block[wait for logrotate service socket] action run
+        [32m- execute the ruby block wait for logrotate service socket[0m
+[0m      [32m- execute the ruby block reload_log_service[0m
+[0m    * ruby_block[restart_log_service] action run
+      * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+      * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+      * ruby_block[reload_log_service] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/sv/logrotate] action create (up to date)
+      * template[/opt/gitlab/sv/logrotate/run] action create (up to date)
+      * directory[/opt/gitlab/sv/logrotate/log] action create (up to date)
+      * directory[/opt/gitlab/sv/logrotate/log/main] action create (up to date)
+      * template[/opt/gitlab/sv/logrotate/log/config] action create (up to date)
+      * ruby_block[verify_chown_persisted_on_logrotate] action nothing (skipped due to action :nothing)
+      * link[/var/log/gitlab/logrotate/config] action create (up to date)
+      * template[/opt/gitlab/sv/logrotate/log/run] action create (up to date)
+      * directory[/opt/gitlab/sv/logrotate/env] action create (up to date)
+      * ruby_block[Delete unmanaged env files for logrotate service] action run (skipped due to only_if)
+      * template[/opt/gitlab/sv/logrotate/check] action create (skipped due to only_if)
+      * template[/opt/gitlab/sv/logrotate/finish] action create (skipped due to only_if)
+      * directory[/opt/gitlab/sv/logrotate/control] action create (up to date)
+      * template[/opt/gitlab/sv/logrotate/control/t] action create (up to date)
+      * link[/opt/gitlab/init/logrotate] action create (up to date)
+      * file[/opt/gitlab/sv/logrotate/down] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/service] action create (up to date)
+      * link[/opt/gitlab/service/logrotate] action create (up to date)
+      * ruby_block[wait for logrotate service socket] action run (skipped due to not_if)
+      [32m- execute the ruby block restart_log_service[0m
+[0m    * directory[/opt/gitlab/service] action create (up to date)
+    * link[/opt/gitlab/service/logrotate] action create (up to date)
+    * ruby_block[wait for logrotate service socket] action run (skipped due to not_if)
+  
+[0mRecipe: redis::disable[0m
+  * service[redis] action nothing (skipped due to action :nothing)
+  * runit_service[redis] action disable
+    * ruby_block[disable redis] action run (skipped due to only_if)
+     (up to date)
+Recipe: gitaly::enable[0m
+  * directory[/var/opt/gitlab/gitaly] action create (up to date)
+  * directory[/var/log/gitlab/gitaly] action create (up to date)
+  * directory[/var/opt/gitlab/gitaly/internal_sockets] action create (up to date)
+  * env_dir[/opt/gitlab/etc/gitaly/env] action create
+    * directory[/opt/gitlab/etc/gitaly/env] action create
+      [32m- create new directory /opt/gitlab/etc/gitaly/env[0m
+[0m    * file[/opt/gitlab/etc/gitaly/env/HOME] action create
+      [32m- create new file /opt/gitlab/etc/gitaly/env/HOME[0m
+      [32m- update content in file /opt/gitlab/etc/gitaly/env/HOME from none to 205bb9[0m
+      [32m- suppressed sensitive resource[0m
+[0m    * file[/opt/gitlab/etc/gitaly/env/PATH] action create
+      [32m- create new file /opt/gitlab/etc/gitaly/env/PATH[0m
+      [32m- update content in file /opt/gitlab/etc/gitaly/env/PATH from none to d5dc07[0m
+      [32m- suppressed sensitive resource[0m
+[0m    * file[/opt/gitlab/etc/gitaly/env/TZ] action create
+      [32m- create new file /opt/gitlab/etc/gitaly/env/TZ[0m
+      [32m- update content in file /opt/gitlab/etc/gitaly/env/TZ from none to 983a95[0m
+      [32m- suppressed sensitive resource[0m
+[0m    * file[/opt/gitlab/etc/gitaly/env/PYTHONPATH] action create
+      [32m- create new file /opt/gitlab/etc/gitaly/env/PYTHONPATH[0m
+      [32m- update content in file /opt/gitlab/etc/gitaly/env/PYTHONPATH from none to 98c9f4[0m
+      [32m- suppressed sensitive resource[0m
+[0m    * file[/opt/gitlab/etc/gitaly/env/ICU_DATA] action create
+      [32m- create new file /opt/gitlab/etc/gitaly/env/ICU_DATA[0m
+      [32m- update content in file /opt/gitlab/etc/gitaly/env/ICU_DATA from none to a04260[0m
+      [32m- suppressed sensitive resource[0m
+[0m    * file[/opt/gitlab/etc/gitaly/env/SSL_CERT_DIR] action create
+      [32m- create new file /opt/gitlab/etc/gitaly/env/SSL_CERT_DIR[0m
+      [32m- update content in file /opt/gitlab/etc/gitaly/env/SSL_CERT_DIR from none to 4f45cf[0m
+      [32m- suppressed sensitive resource[0m
+[0m    * file[/opt/gitlab/etc/gitaly/env/GITALY_PID_FILE] action create
+      [32m- create new file /opt/gitlab/etc/gitaly/env/GITALY_PID_FILE[0m
+      [32m- update content in file /opt/gitlab/etc/gitaly/env/GITALY_PID_FILE from none to e82748[0m
+      [32m- suppressed sensitive resource[0m
+[0m    * file[/opt/gitlab/etc/gitaly/env/WRAPPER_JSON_LOGGING] action create
+      [32m- create new file /opt/gitlab/etc/gitaly/env/WRAPPER_JSON_LOGGING[0m
+      [32m- update content in file /opt/gitlab/etc/gitaly/env/WRAPPER_JSON_LOGGING from none to b5bea4[0m
+      [32m- suppressed sensitive resource[0m
+[0m  
+[0m  * template[Create Gitaly config.toml] action create (up to date)
+  * service[gitaly] action nothing (skipped due to action :nothing)
+  * runit_service[gitaly] action enable
+    * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+    * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+    * ruby_block[reload_log_service] action nothing (skipped due to action :nothing)
+    * directory[/opt/gitlab/sv/gitaly] action create
+      [32m- create new directory /opt/gitlab/sv/gitaly[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * template[/opt/gitlab/sv/gitaly/run] action create
+      [32m- create new file /opt/gitlab/sv/gitaly/run[0m
+      [32m- update content in file /opt/gitlab/sv/gitaly/run from none to 1a05c2[0m
+      [37m--- /opt/gitlab/sv/gitaly/run	2021-10-22 15:33:39.484121769 +0000[0m
+      [37m+++ /opt/gitlab/sv/gitaly/.chef-run20211022-27-1x4llz2	2021-10-22 15:33:39.484121769 +0000[0m
+      [37m@@ -1 +1,19 @@[0m
+      [37m+#!/bin/sh[0m
+      [37m+[0m
+      [37m+# Attempt to change ulimit before the set -e flag, ignore failures[0m
+      [37m+ulimit -n 15000[0m
+      [37m+[0m
+      [37m+set -e # fail on errors[0m
+      [37m+[0m
+      [37m+# Redirect stderr -> stdout[0m
+      [37m+exec 2>&1[0m
+      [37m+[0m
+      [37m+[0m
+      [37m+[0m
+      [37m+cd /var/opt/gitlab/gitaly[0m
+      [37m+[0m
+      [37m+exec chpst -e /opt/gitlab/etc/gitaly/env -P \[0m
+      [37m+  -U git:git \[0m
+      [37m+  -u git:git \[0m
+      [37m+  /opt/gitlab/embedded/bin/gitaly-wrapper /opt/gitlab/embedded/bin/gitaly /var/opt/gitlab/gitaly/config.toml[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * directory[/opt/gitlab/sv/gitaly/log] action create
+      [32m- create new directory /opt/gitlab/sv/gitaly/log[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * directory[/opt/gitlab/sv/gitaly/log/main] action create
+      [32m- create new directory /opt/gitlab/sv/gitaly/log/main[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * template[/opt/gitlab/sv/gitaly/log/config] action create
+      [32m- create new file /opt/gitlab/sv/gitaly/log/config[0m
+      [32m- update content in file /opt/gitlab/sv/gitaly/log/config from none to 623c00[0m
+      [37m--- /opt/gitlab/sv/gitaly/log/config	2021-10-22 15:33:39.504121599 +0000[0m
+      [37m+++ /opt/gitlab/sv/gitaly/log/.chef-config20211022-27-1nhcs1w	2021-10-22 15:33:39.504121599 +0000[0m
+      [37m@@ -1 +1,7 @@[0m
+      [37m+s209715200[0m
+      [37m+n30[0m
+      [37m+t86400[0m
+      [37m+!gzip[0m
+      [37m+[0m
+      [37m+[0m
+      [32m- change mode from '' to '0644'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * ruby_block[verify_chown_persisted_on_gitaly] action create
+      [32m- execute the ruby block verify_chown_persisted_on_gitaly[0m
+[0m    * ruby_block[verify_chown_persisted_on_gitaly] action nothing (skipped due to action :nothing)
+    * link[/var/log/gitlab/gitaly/config] action create (up to date)
+    * template[/opt/gitlab/sv/gitaly/log/run] action create
+      [32m- create new file /opt/gitlab/sv/gitaly/log/run[0m
+      [32m- update content in file /opt/gitlab/sv/gitaly/log/run from none to fa6dcc[0m
+      [37m--- /opt/gitlab/sv/gitaly/log/run	2021-10-22 15:33:39.520121463 +0000[0m
+      [37m+++ /opt/gitlab/sv/gitaly/log/.chef-run20211022-27-2snuou	2021-10-22 15:33:39.520121463 +0000[0m
+      [37m@@ -1 +1,3 @@[0m
+      [37m+#!/bin/sh[0m
+      [37m+exec svlogd /var/log/gitlab/gitaly[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * directory[/opt/gitlab/sv/gitaly/env] action create
+      [32m- create new directory /opt/gitlab/sv/gitaly/env[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * ruby_block[Delete unmanaged env files for gitaly service] action run (skipped due to only_if)
+    * template[/opt/gitlab/sv/gitaly/check] action create (skipped due to only_if)
+    * template[/opt/gitlab/sv/gitaly/finish] action create (skipped due to only_if)
+    * directory[/opt/gitlab/sv/gitaly/control] action create
+      [32m- create new directory /opt/gitlab/sv/gitaly/control[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * link[/opt/gitlab/init/gitaly] action create
+      [32m- create symlink at /opt/gitlab/init/gitaly to /opt/gitlab/embedded/bin/sv[0m
+[0m    * file[/opt/gitlab/sv/gitaly/down] action nothing (skipped due to action :nothing)
+    * ruby_block[restart_service] action run (skipped due to only_if)
+    * ruby_block[reload_log_service] action create
+      * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+      * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+      * ruby_block[reload_log_service] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/sv/gitaly] action create (up to date)
+      * template[/opt/gitlab/sv/gitaly/run] action create (up to date)
+      * directory[/opt/gitlab/sv/gitaly/log] action create (up to date)
+      * directory[/opt/gitlab/sv/gitaly/log/main] action create (up to date)
+      * template[/opt/gitlab/sv/gitaly/log/config] action create (up to date)
+      * ruby_block[verify_chown_persisted_on_gitaly] action nothing (skipped due to action :nothing)
+      * link[/var/log/gitlab/gitaly/config] action create (up to date)
+      * template[/opt/gitlab/sv/gitaly/log/run] action create (up to date)
+      * directory[/opt/gitlab/sv/gitaly/env] action create (up to date)
+      * ruby_block[Delete unmanaged env files for gitaly service] action run (skipped due to only_if)
+      * template[/opt/gitlab/sv/gitaly/check] action create (skipped due to only_if)
+      * template[/opt/gitlab/sv/gitaly/finish] action create (skipped due to only_if)
+      * directory[/opt/gitlab/sv/gitaly/control] action create (up to date)
+      * link[/opt/gitlab/init/gitaly] action create (up to date)
+      * file[/opt/gitlab/sv/gitaly/down] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/service] action create (up to date)
+      * link[/opt/gitlab/service/gitaly] action create
+        [32m- create symlink at /opt/gitlab/service/gitaly to /opt/gitlab/sv/gitaly[0m
+[0m      * ruby_block[wait for gitaly service socket] action run
+        [32m- execute the ruby block wait for gitaly service socket[0m
+[0m      [32m- execute the ruby block reload_log_service[0m
+[0m    * ruby_block[restart_log_service] action run
+      * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+      * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+      * ruby_block[reload_log_service] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/sv/gitaly] action create (up to date)
+      * template[/opt/gitlab/sv/gitaly/run] action create (up to date)
+      * directory[/opt/gitlab/sv/gitaly/log] action create (up to date)
+      * directory[/opt/gitlab/sv/gitaly/log/main] action create (up to date)
+      * template[/opt/gitlab/sv/gitaly/log/config] action create (up to date)
+      * ruby_block[verify_chown_persisted_on_gitaly] action nothing (skipped due to action :nothing)
+      * link[/var/log/gitlab/gitaly/config] action create (up to date)
+      * template[/opt/gitlab/sv/gitaly/log/run] action create (up to date)
+      * directory[/opt/gitlab/sv/gitaly/env] action create (up to date)
+      * ruby_block[Delete unmanaged env files for gitaly service] action run (skipped due to only_if)
+      * template[/opt/gitlab/sv/gitaly/check] action create (skipped due to only_if)
+      * template[/opt/gitlab/sv/gitaly/finish] action create (skipped due to only_if)
+      * directory[/opt/gitlab/sv/gitaly/control] action create (up to date)
+      * link[/opt/gitlab/init/gitaly] action create (up to date)
+      * file[/opt/gitlab/sv/gitaly/down] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/service] action create (up to date)
+      * link[/opt/gitlab/service/gitaly] action create (up to date)
+      * ruby_block[wait for gitaly service socket] action run (skipped due to not_if)
+      [32m- execute the ruby block restart_log_service[0m
+[0m    * directory[/opt/gitlab/service] action create (up to date)
+    * link[/opt/gitlab/service/gitaly] action create (up to date)
+    * ruby_block[wait for gitaly service socket] action run (skipped due to not_if)
+  
+[0m  * version_file[Create version file for Gitaly] action create
+    * file[/var/opt/gitlab/gitaly/VERSION] action create (up to date)
+     (up to date)
+  * version_file[Create Ruby version file for Gitaly] action create
+    * file[/var/opt/gitlab/gitaly/RUBY_VERSION] action create (up to date)
+     (up to date)
+  * consul_service[gitaly] action delete
+    * file[/var/opt/gitlab/consul/config.d/gitaly-service.json] action delete (up to date)
+     (up to date)
+Recipe: postgresql::bin[0m
+  * ruby_block[check_postgresql_version] action run (skipped due to not_if)
+  * ruby_block[check_postgresql_version_is_deprecated] action run (skipped due to not_if)
+  * ruby_block[Link postgresql bin files to the correct version] action run
+    [32m- execute the ruby block Link postgresql bin files to the correct version[0m
+[0m  * template[/opt/gitlab/etc/gitlab-psql-rc] action create
+    [32m- create new file /opt/gitlab/etc/gitlab-psql-rc[0m
+    [32m- update content in file /opt/gitlab/etc/gitlab-psql-rc from none to b7b8fc[0m
+    [37m--- /opt/gitlab/etc/gitlab-psql-rc	2021-10-22 15:33:44.464079290 +0000[0m
+    [37m+++ /opt/gitlab/etc/.chef-gitlab-psql-rc20211022-27-jfhdmg	2021-10-22 15:33:44.464079290 +0000[0m
+    [37m@@ -1 +1,6 @@[0m
+    [37m+psql_user='gitlab-psql'[0m
+    [37m+psql_group='gitlab-psql'[0m
+    [37m+psql_host='/var/opt/gitlab/postgresql'[0m
+    [37m+psql_port='5432'[0m
+    [37m+psql_dbname='gitlabhq_production'[0m
+    [32m- change owner from '' to 'root'[0m
+    [32m- change group from '' to 'root'[0m
+[0mRecipe: postgresql::disable[0m
+  * service[postgresql] action nothing (skipped due to action :nothing)
+  * runit_service[postgresql] action disable
+    * ruby_block[disable postgresql] action run (skipped due to only_if)
+     (up to date)
+Recipe: praefect::disable[0m
+  * service[praefect] action nothing (skipped due to action :nothing)
+  * runit_service[praefect] action disable
+    * ruby_block[disable praefect] action run (skipped due to only_if)
+     (up to date)
+  * consul_service[praefect] action delete
+    * file[/var/opt/gitlab/consul/config.d/praefect-service.json] action delete (up to date)
+     (up to date)
+Recipe: gitlab-kas::disable[0m
+  * service[gitlab-kas] action nothing (skipped due to action :nothing)
+  * runit_service[gitlab-kas] action disable
+    * ruby_block[disable gitlab-kas] action run (skipped due to only_if)
+     (up to date)
+Recipe: gitlab::database_migrations[0m
+  * ruby_block[check remote PG version] action nothing (skipped due to action :nothing)
+  * rails_migration[gitlab-rails] action run
+    * bash[migrate gitlab-rails database] action run (skipped due to not_if)
+     (up to date)
+Recipe: crond::disable[0m
+  * service[crond] action nothing (skipped due to action :nothing)
+  * runit_service[crond] action disable
+    * ruby_block[disable crond] action run (skipped due to only_if)
+     (up to date)
+Recipe: gitlab::puma[0m
+  * directory[/var/log/gitlab/puma] action create (up to date)
+  * directory[/opt/gitlab/var/puma] action create
+    [32m- create new directory /opt/gitlab/var/puma[0m
+    [32m- change mode from '' to '0700'[0m
+    [32m- change owner from '' to 'git'[0m
+[0m  * directory[/var/opt/gitlab/gitlab-rails/sockets] action create (up to date)
+  * puma_config[/var/opt/gitlab/gitlab-rails/etc/puma.rb] action create
+    * directory[/var/opt/gitlab/gitlab-rails/etc] action create (up to date)
+    * template[/var/opt/gitlab/gitlab-rails/etc/puma.rb] action create (up to date)
+     (up to date)
+  * service[puma] action nothing (skipped due to action :nothing)
+  * runit_service[puma] action enable
+    * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+    * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+    * ruby_block[reload_log_service] action nothing (skipped due to action :nothing)
+    * directory[/opt/gitlab/sv/puma] action create
+      [32m- create new directory /opt/gitlab/sv/puma[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * template[/opt/gitlab/sv/puma/run] action create
+      [32m- create new file /opt/gitlab/sv/puma/run[0m
+      [32m- update content in file /opt/gitlab/sv/puma/run from none to ca09fe[0m
+      [37m--- /opt/gitlab/sv/puma/run	2021-10-22 15:33:44.536078676 +0000[0m
+      [37m+++ /opt/gitlab/sv/puma/.chef-run20211022-27-j8iwsm	2021-10-22 15:33:44.536078676 +0000[0m
+      [37m@@ -1 +1,22 @@[0m
+      [37m+#!/bin/bash[0m
+      [37m+[0m
+      [37m+# Let runit capture all script error messages[0m
+      [37m+exec 2>&1[0m
+      [37m+[0m
+      [37m+# Setup run directory.[0m
+      [37m+mkdir -p /dev/shm/gitlab/puma[0m
+      [37m+chmod 0700 /dev/shm/gitlab/puma[0m
+      [37m+chown git /dev/shm/gitlab/puma[0m
+      [37m+export prometheus_run_dir='/dev/shm/gitlab/puma'[0m
+      [37m+[0m
+      [37m+[0m
+      [37m+[0m
+      [37m+[0m
+      [37m+exec chpst -P \[0m
+      [37m+  -u git:git \[0m
+      [37m+  -U git:git \[0m
+      [37m+  -e /opt/gitlab/etc/gitlab-rails/env \[0m
+      [37m+  /usr/bin/env \[0m
+      [37m+    prometheus_multiproc_dir="${prometheus_run_dir}" \[0m
+      [37m+    /opt/gitlab/embedded/bin/bundle exec puma -C /var/opt/gitlab/gitlab-rails/etc/puma.rb[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * directory[/opt/gitlab/sv/puma/log] action create
+      [32m- create new directory /opt/gitlab/sv/puma/log[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * directory[/opt/gitlab/sv/puma/log/main] action create
+      [32m- create new directory /opt/gitlab/sv/puma/log/main[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * template[/opt/gitlab/sv/puma/log/config] action create
+      [32m- create new file /opt/gitlab/sv/puma/log/config[0m
+      [32m- update content in file /opt/gitlab/sv/puma/log/config from none to 623c00[0m
+      [37m--- /opt/gitlab/sv/puma/log/config	2021-10-22 15:33:44.560078471 +0000[0m
+      [37m+++ /opt/gitlab/sv/puma/log/.chef-config20211022-27-2vlqbm	2021-10-22 15:33:44.560078471 +0000[0m
+      [37m@@ -1 +1,7 @@[0m
+      [37m+s209715200[0m
+      [37m+n30[0m
+      [37m+t86400[0m
+      [37m+!gzip[0m
+      [37m+[0m
+      [37m+[0m
+      [32m- change mode from '' to '0644'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * ruby_block[verify_chown_persisted_on_puma] action create
+      [32m- execute the ruby block verify_chown_persisted_on_puma[0m
+[0m    * ruby_block[verify_chown_persisted_on_puma] action nothing (skipped due to action :nothing)
+    * link[/var/log/gitlab/puma/config] action create (up to date)
+    * template[/opt/gitlab/sv/puma/log/run] action create
+      [32m- create new file /opt/gitlab/sv/puma/log/run[0m
+      [32m- update content in file /opt/gitlab/sv/puma/log/run from none to a83bb7[0m
+      [37m--- /opt/gitlab/sv/puma/log/run	2021-10-22 15:33:44.580078301 +0000[0m
+      [37m+++ /opt/gitlab/sv/puma/log/.chef-run20211022-27-gwl2ux	2021-10-22 15:33:44.580078301 +0000[0m
+      [37m@@ -1 +1,3 @@[0m
+      [37m+#!/bin/sh[0m
+      [37m+exec svlogd -tt /var/log/gitlab/puma[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * directory[/opt/gitlab/sv/puma/env] action create
+      [32m- create new directory /opt/gitlab/sv/puma/env[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * ruby_block[Delete unmanaged env files for puma service] action run (skipped due to only_if)
+    * template[/opt/gitlab/sv/puma/check] action create (skipped due to only_if)
+    * template[/opt/gitlab/sv/puma/finish] action create (skipped due to only_if)
+    * directory[/opt/gitlab/sv/puma/control] action create
+      [32m- create new directory /opt/gitlab/sv/puma/control[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * template[/opt/gitlab/sv/puma/control/t] action create
+      [32m- create new file /opt/gitlab/sv/puma/control/t[0m
+      [32m- update content in file /opt/gitlab/sv/puma/control/t from none to d8e9e7[0m
+      [37m--- /opt/gitlab/sv/puma/control/t	2021-10-22 15:33:44.600078130 +0000[0m
+      [37m+++ /opt/gitlab/sv/puma/control/.chef-t20211022-27-1pml57k	2021-10-22 15:33:44.600078130 +0000[0m
+      [37m@@ -1 +1,4 @@[0m
+      [37m+#!/bin/sh[0m
+      [37m+echo "Received TERM from runit, sending to process group (-PID)"[0m
+      [37m+kill -- -$(cat /opt/gitlab/service/puma/supervise/pid)[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * template[/opt/gitlab/sv/puma/control/h] action create
+      [32m- create new file /opt/gitlab/sv/puma/control/h[0m
+      [32m- update content in file /opt/gitlab/sv/puma/control/h from none to 22e721[0m
+      [37m--- /opt/gitlab/sv/puma/control/h	2021-10-22 15:33:44.620077959 +0000[0m
+      [37m+++ /opt/gitlab/sv/puma/control/.chef-h20211022-27-1xl117c	2021-10-22 15:33:44.620077959 +0000[0m
+      [37m@@ -1 +1,48 @@[0m
+      [37m+#!/bin/sh[0m
+      [37m+[0m
+      [37m+# This control handler is meant to be invoked by omnibus-gitlab via Runit[0m
+      [37m+[0m
+      [37m+# Let runit capture all script error messages[0m
+      [37m+exec 2>&1[0m
+      [37m+[0m
+      [37m+PID=$(cat /opt/gitlab/service/puma/supervise/pid)[0m
+      [37m+[0m
+      [37m+readonly puma_graceful_shutdown_sec=90[0m
+      [37m+readonly puma_forceful_shutdown_sec=20[0m
+      [37m+readonly puma_kill_shutdown_sec=10[0m
+      [37m+[0m
+      [37m+echo "Received HUP from runit, sending INT signal to perform graceful restart"[0m
+      [37m+[0m
+      [37m+signal() {[0m
+      [37m+  local pid="$1"[0m
+      [37m+  local signal="$2"[0m
+      [37m+  local tries="$3"[0m
+      [37m+[0m
+      [37m+  echo "Sending $signal signal to Puma $pid..."[0m
+      [37m+  kill "-$signal" "$pid"[0m
+      [37m+[0m
+      [37m+  for i in $(seq 1 "$tries"); do[0m
+      [37m+    echo "Waiting for Puma $pid to exit ($i)..."[0m
+      [37m+    if ! kill -0 "$pid"; then[0m
+      [37m+      echo "Puma $pid did exit."[0m
+      [37m+      return 0[0m
+      [37m+    fi[0m
+      [37m+[0m
+      [37m+    sleep 1[0m
+      [37m+  done[0m
+      [37m+[0m
+      [37m+  echo "Puma $pid did not exit after $signal."[0m
+      [37m+  return 1[0m
+      [37m+}[0m
+      [37m+[0m
+      [37m+([0m
+      [37m+  # we run it in subshell, as `runit` requires[0m
+      [37m+  # the process it runs to exit in order to reap[0m
+      [37m+  # the service[0m
+      [37m+  signal "$PID" "INT" "$puma_graceful_shutdown_sec" ||[0m
+      [37m+  signal "$PID" "TERM" "$puma_forceful_shutdown_sec" ||[0m
+      [37m+  signal "$PID" "KILL" "$puma_kill_shutdown_sec"[0m
+      [37m+) &[0m
+      [37m+[0m
+      [37m+exit 0[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * link[/opt/gitlab/init/puma] action create
+      [32m- create symlink at /opt/gitlab/init/puma to /opt/gitlab/embedded/bin/sv[0m
+[0m    * file[/opt/gitlab/sv/puma/down] action nothing (skipped due to action :nothing)
+    * ruby_block[restart_service] action run (skipped due to only_if)
+    * ruby_block[reload_log_service] action create
+      * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+      * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+      * ruby_block[reload_log_service] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/sv/puma] action create (up to date)
+      * template[/opt/gitlab/sv/puma/run] action create (up to date)
+      * directory[/opt/gitlab/sv/puma/log] action create (up to date)
+      * directory[/opt/gitlab/sv/puma/log/main] action create (up to date)
+      * template[/opt/gitlab/sv/puma/log/config] action create (up to date)
+      * ruby_block[verify_chown_persisted_on_puma] action nothing (skipped due to action :nothing)
+      * link[/var/log/gitlab/puma/config] action create (up to date)
+      * template[/opt/gitlab/sv/puma/log/run] action create (up to date)
+      * directory[/opt/gitlab/sv/puma/env] action create (up to date)
+      * ruby_block[Delete unmanaged env files for puma service] action run (skipped due to only_if)
+      * template[/opt/gitlab/sv/puma/check] action create (skipped due to only_if)
+      * template[/opt/gitlab/sv/puma/finish] action create (skipped due to only_if)
+      * directory[/opt/gitlab/sv/puma/control] action create (up to date)
+      * template[/opt/gitlab/sv/puma/control/t] action create (up to date)
+      * template[/opt/gitlab/sv/puma/control/h] action create (up to date)
+      * link[/opt/gitlab/init/puma] action create (up to date)
+      * file[/opt/gitlab/sv/puma/down] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/service] action create (up to date)
+      * link[/opt/gitlab/service/puma] action create
+        [32m- create symlink at /opt/gitlab/service/puma to /opt/gitlab/sv/puma[0m
+[0m      * ruby_block[wait for puma service socket] action run
+        [32m- execute the ruby block wait for puma service socket[0m
+[0m      [32m- execute the ruby block reload_log_service[0m
+[0m    * ruby_block[restart_log_service] action run
+      * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+      * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+      * ruby_block[reload_log_service] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/sv/puma] action create (up to date)
+      * template[/opt/gitlab/sv/puma/run] action create (up to date)
+      * directory[/opt/gitlab/sv/puma/log] action create (up to date)
+      * directory[/opt/gitlab/sv/puma/log/main] action create (up to date)
+      * template[/opt/gitlab/sv/puma/log/config] action create (up to date)
+      * ruby_block[verify_chown_persisted_on_puma] action nothing (skipped due to action :nothing)
+      * link[/var/log/gitlab/puma/config] action create (up to date)
+      * template[/opt/gitlab/sv/puma/log/run] action create (up to date)
+      * directory[/opt/gitlab/sv/puma/env] action create (up to date)
+      * ruby_block[Delete unmanaged env files for puma service] action run (skipped due to only_if)
+      * template[/opt/gitlab/sv/puma/check] action create (skipped due to only_if)
+      * template[/opt/gitlab/sv/puma/finish] action create (skipped due to only_if)
+      * directory[/opt/gitlab/sv/puma/control] action create (up to date)
+      * template[/opt/gitlab/sv/puma/control/t] action create (up to date)
+      * template[/opt/gitlab/sv/puma/control/h] action create (up to date)
+      * link[/opt/gitlab/init/puma] action create (up to date)
+      * file[/opt/gitlab/sv/puma/down] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/service] action create (up to date)
+      * link[/opt/gitlab/service/puma] action create (up to date)
+      * ruby_block[wait for puma service socket] action run (skipped due to not_if)
+      [32m- execute the ruby block restart_log_service[0m
+[0m    * directory[/opt/gitlab/service] action create (up to date)
+    * link[/opt/gitlab/service/puma] action create (up to date)
+    * ruby_block[wait for puma service socket] action run (skipped due to not_if)
+  
+[0m  * consul_service[rails] action delete
+    * file[/var/opt/gitlab/consul/config.d/rails-service.json] action delete (up to date)
+     (up to date)
+  * gitlab_sysctl[net.core.somaxconn] action create
+    * directory[create /etc/sysctl.d for net.core.somaxconn] action create (skipped due to only_if)
+    * file[create /opt/gitlab/embedded/etc/90-omnibus-gitlab-net.core.somaxconn.conf net.core.somaxconn] action create (skipped due to only_if)
+    * link[/etc/sysctl.d/90-omnibus-gitlab-net.core.somaxconn.conf] action create (skipped due to only_if)
+    * execute[load sysctl conf net.core.somaxconn] action nothing (skipped due to action :nothing)
+     (up to date)
+Recipe: gitlab::sidekiq[0m
+  * sidekiq_service[sidekiq] action enable
+    * directory[/var/log/gitlab/sidekiq] action create (up to date)
+  Recipe: <Dynamically Defined Resource>[0m
+    * service[sidekiq] action nothing (skipped due to action :nothing)
+    * runit_service[sidekiq] action enable
+      * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+      * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+      * ruby_block[reload_log_service] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/sv/sidekiq] action create
+        [32m- create new directory /opt/gitlab/sv/sidekiq[0m
+        [32m- change mode from '' to '0755'[0m
+        [32m- change owner from '' to 'root'[0m
+        [32m- change group from '' to 'root'[0m
+[0m      * template[/opt/gitlab/sv/sidekiq/run] action create
+        [32m- create new file /opt/gitlab/sv/sidekiq/run[0m
+        [32m- update content in file /opt/gitlab/sv/sidekiq/run from none to d94e86[0m
+        [37m--- /opt/gitlab/sv/sidekiq/run	2021-10-22 15:33:51.492019295 +0000[0m
+        [37m+++ /opt/gitlab/sv/sidekiq/.chef-run20211022-27-ezegs4	2021-10-22 15:33:51.492019295 +0000[0m
+        [37m@@ -1 +1,28 @@[0m
+        [37m+#!/bin/sh[0m
+        [37m+[0m
+        [37m+cd /var/opt/gitlab/gitlab-rails/working[0m
+        [37m+[0m
+        [37m+exec 2>&1[0m
+        [37m+# Setup run directory.[0m
+        [37m+mkdir -p /dev/shm/gitlab/sidekiq[0m
+        [37m+rm /dev/shm/gitlab/sidekiq/*.db 2> /dev/null[0m
+        [37m+chmod 0700 /dev/shm/gitlab/sidekiq[0m
+        [37m+chown git /dev/shm/gitlab/sidekiq[0m
+        [37m+export prometheus_run_dir='/dev/shm/gitlab/sidekiq'[0m
+        [37m+[0m
+        [37m+[0m
+        [37m+[0m
+        [37m+exec chpst -e /opt/gitlab/etc/gitlab-rails/env -P \[0m
+        [37m+  -U git:git \[0m
+        [37m+  -u git:git \[0m
+        [37m+  /usr/bin/env \[0m
+        [37m+    prometheus_multiproc_dir="${prometheus_run_dir}" \[0m
+        [37m+    /opt/gitlab/embedded/service/gitlab-rails/bin/sidekiq-cluster \[0m
+        [37m+      -e production \[0m
+        [37m+      -r /opt/gitlab/embedded/service/gitlab-rails \[0m
+        [37m+      -m 50 \[0m
+        [37m+      --timeout 25 \[0m
+        [37m+        "*" \[0m
+        [37m+[0m
+        [37m+# Do not remove this line; it prevents trouble with the trailing backslashes above.[0m
+        [32m- change mode from '' to '0755'[0m
+        [32m- change owner from '' to 'root'[0m
+        [32m- change group from '' to 'root'[0m
+[0m      * directory[/opt/gitlab/sv/sidekiq/log] action create
+        [32m- create new directory /opt/gitlab/sv/sidekiq/log[0m
+        [32m- change mode from '' to '0755'[0m
+        [32m- change owner from '' to 'root'[0m
+        [32m- change group from '' to 'root'[0m
+[0m      * directory[/opt/gitlab/sv/sidekiq/log/main] action create
+        [32m- create new directory /opt/gitlab/sv/sidekiq/log/main[0m
+        [32m- change mode from '' to '0755'[0m
+        [32m- change owner from '' to 'root'[0m
+        [32m- change group from '' to 'root'[0m
+[0m      * template[/opt/gitlab/sv/sidekiq/log/config] action create
+        [32m- create new file /opt/gitlab/sv/sidekiq/log/config[0m
+        [32m- update content in file /opt/gitlab/sv/sidekiq/log/config from none to 623c00[0m
+        [37m--- /opt/gitlab/sv/sidekiq/log/config	2021-10-22 15:33:51.520019057 +0000[0m
+        [37m+++ /opt/gitlab/sv/sidekiq/log/.chef-config20211022-27-1rxsj17	2021-10-22 15:33:51.520019057 +0000[0m
+        [37m@@ -1 +1,7 @@[0m
+        [37m+s209715200[0m
+        [37m+n30[0m
+        [37m+t86400[0m
+        [37m+!gzip[0m
+        [37m+[0m
+        [37m+[0m
+        [32m- change mode from '' to '0644'[0m
+        [32m- change owner from '' to 'root'[0m
+        [32m- change group from '' to 'root'[0m
+[0m      * ruby_block[verify_chown_persisted_on_sidekiq] action create
+        [32m- execute the ruby block verify_chown_persisted_on_sidekiq[0m
+[0m      * ruby_block[verify_chown_persisted_on_sidekiq] action nothing (skipped due to action :nothing)
+      * link[/var/log/gitlab/sidekiq/config] action create (up to date)
+      * template[/opt/gitlab/sv/sidekiq/log/run] action create
+        [32m- create new file /opt/gitlab/sv/sidekiq/log/run[0m
+        [32m- update content in file /opt/gitlab/sv/sidekiq/log/run from none to 0c55bd[0m
+        [37m--- /opt/gitlab/sv/sidekiq/log/run	2021-10-22 15:33:51.544018852 +0000[0m
+        [37m+++ /opt/gitlab/sv/sidekiq/log/.chef-run20211022-27-vs7gve	2021-10-22 15:33:51.544018852 +0000[0m
+        [37m@@ -1 +1,3 @@[0m
+        [37m+#!/bin/sh[0m
+        [37m+exec svlogd /var/log/gitlab/sidekiq[0m
+        [32m- change mode from '' to '0755'[0m
+        [32m- change owner from '' to 'root'[0m
+        [32m- change group from '' to 'root'[0m
+[0m      * directory[/opt/gitlab/sv/sidekiq/env] action create
+        [32m- create new directory /opt/gitlab/sv/sidekiq/env[0m
+        [32m- change mode from '' to '0755'[0m
+        [32m- change owner from '' to 'root'[0m
+        [32m- change group from '' to 'root'[0m
+[0m      * ruby_block[Delete unmanaged env files for sidekiq service] action run (skipped due to only_if)
+      * template[/opt/gitlab/sv/sidekiq/check] action create (skipped due to only_if)
+      * template[/opt/gitlab/sv/sidekiq/finish] action create (skipped due to only_if)
+      * directory[/opt/gitlab/sv/sidekiq/control] action create
+        [32m- create new directory /opt/gitlab/sv/sidekiq/control[0m
+        [32m- change mode from '' to '0755'[0m
+        [32m- change owner from '' to 'root'[0m
+        [32m- change group from '' to 'root'[0m
+[0m      * link[/opt/gitlab/init/sidekiq] action create
+        [32m- create symlink at /opt/gitlab/init/sidekiq to /opt/gitlab/embedded/bin/sv[0m
+[0m      * file[/opt/gitlab/sv/sidekiq/down] action nothing (skipped due to action :nothing)
+      * ruby_block[restart_service] action run (skipped due to only_if)
+      * ruby_block[reload_log_service] action create
+        * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+        * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+        * ruby_block[reload_log_service] action nothing (skipped due to action :nothing)
+        * directory[/opt/gitlab/sv/sidekiq] action create (up to date)
+        * template[/opt/gitlab/sv/sidekiq/run] action create (up to date)
+        * directory[/opt/gitlab/sv/sidekiq/log] action create (up to date)
+        * directory[/opt/gitlab/sv/sidekiq/log/main] action create (up to date)
+        * template[/opt/gitlab/sv/sidekiq/log/config] action create (up to date)
+        * ruby_block[verify_chown_persisted_on_sidekiq] action nothing (skipped due to action :nothing)
+        * link[/var/log/gitlab/sidekiq/config] action create (up to date)
+        * template[/opt/gitlab/sv/sidekiq/log/run] action create (up to date)
+        * directory[/opt/gitlab/sv/sidekiq/env] action create (up to date)
+        * ruby_block[Delete unmanaged env files for sidekiq service] action run (skipped due to only_if)
+        * template[/opt/gitlab/sv/sidekiq/check] action create (skipped due to only_if)
+        * template[/opt/gitlab/sv/sidekiq/finish] action create (skipped due to only_if)
+        * directory[/opt/gitlab/sv/sidekiq/control] action create (up to date)
+        * link[/opt/gitlab/init/sidekiq] action create (up to date)
+        * file[/opt/gitlab/sv/sidekiq/down] action nothing (skipped due to action :nothing)
+        * directory[/opt/gitlab/service] action create (up to date)
+        * link[/opt/gitlab/service/sidekiq] action create
+          [32m- create symlink at /opt/gitlab/service/sidekiq to /opt/gitlab/sv/sidekiq[0m
+[0m        * ruby_block[wait for sidekiq service socket] action run
+          [32m- execute the ruby block wait for sidekiq service socket[0m
+[0m        [32m- execute the ruby block reload_log_service[0m
+[0m      * ruby_block[restart_log_service] action run
+        * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+        * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+        * ruby_block[reload_log_service] action nothing (skipped due to action :nothing)
+        * directory[/opt/gitlab/sv/sidekiq] action create (up to date)
+        * template[/opt/gitlab/sv/sidekiq/run] action create (up to date)
+        * directory[/opt/gitlab/sv/sidekiq/log] action create (up to date)
+        * directory[/opt/gitlab/sv/sidekiq/log/main] action create (up to date)
+        * template[/opt/gitlab/sv/sidekiq/log/config] action create (up to date)
+        * ruby_block[verify_chown_persisted_on_sidekiq] action nothing (skipped due to action :nothing)
+        * link[/var/log/gitlab/sidekiq/config] action create (up to date)
+        * template[/opt/gitlab/sv/sidekiq/log/run] action create (up to date)
+        * directory[/opt/gitlab/sv/sidekiq/env] action create (up to date)
+        * ruby_block[Delete unmanaged env files for sidekiq service] action run (skipped due to only_if)
+        * template[/opt/gitlab/sv/sidekiq/check] action create (skipped due to only_if)
+        * template[/opt/gitlab/sv/sidekiq/finish] action create (skipped due to only_if)
+        * directory[/opt/gitlab/sv/sidekiq/control] action create (up to date)
+        * link[/opt/gitlab/init/sidekiq] action create (up to date)
+        * file[/opt/gitlab/sv/sidekiq/down] action nothing (skipped due to action :nothing)
+        * directory[/opt/gitlab/service] action create (up to date)
+        * link[/opt/gitlab/service/sidekiq] action create (up to date)
+        * ruby_block[wait for sidekiq service socket] action run (skipped due to not_if)
+        [32m- execute the ruby block restart_log_service[0m
+[0m      * directory[/opt/gitlab/service] action create (up to date)
+      * link[/opt/gitlab/service/sidekiq] action create (up to date)
+      * ruby_block[wait for sidekiq service socket] action run (skipped due to not_if)
+    
+[0m  
+[0mRecipe: gitlab::sidekiq[0m
+  * consul_service[sidekiq] action delete
+    * file[/var/opt/gitlab/consul/config.d/sidekiq-service.json] action delete (up to date)
+     (up to date)
+Recipe: gitlab::gitlab-workhorse[0m
+  * directory[/var/opt/gitlab/gitlab-workhorse] action create (up to date)
+  * directory[/var/opt/gitlab/gitlab-workhorse/sockets] action create (up to date)
+  * directory[/var/log/gitlab/gitlab-workhorse] action create (up to date)
+  * directory[/opt/gitlab/etc/gitlab-workhorse] action create
+    [32m- create new directory /opt/gitlab/etc/gitlab-workhorse[0m
+    [32m- change mode from '' to '0700'[0m
+    [32m- change owner from '' to 'git'[0m
+[0m  * env_dir[/opt/gitlab/etc/gitlab-workhorse/env] action create
+    * directory[/opt/gitlab/etc/gitlab-workhorse/env] action create
+      [32m- create new directory /opt/gitlab/etc/gitlab-workhorse/env[0m
+[0m    * file[/opt/gitlab/etc/gitlab-workhorse/env/PATH] action create
+      [32m- create new file /opt/gitlab/etc/gitlab-workhorse/env/PATH[0m
+      [32m- update content in file /opt/gitlab/etc/gitlab-workhorse/env/PATH from none to d5dc07[0m
+      [32m- suppressed sensitive resource[0m
+[0m    * file[/opt/gitlab/etc/gitlab-workhorse/env/HOME] action create
+      [32m- create new file /opt/gitlab/etc/gitlab-workhorse/env/HOME[0m
+      [32m- update content in file /opt/gitlab/etc/gitlab-workhorse/env/HOME from none to 205bb9[0m
+      [32m- suppressed sensitive resource[0m
+[0m    * file[/opt/gitlab/etc/gitlab-workhorse/env/SSL_CERT_DIR] action create
+      [32m- create new file /opt/gitlab/etc/gitlab-workhorse/env/SSL_CERT_DIR[0m
+      [32m- update content in file /opt/gitlab/etc/gitlab-workhorse/env/SSL_CERT_DIR from none to 4f45cf[0m
+      [32m- suppressed sensitive resource[0m
+[0m  
+[0m  * service[gitlab-workhorse] action nothing (skipped due to action :nothing)
+  * runit_service[gitlab-workhorse] action enable
+    * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+    * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+    * ruby_block[reload_log_service] action nothing (skipped due to action :nothing)
+    * directory[/opt/gitlab/sv/gitlab-workhorse] action create
+      [32m- create new directory /opt/gitlab/sv/gitlab-workhorse[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * template[/opt/gitlab/sv/gitlab-workhorse/run] action create
+      [32m- create new file /opt/gitlab/sv/gitlab-workhorse/run[0m
+      [32m- update content in file /opt/gitlab/sv/gitlab-workhorse/run from none to b1d72f[0m
+      [37m--- /opt/gitlab/sv/gitlab-workhorse/run	2021-10-22 15:33:57.447968411 +0000[0m
+      [37m+++ /opt/gitlab/sv/gitlab-workhorse/.chef-run20211022-27-1fcvy4e	2021-10-22 15:33:57.447968411 +0000[0m
+      [37m@@ -1 +1,28 @@[0m
+      [37m+#!/bin/sh[0m
+      [37m+set -e # fail on errors[0m
+      [37m+[0m
+      [37m+# Redirect stderr -> stdout[0m
+      [37m+exec 2>&1[0m
+      [37m+[0m
+      [37m+[0m
+      [37m+[0m
+      [37m+cd /var/opt/gitlab/gitlab-workhorse[0m
+      [37m+[0m
+      [37m+exec chpst -e /opt/gitlab/etc/gitlab-workhorse/env -P \[0m
+      [37m+  -U git:git \[0m
+      [37m+  -u git:git \[0m
+      [37m+  /opt/gitlab/embedded/bin/gitlab-workhorse \[0m
+      [37m+    -listenNetwork unix \[0m
+      [37m+    -listenUmask 0 \[0m
+      [37m+    -listenAddr /var/opt/gitlab/gitlab-workhorse/sockets/socket \[0m
+      [37m+    -authBackend http://localhost:8080 \[0m
+      [37m+    -authSocket /var/opt/gitlab/gitlab-rails/sockets/gitlab.socket \[0m
+      [37m+    -documentRoot /opt/gitlab/embedded/service/gitlab-rails/public \[0m
+      [37m+    -pprofListenAddr ''\[0m
+      [37m+    -prometheusListenAddr localhost:9229 \[0m
+      [37m+    -secretPath /opt/gitlab/embedded/service/gitlab-rails/.gitlab_workhorse_secret \[0m
+      [37m+    -logFormat json \[0m
+      [37m+    -config config.toml \[0m
+      [37m+[0m
+      [37m+# Do not remove this line; it prevents trouble with the trailing backslashes above.[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * directory[/opt/gitlab/sv/gitlab-workhorse/log] action create
+      [32m- create new directory /opt/gitlab/sv/gitlab-workhorse/log[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * directory[/opt/gitlab/sv/gitlab-workhorse/log/main] action create
+      [32m- create new directory /opt/gitlab/sv/gitlab-workhorse/log/main[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * template[/opt/gitlab/sv/gitlab-workhorse/log/config] action create
+      [32m- create new file /opt/gitlab/sv/gitlab-workhorse/log/config[0m
+      [32m- update content in file /opt/gitlab/sv/gitlab-workhorse/log/config from none to 623c00[0m
+      [37m--- /opt/gitlab/sv/gitlab-workhorse/log/config	2021-10-22 15:33:57.471968205 +0000[0m
+      [37m+++ /opt/gitlab/sv/gitlab-workhorse/log/.chef-config20211022-27-pbukc5	2021-10-22 15:33:57.471968205 +0000[0m
+      [37m@@ -1 +1,7 @@[0m
+      [37m+s209715200[0m
+      [37m+n30[0m
+      [37m+t86400[0m
+      [37m+!gzip[0m
+      [37m+[0m
+      [37m+[0m
+      [32m- change mode from '' to '0644'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * ruby_block[verify_chown_persisted_on_gitlab-workhorse] action create
+      [32m- execute the ruby block verify_chown_persisted_on_gitlab-workhorse[0m
+[0m    * ruby_block[verify_chown_persisted_on_gitlab-workhorse] action nothing (skipped due to action :nothing)
+    * link[/var/log/gitlab/gitlab-workhorse/config] action create (up to date)
+    * template[/opt/gitlab/sv/gitlab-workhorse/log/run] action create
+      [32m- create new file /opt/gitlab/sv/gitlab-workhorse/log/run[0m
+      [32m- update content in file /opt/gitlab/sv/gitlab-workhorse/log/run from none to 34ab60[0m
+      [37m--- /opt/gitlab/sv/gitlab-workhorse/log/run	2021-10-22 15:33:57.495968001 +0000[0m
+      [37m+++ /opt/gitlab/sv/gitlab-workhorse/log/.chef-run20211022-27-porrpy	2021-10-22 15:33:57.495968001 +0000[0m
+      [37m@@ -1 +1,3 @@[0m
+      [37m+#!/bin/sh[0m
+      [37m+exec svlogd /var/log/gitlab/gitlab-workhorse[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * directory[/opt/gitlab/sv/gitlab-workhorse/env] action create
+      [32m- create new directory /opt/gitlab/sv/gitlab-workhorse/env[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * ruby_block[Delete unmanaged env files for gitlab-workhorse service] action run (skipped due to only_if)
+    * template[/opt/gitlab/sv/gitlab-workhorse/check] action create (skipped due to only_if)
+    * template[/opt/gitlab/sv/gitlab-workhorse/finish] action create (skipped due to only_if)
+    * directory[/opt/gitlab/sv/gitlab-workhorse/control] action create
+      [32m- create new directory /opt/gitlab/sv/gitlab-workhorse/control[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * link[/opt/gitlab/init/gitlab-workhorse] action create
+      [32m- create symlink at /opt/gitlab/init/gitlab-workhorse to /opt/gitlab/embedded/bin/sv[0m
+[0m    * file[/opt/gitlab/sv/gitlab-workhorse/down] action nothing (skipped due to action :nothing)
+    * ruby_block[restart_service] action run (skipped due to only_if)
+    * ruby_block[reload_log_service] action create
+      * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+      * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+      * ruby_block[reload_log_service] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/sv/gitlab-workhorse] action create (up to date)
+      * template[/opt/gitlab/sv/gitlab-workhorse/run] action create (up to date)
+      * directory[/opt/gitlab/sv/gitlab-workhorse/log] action create (up to date)
+      * directory[/opt/gitlab/sv/gitlab-workhorse/log/main] action create (up to date)
+      * template[/opt/gitlab/sv/gitlab-workhorse/log/config] action create (up to date)
+      * ruby_block[verify_chown_persisted_on_gitlab-workhorse] action nothing (skipped due to action :nothing)
+      * link[/var/log/gitlab/gitlab-workhorse/config] action create (up to date)
+      * template[/opt/gitlab/sv/gitlab-workhorse/log/run] action create (up to date)
+      * directory[/opt/gitlab/sv/gitlab-workhorse/env] action create (up to date)
+      * ruby_block[Delete unmanaged env files for gitlab-workhorse service] action run (skipped due to only_if)
+      * template[/opt/gitlab/sv/gitlab-workhorse/check] action create (skipped due to only_if)
+      * template[/opt/gitlab/sv/gitlab-workhorse/finish] action create (skipped due to only_if)
+      * directory[/opt/gitlab/sv/gitlab-workhorse/control] action create (up to date)
+      * link[/opt/gitlab/init/gitlab-workhorse] action create (up to date)
+      * file[/opt/gitlab/sv/gitlab-workhorse/down] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/service] action create (up to date)
+      * link[/opt/gitlab/service/gitlab-workhorse] action create
+        [32m- create symlink at /opt/gitlab/service/gitlab-workhorse to /opt/gitlab/sv/gitlab-workhorse[0m
+[0m      * ruby_block[wait for gitlab-workhorse service socket] action run
+        [32m- execute the ruby block wait for gitlab-workhorse service socket[0m
+[0m      [32m- execute the ruby block reload_log_service[0m
+[0m    * ruby_block[restart_log_service] action run
+      * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+      * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+      * ruby_block[reload_log_service] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/sv/gitlab-workhorse] action create (up to date)
+      * template[/opt/gitlab/sv/gitlab-workhorse/run] action create (up to date)
+      * directory[/opt/gitlab/sv/gitlab-workhorse/log] action create (up to date)
+      * directory[/opt/gitlab/sv/gitlab-workhorse/log/main] action create (up to date)
+      * template[/opt/gitlab/sv/gitlab-workhorse/log/config] action create (up to date)
+      * ruby_block[verify_chown_persisted_on_gitlab-workhorse] action nothing (skipped due to action :nothing)
+      * link[/var/log/gitlab/gitlab-workhorse/config] action create (up to date)
+      * template[/opt/gitlab/sv/gitlab-workhorse/log/run] action create (up to date)
+      * directory[/opt/gitlab/sv/gitlab-workhorse/env] action create (up to date)
+      * ruby_block[Delete unmanaged env files for gitlab-workhorse service] action run (skipped due to only_if)
+      * template[/opt/gitlab/sv/gitlab-workhorse/check] action create (skipped due to only_if)
+      * template[/opt/gitlab/sv/gitlab-workhorse/finish] action create (skipped due to only_if)
+      * directory[/opt/gitlab/sv/gitlab-workhorse/control] action create (up to date)
+      * link[/opt/gitlab/init/gitlab-workhorse] action create (up to date)
+      * file[/opt/gitlab/sv/gitlab-workhorse/down] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/service] action create (up to date)
+      * link[/opt/gitlab/service/gitlab-workhorse] action create (up to date)
+      * ruby_block[wait for gitlab-workhorse service socket] action run (skipped due to not_if)
+      [32m- execute the ruby block restart_log_service[0m
+[0m    * directory[/opt/gitlab/service] action create (up to date)
+    * link[/opt/gitlab/service/gitlab-workhorse] action create (up to date)
+    * ruby_block[wait for gitlab-workhorse service socket] action run (skipped due to not_if)
+  
+[0m  * consul_service[workhorse] action delete
+    * file[/var/opt/gitlab/consul/config.d/workhorse-service.json] action delete (up to date)
+     (up to date)
+  * version_file[Create version file for Workhorse] action create
+    * file[/var/opt/gitlab/gitlab-workhorse/VERSION] action create (up to date)
+     (up to date)
+  * template[/var/opt/gitlab/gitlab-workhorse/config.toml] action create (up to date)
+Recipe: gitlab::mailroom_disable[0m
+  * service[mailroom] action nothing (skipped due to action :nothing)
+  * runit_service[mailroom] action disable
+    * ruby_block[disable mailroom] action run (skipped due to only_if)
+     (up to date)
+Recipe: gitlab::nginx[0m
+  * directory[/var/opt/gitlab/nginx] action create (up to date)
+  * directory[/var/opt/gitlab/nginx/conf] action create (up to date)
+  * directory[/var/log/gitlab/nginx] action create (up to date)
+  * link[/var/opt/gitlab/nginx/logs] action create (up to date)
+  * template[/var/opt/gitlab/nginx/conf/gitlab-http.conf] action create (up to date)
+  * template[/var/opt/gitlab/nginx/conf/gitlab-smartcard-http.conf] action delete (up to date)
+  * template[/var/opt/gitlab/nginx/conf/gitlab-health.conf] action create (up to date)
+  * template[/var/opt/gitlab/nginx/conf/gitlab-pages.conf] action create (up to date)
+  * template[/var/opt/gitlab/nginx/conf/gitlab-registry.conf] action create (up to date)
+  * template[/var/opt/gitlab/nginx/conf/gitlab-mattermost-http.conf] action delete (up to date)
+  * template[/var/opt/gitlab/nginx/conf/nginx-status.conf] action create (up to date)
+  * consul_service[nginx] action delete
+    * file[/var/opt/gitlab/consul/config.d/nginx-service.json] action delete (up to date)
+     (up to date)
+  * template[/var/opt/gitlab/nginx/conf/nginx.conf] action create (up to date)
+Recipe: nginx::enable[0m
+  * service[nginx] action nothing (skipped due to action :nothing)
+  * runit_service[nginx] action enable
+    * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+    * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+    * ruby_block[reload_log_service] action nothing (skipped due to action :nothing)
+    * directory[/opt/gitlab/sv/nginx] action create
+      [32m- create new directory /opt/gitlab/sv/nginx[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * template[/opt/gitlab/sv/nginx/run] action create
+      [32m- create new file /opt/gitlab/sv/nginx/run[0m
+      [32m- update content in file /opt/gitlab/sv/nginx/run from none to d75aea[0m
+      [37m--- /opt/gitlab/sv/nginx/run	2021-10-22 15:34:03.559916153 +0000[0m
+      [37m+++ /opt/gitlab/sv/nginx/.chef-run20211022-27-18qkmt3	2021-10-22 15:34:03.559916153 +0000[0m
+      [37m@@ -1 +1,6 @@[0m
+      [37m+#!/bin/sh[0m
+      [37m+exec 2>&1[0m
+      [37m+[0m
+      [37m+cd /var/opt/gitlab/nginx[0m
+      [37m+exec chpst -P /opt/gitlab/embedded/sbin/nginx -p /var/opt/gitlab/nginx[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * directory[/opt/gitlab/sv/nginx/log] action create
+      [32m- create new directory /opt/gitlab/sv/nginx/log[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * directory[/opt/gitlab/sv/nginx/log/main] action create
+      [32m- create new directory /opt/gitlab/sv/nginx/log/main[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * template[/opt/gitlab/sv/nginx/log/config] action create
+      [32m- create new file /opt/gitlab/sv/nginx/log/config[0m
+      [32m- update content in file /opt/gitlab/sv/nginx/log/config from none to 623c00[0m
+      [37m--- /opt/gitlab/sv/nginx/log/config	2021-10-22 15:34:03.579915981 +0000[0m
+      [37m+++ /opt/gitlab/sv/nginx/log/.chef-config20211022-27-17o5fvu	2021-10-22 15:34:03.579915981 +0000[0m
+      [37m@@ -1 +1,7 @@[0m
+      [37m+s209715200[0m
+      [37m+n30[0m
+      [37m+t86400[0m
+      [37m+!gzip[0m
+      [37m+[0m
+      [37m+[0m
+      [32m- change mode from '' to '0644'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * ruby_block[verify_chown_persisted_on_nginx] action create
+      [32m- execute the ruby block verify_chown_persisted_on_nginx[0m
+[0m    * ruby_block[verify_chown_persisted_on_nginx] action nothing (skipped due to action :nothing)
+    * link[/var/log/gitlab/nginx/config] action create (up to date)
+    * template[/opt/gitlab/sv/nginx/log/run] action create
+      [32m- create new file /opt/gitlab/sv/nginx/log/run[0m
+      [32m- update content in file /opt/gitlab/sv/nginx/log/run from none to c70025[0m
+      [37m--- /opt/gitlab/sv/nginx/log/run	2021-10-22 15:34:03.595915845 +0000[0m
+      [37m+++ /opt/gitlab/sv/nginx/log/.chef-run20211022-27-16trjf9	2021-10-22 15:34:03.595915845 +0000[0m
+      [37m@@ -1 +1,3 @@[0m
+      [37m+#!/bin/sh[0m
+      [37m+exec svlogd -tt /var/log/gitlab/nginx[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * directory[/opt/gitlab/sv/nginx/env] action create
+      [32m- create new directory /opt/gitlab/sv/nginx/env[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * ruby_block[Delete unmanaged env files for nginx service] action run (skipped due to only_if)
+    * template[/opt/gitlab/sv/nginx/check] action create (skipped due to only_if)
+    * template[/opt/gitlab/sv/nginx/finish] action create (skipped due to only_if)
+    * directory[/opt/gitlab/sv/nginx/control] action create
+      [32m- create new directory /opt/gitlab/sv/nginx/control[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * link[/opt/gitlab/init/nginx] action create
+      [32m- create symlink at /opt/gitlab/init/nginx to /opt/gitlab/embedded/bin/sv[0m
+[0m    * file[/opt/gitlab/sv/nginx/down] action nothing (skipped due to action :nothing)
+    * ruby_block[restart_service] action run (skipped due to only_if)
+    * ruby_block[reload_log_service] action create
+      * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+      * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+      * ruby_block[reload_log_service] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/sv/nginx] action create (up to date)
+      * template[/opt/gitlab/sv/nginx/run] action create (up to date)
+      * directory[/opt/gitlab/sv/nginx/log] action create (up to date)
+      * directory[/opt/gitlab/sv/nginx/log/main] action create (up to date)
+      * template[/opt/gitlab/sv/nginx/log/config] action create (up to date)
+      * ruby_block[verify_chown_persisted_on_nginx] action nothing (skipped due to action :nothing)
+      * link[/var/log/gitlab/nginx/config] action create (up to date)
+      * template[/opt/gitlab/sv/nginx/log/run] action create (up to date)
+      * directory[/opt/gitlab/sv/nginx/env] action create (up to date)
+      * ruby_block[Delete unmanaged env files for nginx service] action run (skipped due to only_if)
+      * template[/opt/gitlab/sv/nginx/check] action create (skipped due to only_if)
+      * template[/opt/gitlab/sv/nginx/finish] action create (skipped due to only_if)
+      * directory[/opt/gitlab/sv/nginx/control] action create (up to date)
+      * link[/opt/gitlab/init/nginx] action create (up to date)
+      * file[/opt/gitlab/sv/nginx/down] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/service] action create (up to date)
+      * link[/opt/gitlab/service/nginx] action create
+        [32m- create symlink at /opt/gitlab/service/nginx to /opt/gitlab/sv/nginx[0m
+[0m      * ruby_block[wait for nginx service socket] action run
+        [32m- execute the ruby block wait for nginx service socket[0m
+[0m      [32m- execute the ruby block reload_log_service[0m
+[0m    * ruby_block[restart_log_service] action run
+      * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+      * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+      * ruby_block[reload_log_service] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/sv/nginx] action create (up to date)
+      * template[/opt/gitlab/sv/nginx/run] action create (up to date)
+      * directory[/opt/gitlab/sv/nginx/log] action create (up to date)
+      * directory[/opt/gitlab/sv/nginx/log/main] action create (up to date)
+      * template[/opt/gitlab/sv/nginx/log/config] action create (up to date)
+      * ruby_block[verify_chown_persisted_on_nginx] action nothing (skipped due to action :nothing)
+      * link[/var/log/gitlab/nginx/config] action create (up to date)
+      * template[/opt/gitlab/sv/nginx/log/run] action create (up to date)
+      * directory[/opt/gitlab/sv/nginx/env] action create (up to date)
+      * ruby_block[Delete unmanaged env files for nginx service] action run (skipped due to only_if)
+      * template[/opt/gitlab/sv/nginx/check] action create (skipped due to only_if)
+      * template[/opt/gitlab/sv/nginx/finish] action create (skipped due to only_if)
+      * directory[/opt/gitlab/sv/nginx/control] action create (up to date)
+      * link[/opt/gitlab/init/nginx] action create (up to date)
+      * file[/opt/gitlab/sv/nginx/down] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/service] action create (up to date)
+      * link[/opt/gitlab/service/nginx] action create (up to date)
+      * ruby_block[wait for nginx service socket] action run (skipped due to not_if)
+      [32m- execute the ruby block restart_log_service[0m
+[0m    * directory[/opt/gitlab/service] action create (up to date)
+    * link[/opt/gitlab/service/nginx] action create (up to date)
+    * ruby_block[wait for nginx service socket] action run (skipped due to not_if)
+  
+[0m  * execute[reload nginx] action nothing (skipped due to action :nothing)
+Recipe: gitlab::remote-syslog_disable[0m
+  * service[remote-syslog] action nothing (skipped due to action :nothing)
+  * runit_service[remote-syslog] action disable
+    * ruby_block[disable remote-syslog] action run (skipped due to only_if)
+     (up to date)
+Recipe: gitlab::storage-check_disable[0m
+  * service[storage-check] action nothing (skipped due to action :nothing)
+  * runit_service[storage-check] action disable
+    * ruby_block[disable storage-check] action run (skipped due to only_if)
+     (up to date)
+Recipe: gitlab-pages::enable[0m
+  * directory[/var/opt/gitlab/gitlab-pages] action create (up to date)
+  * directory[/var/log/gitlab/gitlab-pages] action create (up to date)
+  * directory[/opt/gitlab/etc/gitlab-pages] action create
+    [32m- create new directory /opt/gitlab/etc/gitlab-pages[0m
+    [32m- change mode from '' to '0700'[0m
+    [32m- change owner from '' to 'git'[0m
+[0m  * ruby_block[authorize pages with gitlab] action run (skipped due to only_if)
+  * ruby_block[re-populate GitLab Pages configuration options] action run
+    [32m- execute the ruby block re-populate GitLab Pages configuration options[0m
+[0m  * version_file[Create version file for Gitlab Pages] action create
+    * file[/var/opt/gitlab/gitlab-pages/VERSION] action create (up to date)
+     (up to date)
+  * file[/var/opt/gitlab/gitlab-pages/admin.secret] action delete (up to date)
+  * template[/var/opt/gitlab/gitlab-pages/.gitlab_pages_secret] action create (up to date)
+  * template[/var/opt/gitlab/gitlab-pages/gitlab-pages-config] action create (up to date)
+  * env_dir[/opt/gitlab/etc/gitlab-pages/env] action create
+    * directory[/opt/gitlab/etc/gitlab-pages/env] action create
+      [32m- create new directory /opt/gitlab/etc/gitlab-pages/env[0m
+[0m    * file[/opt/gitlab/etc/gitlab-pages/env/SSL_CERT_DIR] action create
+      [32m- create new file /opt/gitlab/etc/gitlab-pages/env/SSL_CERT_DIR[0m
+      [32m- update content in file /opt/gitlab/etc/gitlab-pages/env/SSL_CERT_DIR from none to 4f45cf[0m
+      [32m- suppressed sensitive resource[0m
+[0m  
+[0m  * service[gitlab-pages] action nothing (skipped due to action :nothing)
+  * runit_service[gitlab-pages] action enable
+    * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+    * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+    * ruby_block[reload_log_service] action nothing (skipped due to action :nothing)
+    * directory[/opt/gitlab/sv/gitlab-pages] action create
+      [32m- create new directory /opt/gitlab/sv/gitlab-pages[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * template[/opt/gitlab/sv/gitlab-pages/run] action create
+      [32m- create new file /opt/gitlab/sv/gitlab-pages/run[0m
+      [32m- update content in file /opt/gitlab/sv/gitlab-pages/run from none to 066328[0m
+      [37m--- /opt/gitlab/sv/gitlab-pages/run	2021-10-22 15:34:09.083868889 +0000[0m
+      [37m+++ /opt/gitlab/sv/gitlab-pages/.chef-run20211022-27-p0pmg	2021-10-22 15:34:09.083868889 +0000[0m
+      [37m@@ -1 +1,14 @@[0m
+      [37m+#!/bin/bash[0m
+      [37m+set -e # fail on errors[0m
+      [37m+[0m
+      [37m+# Redirect stderr -> stdout[0m
+      [37m+exec 2>&1[0m
+      [37m+[0m
+      [37m+[0m
+      [37m+cd /var/opt/gitlab/gitlab-pages[0m
+      [37m+[0m
+      [37m+[0m
+      [37m+exec chpst -e /opt/gitlab/etc/gitlab-pages/env \[0m
+      [37m+    /opt/gitlab/embedded/bin/gitlab-pages \[0m
+      [37m+    -config="/var/opt/gitlab/gitlab-pages/gitlab-pages-config" \[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * directory[/opt/gitlab/sv/gitlab-pages/log] action create
+      [32m- create new directory /opt/gitlab/sv/gitlab-pages/log[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * directory[/opt/gitlab/sv/gitlab-pages/log/main] action create
+      [32m- create new directory /opt/gitlab/sv/gitlab-pages/log/main[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * template[/opt/gitlab/sv/gitlab-pages/log/config] action create
+      [32m- create new file /opt/gitlab/sv/gitlab-pages/log/config[0m
+      [32m- update content in file /opt/gitlab/sv/gitlab-pages/log/config from none to 623c00[0m
+      [37m--- /opt/gitlab/sv/gitlab-pages/log/config	2021-10-22 15:34:09.107868683 +0000[0m
+      [37m+++ /opt/gitlab/sv/gitlab-pages/log/.chef-config20211022-27-1cm3a5w	2021-10-22 15:34:09.107868683 +0000[0m
+      [37m@@ -1 +1,7 @@[0m
+      [37m+s209715200[0m
+      [37m+n30[0m
+      [37m+t86400[0m
+      [37m+!gzip[0m
+      [37m+[0m
+      [37m+[0m
+      [32m- change mode from '' to '0644'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * ruby_block[verify_chown_persisted_on_gitlab-pages] action create
+      [32m- execute the ruby block verify_chown_persisted_on_gitlab-pages[0m
+[0m    * ruby_block[verify_chown_persisted_on_gitlab-pages] action nothing (skipped due to action :nothing)
+    * link[/var/log/gitlab/gitlab-pages/config] action create (up to date)
+    * template[/opt/gitlab/sv/gitlab-pages/log/run] action create
+      [32m- create new file /opt/gitlab/sv/gitlab-pages/log/run[0m
+      [32m- update content in file /opt/gitlab/sv/gitlab-pages/log/run from none to b21dfc[0m
+      [37m--- /opt/gitlab/sv/gitlab-pages/log/run	2021-10-22 15:34:09.127868511 +0000[0m
+      [37m+++ /opt/gitlab/sv/gitlab-pages/log/.chef-run20211022-27-10wf922	2021-10-22 15:34:09.123868546 +0000[0m
+      [37m@@ -1 +1,3 @@[0m
+      [37m+#!/bin/sh[0m
+      [37m+exec svlogd /var/log/gitlab/gitlab-pages[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * directory[/opt/gitlab/sv/gitlab-pages/env] action create
+      [32m- create new directory /opt/gitlab/sv/gitlab-pages/env[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * ruby_block[Delete unmanaged env files for gitlab-pages service] action run (skipped due to only_if)
+    * template[/opt/gitlab/sv/gitlab-pages/check] action create (skipped due to only_if)
+    * template[/opt/gitlab/sv/gitlab-pages/finish] action create (skipped due to only_if)
+    * directory[/opt/gitlab/sv/gitlab-pages/control] action create
+      [32m- create new directory /opt/gitlab/sv/gitlab-pages/control[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * link[/opt/gitlab/init/gitlab-pages] action create
+      [32m- create symlink at /opt/gitlab/init/gitlab-pages to /opt/gitlab/embedded/bin/sv[0m
+[0m    * file[/opt/gitlab/sv/gitlab-pages/down] action nothing (skipped due to action :nothing)
+    * ruby_block[restart_service] action run (skipped due to only_if)
+    * ruby_block[reload_log_service] action create
+      * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+      * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+      * ruby_block[reload_log_service] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/sv/gitlab-pages] action create (up to date)
+      * template[/opt/gitlab/sv/gitlab-pages/run] action create (up to date)
+      * directory[/opt/gitlab/sv/gitlab-pages/log] action create (up to date)
+      * directory[/opt/gitlab/sv/gitlab-pages/log/main] action create (up to date)
+      * template[/opt/gitlab/sv/gitlab-pages/log/config] action create (up to date)
+      * ruby_block[verify_chown_persisted_on_gitlab-pages] action nothing (skipped due to action :nothing)
+      * link[/var/log/gitlab/gitlab-pages/config] action create (up to date)
+      * template[/opt/gitlab/sv/gitlab-pages/log/run] action create (up to date)
+      * directory[/opt/gitlab/sv/gitlab-pages/env] action create (up to date)
+      * ruby_block[Delete unmanaged env files for gitlab-pages service] action run (skipped due to only_if)
+      * template[/opt/gitlab/sv/gitlab-pages/check] action create (skipped due to only_if)
+      * template[/opt/gitlab/sv/gitlab-pages/finish] action create (skipped due to only_if)
+      * directory[/opt/gitlab/sv/gitlab-pages/control] action create (up to date)
+      * link[/opt/gitlab/init/gitlab-pages] action create (up to date)
+      * file[/opt/gitlab/sv/gitlab-pages/down] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/service] action create (up to date)
+      * link[/opt/gitlab/service/gitlab-pages] action create
+        [32m- create symlink at /opt/gitlab/service/gitlab-pages to /opt/gitlab/sv/gitlab-pages[0m
+[0m      * ruby_block[wait for gitlab-pages service socket] action run
+        [32m- execute the ruby block wait for gitlab-pages service socket[0m
+[0m      [32m- execute the ruby block reload_log_service[0m
+[0m    * ruby_block[restart_log_service] action run
+      * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+      * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+      * ruby_block[reload_log_service] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/sv/gitlab-pages] action create (up to date)
+      * template[/opt/gitlab/sv/gitlab-pages/run] action create (up to date)
+      * directory[/opt/gitlab/sv/gitlab-pages/log] action create (up to date)
+      * directory[/opt/gitlab/sv/gitlab-pages/log/main] action create (up to date)
+      * template[/opt/gitlab/sv/gitlab-pages/log/config] action create (up to date)
+      * ruby_block[verify_chown_persisted_on_gitlab-pages] action nothing (skipped due to action :nothing)
+      * link[/var/log/gitlab/gitlab-pages/config] action create (up to date)
+      * template[/opt/gitlab/sv/gitlab-pages/log/run] action create (up to date)
+      * directory[/opt/gitlab/sv/gitlab-pages/env] action create (up to date)
+      * ruby_block[Delete unmanaged env files for gitlab-pages service] action run (skipped due to only_if)
+      * template[/opt/gitlab/sv/gitlab-pages/check] action create (skipped due to only_if)
+      * template[/opt/gitlab/sv/gitlab-pages/finish] action create (skipped due to only_if)
+      * directory[/opt/gitlab/sv/gitlab-pages/control] action create (up to date)
+      * link[/opt/gitlab/init/gitlab-pages] action create (up to date)
+      * file[/opt/gitlab/sv/gitlab-pages/down] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/service] action create (up to date)
+      * link[/opt/gitlab/service/gitlab-pages] action create (up to date)
+      * ruby_block[wait for gitlab-pages service socket] action run (skipped due to not_if)
+      [32m- execute the ruby block restart_log_service[0m
+[0m    * directory[/opt/gitlab/service] action create (up to date)
+    * link[/opt/gitlab/service/gitlab-pages] action create (up to date)
+    * ruby_block[wait for gitlab-pages service socket] action run (skipped due to not_if)
+  
+[0mRecipe: registry::enable[0m
+  * directory[create /var/opt/gitlab/registry] action create (up to date)
+  * account[Docker registry user and group] action create (up to date)
+  * directory[create /var/opt/gitlab/registry and set the owner] action create (up to date)
+  * directory[create /var/log/gitlab/registry and set the owner] action create (up to date)
+  * env_dir[/opt/gitlab/etc/registry/env] action create
+    * directory[/opt/gitlab/etc/registry/env] action create
+      [32m- create new directory /opt/gitlab/etc/registry/env[0m
+[0m    * file[/opt/gitlab/etc/registry/env/SSL_CERT_DIR] action create
+      [32m- create new file /opt/gitlab/etc/registry/env/SSL_CERT_DIR[0m
+      [32m- update content in file /opt/gitlab/etc/registry/env/SSL_CERT_DIR from none to 4f45cf[0m
+      [32m- suppressed sensitive resource[0m
+[0m  
+[0m  * directory[/var/opt/gitlab/gitlab-rails/shared/registry] action create (up to date)
+  * file[/var/opt/gitlab/registry/gitlab-registry.crt] action create (up to date)
+  * template[/var/opt/gitlab/registry/config.yml] action create (up to date)
+  * service[registry] action nothing (skipped due to action :nothing)
+  * runit_service[registry] action enable
+    * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+    * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+    * ruby_block[reload_log_service] action nothing (skipped due to action :nothing)
+    * directory[/opt/gitlab/sv/registry] action create
+      [32m- create new directory /opt/gitlab/sv/registry[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * template[/opt/gitlab/sv/registry/run] action create
+      [32m- create new file /opt/gitlab/sv/registry/run[0m
+      [32m- update content in file /opt/gitlab/sv/registry/run from none to acccae[0m
+      [37m--- /opt/gitlab/sv/registry/run	2021-10-22 15:34:13.719829197 +0000[0m
+      [37m+++ /opt/gitlab/sv/registry/.chef-run20211022-27-tyc8c9	2021-10-22 15:34:13.719829197 +0000[0m
+      [37m@@ -1 +1,13 @@[0m
+      [37m+#!/bin/bash[0m
+      [37m+set -e # fail on errors[0m
+      [37m+[0m
+      [37m+# Redirect stderr -> stdout[0m
+      [37m+exec 2>&1[0m
+      [37m+[0m
+      [37m+cd /var/opt/gitlab/registry[0m
+      [37m+[0m
+      [37m+exec chpst -e /opt/gitlab/etc/registry/env -P \[0m
+      [37m+  -U registry:registry \[0m
+      [37m+  -u registry:registry \[0m
+      [37m+  /opt/gitlab/embedded/bin/registry serve ./config.yml[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * directory[/opt/gitlab/sv/registry/log] action create
+      [32m- create new directory /opt/gitlab/sv/registry/log[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * directory[/opt/gitlab/sv/registry/log/main] action create
+      [32m- create new directory /opt/gitlab/sv/registry/log/main[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * template[/opt/gitlab/sv/registry/log/config] action create
+      [32m- create new file /opt/gitlab/sv/registry/log/config[0m
+      [32m- update content in file /opt/gitlab/sv/registry/log/config from none to 623c00[0m
+      [37m--- /opt/gitlab/sv/registry/log/config	2021-10-22 15:34:13.743828991 +0000[0m
+      [37m+++ /opt/gitlab/sv/registry/log/.chef-config20211022-27-1mdl7t	2021-10-22 15:34:13.743828991 +0000[0m
+      [37m@@ -1 +1,7 @@[0m
+      [37m+s209715200[0m
+      [37m+n30[0m
+      [37m+t86400[0m
+      [37m+!gzip[0m
+      [37m+[0m
+      [37m+[0m
+      [32m- change mode from '' to '0644'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * ruby_block[verify_chown_persisted_on_registry] action create
+      [32m- execute the ruby block verify_chown_persisted_on_registry[0m
+[0m    * ruby_block[verify_chown_persisted_on_registry] action nothing (skipped due to action :nothing)
+    * link[/var/log/gitlab/registry/config] action create (up to date)
+    * template[/opt/gitlab/sv/registry/log/run] action create
+      [32m- create new file /opt/gitlab/sv/registry/log/run[0m
+      [32m- update content in file /opt/gitlab/sv/registry/log/run from none to cb6440[0m
+      [37m--- /opt/gitlab/sv/registry/log/run	2021-10-22 15:34:13.763828821 +0000[0m
+      [37m+++ /opt/gitlab/sv/registry/log/.chef-run20211022-27-1g5uf6g	2021-10-22 15:34:13.759828854 +0000[0m
+      [37m@@ -1 +1,3 @@[0m
+      [37m+#!/bin/sh[0m
+      [37m+exec svlogd -tt /var/log/gitlab/registry[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * directory[/opt/gitlab/sv/registry/env] action create
+      [32m- create new directory /opt/gitlab/sv/registry/env[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * ruby_block[Delete unmanaged env files for registry service] action run (skipped due to only_if)
+    * template[/opt/gitlab/sv/registry/check] action create (skipped due to only_if)
+    * template[/opt/gitlab/sv/registry/finish] action create (skipped due to only_if)
+    * directory[/opt/gitlab/sv/registry/control] action create
+      [32m- create new directory /opt/gitlab/sv/registry/control[0m
+      [32m- change mode from '' to '0755'[0m
+      [32m- change owner from '' to 'root'[0m
+      [32m- change group from '' to 'root'[0m
+[0m    * link[/opt/gitlab/init/registry] action create
+      [32m- create symlink at /opt/gitlab/init/registry to /opt/gitlab/embedded/bin/sv[0m
+[0m    * file[/opt/gitlab/sv/registry/down] action nothing (skipped due to action :nothing)
+    * ruby_block[restart_service] action run (skipped due to only_if)
+    * ruby_block[reload_log_service] action create
+      * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+      * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+      * ruby_block[reload_log_service] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/sv/registry] action create (up to date)
+      * template[/opt/gitlab/sv/registry/run] action create (up to date)
+      * directory[/opt/gitlab/sv/registry/log] action create (up to date)
+      * directory[/opt/gitlab/sv/registry/log/main] action create (up to date)
+      * template[/opt/gitlab/sv/registry/log/config] action create (up to date)
+      * ruby_block[verify_chown_persisted_on_registry] action nothing (skipped due to action :nothing)
+      * link[/var/log/gitlab/registry/config] action create (up to date)
+      * template[/opt/gitlab/sv/registry/log/run] action create (up to date)
+      * directory[/opt/gitlab/sv/registry/env] action create (up to date)
+      * ruby_block[Delete unmanaged env files for registry service] action run (skipped due to only_if)
+      * template[/opt/gitlab/sv/registry/check] action create (skipped due to only_if)
+      * template[/opt/gitlab/sv/registry/finish] action create (skipped due to only_if)
+      * directory[/opt/gitlab/sv/registry/control] action create (up to date)
+      * link[/opt/gitlab/init/registry] action create (up to date)
+      * file[/opt/gitlab/sv/registry/down] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/service] action create (up to date)
+      * link[/opt/gitlab/service/registry] action create
+        [32m- create symlink at /opt/gitlab/service/registry to /opt/gitlab/sv/registry[0m
+[0m      * ruby_block[wait for registry service socket] action run
+        [32m- execute the ruby block wait for registry service socket[0m
+[0m      [32m- execute the ruby block reload_log_service[0m
+[0m    * ruby_block[restart_log_service] action run
+      * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+      * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+      * ruby_block[reload_log_service] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/sv/registry] action create (up to date)
+      * template[/opt/gitlab/sv/registry/run] action create (up to date)
+      * directory[/opt/gitlab/sv/registry/log] action create (up to date)
+      * directory[/opt/gitlab/sv/registry/log/main] action create (up to date)
+      * template[/opt/gitlab/sv/registry/log/config] action create (up to date)
+      * ruby_block[verify_chown_persisted_on_registry] action nothing (skipped due to action :nothing)
+      * link[/var/log/gitlab/registry/config] action create (up to date)
+      * template[/opt/gitlab/sv/registry/log/run] action create (up to date)
+      * directory[/opt/gitlab/sv/registry/env] action create (up to date)
+      * ruby_block[Delete unmanaged env files for registry service] action run (skipped due to only_if)
+      * template[/opt/gitlab/sv/registry/check] action create (skipped due to only_if)
+      * template[/opt/gitlab/sv/registry/finish] action create (skipped due to only_if)
+      * directory[/opt/gitlab/sv/registry/control] action create (up to date)
+      * link[/opt/gitlab/init/registry] action create (up to date)
+      * file[/opt/gitlab/sv/registry/down] action nothing (skipped due to action :nothing)
+      * directory[/opt/gitlab/service] action create (up to date)
+      * link[/opt/gitlab/service/registry] action create (up to date)
+      * ruby_block[wait for registry service socket] action run (skipped due to not_if)

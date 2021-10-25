@@ -1,0 +1,120 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "gitlab.server.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gitlab.server.labels" . | nindent 4 }}
+data:
+  GITLAB_OMNIBUS_CONFIG: |
+    external_url 'https://{{ .Values.server.subdomain }}.{{ .Values.global.domainName }}'
+      git_data_dirs({ "default" => { "path" => "/git-data" } })
+      redis['enable'] = false
+      gitlab_rails['redis_host'] = '{{ include "gitlab.redis.fullname" .}}.{{ .Release.Namespace }}.svc.cluster.local'
+      gitlab_rails['redis_port'] = 6379
+      gitlab_rails['redis_password'] =  '{{ .Values.redis.password }}'
+      nginx['listen_port'] = 80
+      nginx['listen_https'] = false
+      postgresql['enable'] = false
+      gitlab_rails['initial_root_password'] = '{{ .Values.server.admin.password }}'
+      gitlab_rails['db_adapter'] = 'postgresql'
+      gitlab_rails['db_encoding'] = 'unicode'
+      gitlab_rails['db_host'] = '{{ include "postgres.fullname" .}}.{{ .Release.Namespace }}.svc.cluster.local'
+      gitlab_rails['db_password'] = '{{ .Values.server.postgres.password }}'
+      gitlab_rails['gitlab_shell_ssh_port'] = {{ .Values.server.sshPort }}
+      gitlab_rails['ldap_enabled'] = true
+      gitlab_rails['prevent_ldap_sign_in'] = false
+      gitlab_rails['packages_enabled'] = true
+      gitlab_rails['lfs_enabled'] = true
+      gitlab_rails['object_store']['enabled'] = true
+      gitlab_rails['object_store']['proxy_download'] = true
+      gitlab_rails['object_store']['connection'] = {
+        'aws_signature_version' => 4,
+        'provider' => 'AWS',
+        'region' => 'eu-central-1',
+        'aws_access_key_id' => '{{ .Values.minio.accessKey }}',
+        'aws_secret_access_key' => '{{ .Values.minio.secretKey }}',
+        'host' => '{{ include "gitlab.minio.fullname" .}}.{{ .Release.Namespace }}.svc.cluster.local',
+        'endpoint' => 'http://{{ include "gitlab.minio.fullname" .}}.{{ .Release.Namespace }}.svc.cluster.local:9000',
+        'path_style' => true,
+        'use_iam_profile' => false
+      }
+      gitlab_rails['monitoring_whitelist'] = ['0.0.0.0/0']
+      gitlab_rails['object_store']['objects']['artifacts']['bucket'] = 'gitlab-artifacts-storage'
+      gitlab_rails['object_store']['objects']['external_diffs']['bucket'] = 'gitlab-diffs-storage'
+      gitlab_rails['object_store']['objects']['lfs']['bucket'] = 'gitlab-lfs-storage'
+      gitlab_rails['object_store']['objects']['uploads']['bucket'] = 'gitlab-uploads-storage'
+      gitlab_rails['object_store']['objects']['packages']['bucket'] = 'gitlab-packages-storage'
+      gitlab_rails['object_store']['objects']['dependency_proxy']['bucket'] = 'gitlab-dependency-storage'
+      gitlab_rails['object_store']['objects']['terraform_state']['bucket'] = 'gitlab-terraform-storage'
+      gitlab_rails['object_store']['objects']['pages']['bucket'] = 'gitlab-pages-storage'
+      grafana['enable'] = false
+      prometheus['enable'] = false
+      prometheus_monitoring['enable'] = false
+      alertmanager['enable'] = false
+      pages_nginx['enable'] = true
+      pages_external_url 'https://{{ .Values.server.subdomainPages }}.{{ .Values.global.domainName }}'
+      pages_nginx['listen_port'] = 82
+      pages_nginx['listen_https'] = false
+      pages_nginx['proxy_set_headers'] = {
+        "X-Forwarded-Proto" => "https",
+        "X-Forwarded-Ssl" => "on"
+      }
+      gitlab_pages['inplace_chroot'] = true
+      registry['enable'] = true
+      registry['storage'] = {
+        's3' => {
+          'accesskey' => '{{ .Values.minio.accessKey }}',
+          'secretkey' => '{{ .Values.minio.secretKey }}',
+          'bucket' => 'gitlab-registry-storage',
+          'region' => 'eu-central-1',
+          'regionendpoint' => 'http://{{ include "gitlab.minio.fullname" .}}.{{ .Release.Namespace }}.svc.cluster.local:9000'
+        }
+      }
+      registry_external_url 'https://{{ .Values.server.subdomainRegistry }}.{{ .Values.global.domainName }}'
+      registry_nginx['enable'] = true
+      registry_nginx['listen_port'] = 81
+      registry_nginx['listen_https'] = false
+      registry_nginx['proxy_set_headers'] = {
+        "X-Forwarded-Proto" => "https",
+        "X-Forwarded-Ssl" => "on",
+        "Host" => "{{ .Values.server.subdomainRegistry }}.{{ .Values.global.domainName }}",
+        "X-Real-IP" => "$remote_addr",
+        "X-Forwarded-For" => "$proxy_add_x_forwarded_for",
+        "Upgrade" => "$http_upgrade",
+        "Connection" => "$connection_upgrade"
+      }
+      gitlab_rails['ldap_servers'] = {
+      'main' => {
+        'label' => 'LDAP',
+        'host' =>  '{{ include "openldap.fullname" .}}.{{ .Release.Namespace }}.svc.cluster.local',
+        'port' => 389,
+        'uid' => 'uid',
+        'encryption' => 'plain',
+        'verify_certificates' => true,
+        'bind_dn' => '{{ printf "cn=readonly,%s" .Values.global.domainComponent }}',
+        'password' => '{{ .Values.server.openldap.readonlyPassword }}',
+        'verify_certificates' => false,
+        'tls_options' => {
+          'ca_file' => '',
+          'ssl_version' => '',
+          'ciphers' => '',
+          'cert' => '',
+          'key' => ''
+        },
+        'timeout' => 10,
+        'active_directory' => false,
+        'allow_username_or_email_login' => false,
+        'block_auto_created_users' => false,
+        'base' => '{{ printf "ou=%s,%s" .Values.server.openldap.users .Values.global.domainComponent }}',
+        'user_filter' => '(memberOf={{ printf "cn=%s,ou=%s,%s" .Values.server.openldap.group .Values.server.openldap.groups .Values.global.domainComponent }})',
+        'attributes' => {
+          'username' => ['uid', 'userid', 'sAMAccountName'],
+          'email' => ['mail', 'email', 'userPrincipalName', 'uid'],
+          'name' => 'cn',
+          'first_name' => 'givenName',
+          'last_name' => 'sn'
+        },
+        'lowercase_usernames' => false,
+        }
+      }

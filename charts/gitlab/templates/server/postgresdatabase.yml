@@ -1,0 +1,11 @@
+apiVersion: homelab.local/v1alpha1
+kind: PostgresDatabase
+metadata:
+  name: {{ include "gitlab.server.fullname" . }}
+  labels:
+    {{- include "gitlab.server.labels" . | nindent 4 }}
+spec:
+  name: {{ .Values.server.postgres.database }}
+  role: {{ .Values.server.postgres.role }}
+  password: '{{ .Values.server.postgres.password }}'
+  superuser: true

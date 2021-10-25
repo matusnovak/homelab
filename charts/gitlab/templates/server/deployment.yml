@@ -1,0 +1,157 @@
+{{ $configMapHash := include (print $.Template.BasePath "/server/configmap.yml") . | sha256sum }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "gitlab.server.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gitlab.server.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.server.replicaCount }}
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      {{- include "gitlab.server.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ $configMapHash }}
+      {{- with .Values.server.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "gitlab.server.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.server.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "gitlab.server.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.server.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: {{ printf "%s-init" .Chart.Name }}
+          image: "{{ .Values.global.busybox.repository }}:{{ .Values.global.busybox.tag }}"
+          command:
+            - 'sh'
+            - '-c'
+            - 'chmod 755 /var/log/gitlab && chown 0:0 /var/log/gitlab && chmod 755 /etc/gitlab && chown 0:0 /etc/gitlab && chmod 755 /var/opt/gitlab && chown 0:0 /var/opt/gitlab'
+          volumeMounts:
+            - name: data-volume
+              mountPath: /var/opt/gitlab
+            - name: config-volume
+              mountPath: /etc/gitlab
+            - name: logs-volume
+              mountPath: /var/log/gitlab
+            - name: git-volume
+              mountPath: /git-data
+        - name: {{ printf "%s-ldap" .Chart.Name }}
+          image: "{{ .Values.global.openldapCheck.repository }}:{{ .Values.global.openldapCheck.tag }}"
+          imagePullPolicy: {{ .Values.global.openldapCheck.pullPolicy }}
+          command:
+            - 'sh'
+            - '-c'
+            - 'until ldapsearch -x -H "ldap://$LDAP_HOST:389" -D "$LDAP_USER" -w "$LDAP_PASSWORD" -b "$LDAP_BASE"; do echo "waiting for openldap"; sleep 2; done;'
+          env:
+            - name: LDAP_HOST
+              value: '{{ include "openldap.fullname" .}}.{{ .Release.Namespace }}.svc.cluster.local'
+            - name: LDAP_USER
+              value: '{{ printf "cn=readonly,%s" .Values.global.domainComponent }}'
+            - name: LDAP_PASSWORD
+              value: '{{ .Values.server.openldap.readonlyPassword }}'
+            - name: LDAP_BASE
+              value: '{{ printf "ou=%s,%s" .Values.server.openldap.users .Values.global.domainComponent }}'
+        - name: {{ printf "%s-psql" .Chart.Name }}
+          image: "{{ .Values.global.postgresCheck.repository }}:{{ .Values.global.postgresCheck.tag }}"
+          imagePullPolicy: {{ .Values.global.postgresCheck.pullPolicy }}
+          command:
+            - 'sh'
+            - '-c'
+            - 'until psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_ROLE -d $POSTGRES_DB -c "select 1"; do echo "waiting for database"; sleep 2; done;'
+          env:
+            - name: POSTGRES_HOST
+              value: '{{ include "postgres.fullname" .}}.{{ .Release.Namespace }}.svc.cluster.local'
+            - name: POSTGRES_DB
+              value: '{{ .Values.server.postgres.database }}'
+            - name: POSTGRES_ROLE
+              value: '{{ .Values.server.postgres.role }}'
+            - name: POSTGRES_PORT
+              value: '5432'
+            - name: PGPASSWORD
+              value: '{{ .Values.server.postgres.password }}'
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.server.securityContext | nindent 12 }}
+          image: "{{ .Values.server.image.repository }}:{{ .Values.server.image.tag }}"
+          imagePullPolicy: {{ .Values.server.image.pullPolicy }}
+          env:
+            - name: GITLAB_OMNIBUS_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  name: '{{ include "gitlab.server.fullname" . }}'
+                  key: GITLAB_OMNIBUS_CONFIG
+          {{- with .Values.server.env }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: web
+              containerPort: 80
+              protocol: TCP
+            - name: registry
+              containerPort: 81
+              protocol: TCP
+            - name: pages
+              containerPort: 82
+              protocol: TCP
+            - name: ssh
+              containerPort: {{ .Values.server.sshPort }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /-/liveness
+              port: web
+            initialDelaySeconds: 600
+          readinessProbe:
+            httpGet:
+              path: /-/readiness
+              port: web
+            initialDelaySeconds: 120
+          resources:
+            {{- toYaml .Values.server.resources | nindent 12 }}
+          volumeMounts:
+            - name: data-volume
+              mountPath: /var/opt/gitlab
+            - name: config-volume
+              mountPath: /etc/gitlab
+            - name: logs-volume
+              mountPath: /var/log/gitlab
+            - name: git-volume
+              mountPath: /git-data
+      {{- with .Values.server.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.server.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.server.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: {{ include "gitlab.server.persistentVolumeClaimName.data" . }}
+        - name: config-volume
+          persistentVolumeClaim:
+            claimName: {{ include "gitlab.server.persistentVolumeClaimName.config" . }}
+        - name: logs-volume
+          persistentVolumeClaim:
+            claimName: {{ include "gitlab.server.persistentVolumeClaimName.logs" . }}
+        - name: git-volume
+          persistentVolumeClaim:
+            claimName: {{ include "gitlab.server.persistentVolumeClaimName.git" . }}
