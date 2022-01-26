@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "nextcloud.onlyoffice.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nextcloud.onlyoffice.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.onlyoffice.service.type }}
+  ports:
+    - port: 80
+      protocol: TCP
+      name: web
+  selector:
+    {{- include "nextcloud.onlyoffice.selectorLabels" . | nindent 4 }}

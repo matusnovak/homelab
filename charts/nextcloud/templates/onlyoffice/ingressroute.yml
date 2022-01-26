@@ -1,0 +1,21 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ printf "%s-web-ingress" (include "nextcloud.onlyoffice.fullname" .) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nextcloud.onlyoffice.labels" . | nindent 4 }}
+spec:
+  routes: 
+    - kind: Rule
+      match: {{ printf "Host(`%s.%s`)" .Values.onlyoffice.subdomain .Values.global.domainName }}
+      services:
+        - name: {{ include "nextcloud.onlyoffice.fullname" .}}
+          port: 80
+      middlewares:
+        - name: {{ printf "%s-headers" (include "nextcloud.onlyoffice.fullname" .) }}
+          namespace: {{ .Release.Namespace }}
+  {{- if .Values.global.certResolver }}
+  tls:
+    certResolver: {{ .Values.global.certResolver }}
+  {{- end }}

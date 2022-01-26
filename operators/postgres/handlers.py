@@ -39,7 +39,6 @@ def postgres_exec(query: str) -> list:
 
 def postgres_create(spec):
     try:
-        logging.info(f'FUCKING USE THE COLLATE {spec}')
         db_name = spec['name']
         db_role = spec['role']
         db_encoding = ' ENCODING \'{}\''.format(spec['encoding']) if 'encoding' in spec else ''
@@ -79,8 +78,6 @@ def postgres_create(spec):
                 f'CREATE DATABASE {db_name}{db_extra}',
                 f'GRANT ALL PRIVILEGES ON DATABASE {db_name} TO {db_role}'
             ]
-
-            logging.info(f'FOR FUCK SAKE {queries}')
 
             for q in queries:
                 postgres_exec(q)

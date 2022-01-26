@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "nextcloud.redis.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nextcloud.redis.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.redis.service.type }}
+  ports:
+    - port: 6379
+      protocol: TCP
+      name: redis
+  selector:
+    {{- include "nextcloud.redis.selectorLabels" . | nindent 4 }}

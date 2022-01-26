@@ -6,17 +6,15 @@ metadata:
   labels:
     {{- include "gitlab.server.labels" . | nindent 4 }}
 spec:
-  entryPoints:
-    {{ .Values.global.ingress.entryPoints | toYaml | nindent 4 }}
   routes: 
     - kind: Rule
       match: {{ printf "Host(`%s.%s`)" .Values.server.subdomain .Values.global.domainName }}
       services:
         - name: {{ include "gitlab.server.fullname" .}}
           port: 80
-  {{- if .Values.global.ingress.acme }}
+  {{- if .Values.global.certResolver }}
   tls:
-    certResolver: letsencrypt
+    certResolver: {{ .Values.global.certResolver }}
   {{- end }}
 ---
 apiVersion: traefik.containo.us/v1alpha1
@@ -27,17 +25,15 @@ metadata:
   labels:
     {{- include "gitlab.server.labels" . | nindent 4 }}
 spec:
-  entryPoints:
-    {{ .Values.global.ingress.entryPoints | toYaml | nindent 4 }}
   routes: 
     - kind: Rule
       match: {{ printf "Host(`%s.%s`)" .Values.server.subdomainRegistry .Values.global.domainName }}
       services:
         - name: {{ include "gitlab.server.fullname" .}}
           port: 81
-  {{- if .Values.global.ingress.acme }}
+  {{- if .Values.global.certResolver }}
   tls:
-    certResolver: letsencrypt
+    certResolver: {{ .Values.global.certResolver }}
   {{- end }}
 ---
 apiVersion: traefik.containo.us/v1alpha1
@@ -48,15 +44,13 @@ metadata:
   labels:
     {{- include "gitlab.server.labels" . | nindent 4 }}
 spec:
-  entryPoints:
-    {{ .Values.global.ingress.entryPoints | toYaml | nindent 4 }}
   routes: 
     - kind: Rule
       match: {{ printf "HostRegexp(`%s.%s`, `{subdomain:[a-z0-9_-]+}.%s.%s`)" .Values.server.subdomainPages .Values.global.domainName .Values.server.subdomainPages .Values.global.domainName }}
       services:
         - name: {{ include "gitlab.server.fullname" .}}
           port: 82
-  {{- if .Values.global.ingress.acme }}
+  {{- if .Values.global.certResolver }}
   tls:
     certResolver: letsencrypt
     domains:

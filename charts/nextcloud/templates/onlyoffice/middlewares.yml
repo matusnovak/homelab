@@ -1,0 +1,11 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ printf "%s-headers" (include "nextcloud.onlyoffice.fullname" .) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nextcloud.onlyoffice.labels" . | nindent 4 }}
+spec:
+  headers:
+    customRequestHeaders:
+      X-Forwarded-Proto: "https"

@@ -13,8 +13,8 @@ Create a default fully qualified name for postgres
 {{- end }}
 
 {{/*
-Create a default fully qualified name for traefik
+Create a default fully qualified name for authelia
 */}}
-{{- define "traefik.fullname" -}}
-{{- printf "%s-%s" .Release.Name .Values.global.fullname.traefik | trunc 63 | trimSuffix "-" }}
+{{- define "authelia.fullname" -}}
+{{- printf "%s-%s-server" .Release.Name .Values.global.fullname.authelia | trunc 63 | trimSuffix "-" }}
 {{- end }}

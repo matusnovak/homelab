@@ -6,16 +6,13 @@ metadata:
   labels:
     {{- include "authelia.server.labels" . | nindent 4 }}
 spec:
-  entryPoints:
-    {{ .Values.global.ingress.entryPoints | toYaml | nindent 4 }}
   routes: 
     - kind: Rule
       match: {{ printf "Host(`%s.%s`)" .Values.server.subdomain .Values.global.domainName }}
       services:
         - name: {{ include "authelia.server.fullname" .}}
           port: 9091
-      middlewares:
-  {{- if .Values.global.ingress.acme }}
+  {{- if .Values.global.certResolver }}
   tls:
-    certResolver: letsencrypt
+    certResolver: {{ .Values.global.certResolver }}
   {{- end }}

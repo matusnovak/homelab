@@ -1,6 +1,0 @@
-apiVersion: v2
-name: traefik
-description: Reverse proxy for Homelab
-type: application
-version: 0.1.0
-appVersion: "v2.4"

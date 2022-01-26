@@ -1,0 +1,27 @@
+services:
+  registry:
+    image: registry:2
+    container_name: registry
+    restart: unless-stopped
+    volumes:
+      - '/var/lib/registry:/var/lib/registry'
+    environment:
+      REGISTRY_HTTP_ADDR: '0.0.0.0:5443'
+      REGISTRY_HTTP_TLS_CERTIFICATE: '/run/secrets/ca_crt'
+      REGISTRY_HTTP_TLS_KEY: '/run/secrets/ca_key'
+      REGISTRY_AUTH: 'htpasswd'
+      REGISTRY_AUTH_HTPASSWD_REALM: 'Registry Realm'
+      REGISTRY_AUTH_HTPASSWD_PATH: '/run/secrets/htpasswd'
+    ports:
+      - '5443:5443'
+    secrets:
+      - ca_key
+      - ca_crt
+      - htpasswd
+secrets:
+  ca_key:
+    file: ./registry.key
+  ca_crt:
+    file: ./registry.crt
+  htpasswd:
+    file: ./htpasswd

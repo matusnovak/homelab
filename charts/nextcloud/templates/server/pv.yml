@@ -1,0 +1,109 @@
+{{- if .Values.server.persistentVolume.html.create -}}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "nextcloud.server.persistentVolumeName.html" . }}
+  labels:
+    {{- include "nextcloud.server.labels" . | nindent 4 }}
+  {{- with .Values.server.persistentVolume.html.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.server.persistentVolume.html.storageClass }}
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.global.dataDir }}/nextcloud/html
+{{- end -}}
+{{- if .Values.server.persistentVolume.config.create }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "nextcloud.server.persistentVolumeName.config" . }}
+  labels:
+    {{- include "nextcloud.server.labels" . | nindent 4 }}
+  {{- with .Values.server.persistentVolume.config.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.server.persistentVolume.config.storageClass }}
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.global.dataDir }}/nextcloud/config
+{{- end -}}
+{{- if .Values.server.persistentVolume.apps.create }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "nextcloud.server.persistentVolumeName.apps" . }}
+  labels:
+    {{- include "nextcloud.server.labels" . | nindent 4 }}
+  {{- with .Values.server.persistentVolume.apps.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.server.persistentVolume.apps.storageClass }}
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.global.dataDir }}/nextcloud/apps
+{{- end -}}
+{{- if .Values.server.persistentVolume.theme.create }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "nextcloud.server.persistentVolumeName.theme" . }}
+  labels:
+    {{- include "nextcloud.server.labels" . | nindent 4 }}
+  {{- with .Values.server.persistentVolume.theme.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.server.persistentVolume.theme.storageClass }}
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.global.dataDir }}/nextcloud/theme
+{{- end -}}
+{{- if .Values.server.persistentVolume.data.create }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "nextcloud.server.persistentVolumeName.data" . }}
+  labels:
+    {{- include "nextcloud.server.labels" . | nindent 4 }}
+  {{- with .Values.server.persistentVolume.data.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.server.persistentVolume.data.storageClass }}
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.server.persistentVolume.data.path | default (printf "%s/nextcloud/data" .Values.global.dataDir) }}
+{{- end -}}

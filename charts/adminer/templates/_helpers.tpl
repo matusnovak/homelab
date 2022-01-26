@@ -15,11 +15,11 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 
 {{/*
-Create a default fully qualified for traefik.
+Create a default fully qualified for authelia.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
-{{- define "traefik.fullname" -}}
-{{- printf "%s-%s" .Release.Name .Values.global.fullname.traefik | trunc 63 | trimSuffix "-" }}
+{{- define "authelia.fullname" -}}
+{{- printf "%s-%s" .Release.Name .Values.global.fullname.authelia | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*

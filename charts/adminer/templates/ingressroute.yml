@@ -6,8 +6,6 @@ metadata:
   labels:
     {{- include "adminer.labels" . | nindent 4 }}
 spec:
-  entryPoints:
-    {{ .Values.global.ingress.entryPoints | toYaml | nindent 4 }}
   routes: 
     - kind: Rule
       match: {{ printf "Host(`%s.%s`)" .Values.subdomain .Values.global.domainName }}
@@ -16,10 +14,10 @@ spec:
           port: 8080
       {{- if .Values.auth }}
       middlewares:
-        - name: {{ printf "%s-forward-auth" (include "traefik.fullname" .) }}
+        - name: {{ printf "%s-forward-auth" (include "authelia.fullname" .) }}
           namespace: {{ .Release.Namespace }}
       {{- end }}
-  {{- if .Values.global.ingress.acme }}
+  {{- if .Values.global.certResolver }}
   tls:
-    certResolver: letsencrypt
+    certResolver: {{ .Values.global.certResolver }}
   {{- end }}

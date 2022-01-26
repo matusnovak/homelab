@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "gitlab.cache.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gitlab.cache.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.cache.replicaCount }}
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      {{- include "gitlab.cache.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.cache.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "gitlab.cache.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.cache.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "gitlab.cache.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.cache.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.cache.securityContext | nindent 12 }}
+          image: "{{ .Values.cache.image.repository }}:{{ .Values.cache.image.tag }}"
+          imagePullPolicy: {{ .Values.cache.image.pullPolicy }}
+          env:
+            - name: MINIO_BROWSER
+              value: 'off'
+            - name: MINIO_ACCESS_KEY
+              value: '{{ .Values.cache.accessKey }}'
+            - name: MINIO_SECRET_KEY
+              value: '{{ .Values.cache.secretKey }}'
+          {{- with .Values.cache.env }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          command:
+            - 'sh'
+          args:
+            - '-c'
+            - |
+              mkdir -p /export/gitlab-runner-cache
+              minio server /export
+          ports:
+            - name: s3
+              containerPort: 9000
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.cache.resources | nindent 12 }}
+          volumeMounts:
+            - name: data-volume
+              mountPath: /export
+      {{- with .Values.cache.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.cache.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.cache.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: data-volume
+          emptyDir: {}

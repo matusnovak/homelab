@@ -1,0 +1,22 @@
+{{- if .Values.redis.role.create }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "nextcloud.redis.roleName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nextcloud.redis.labels" . | nindent 4 }}
+  {{- with .Values.redis.role.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+subjects:
+  - kind: ServiceAccount
+    namespace: {{ .Release.Namespace }}
+    name: {{ include "nextcloud.redis.serviceAccountName" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "nextcloud.redis.roleName" . }}
+{{- end }}

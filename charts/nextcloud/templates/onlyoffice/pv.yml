@@ -1,0 +1,43 @@
+{{- if .Values.onlyoffice.persistentVolume.data.create -}}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "nextcloud.onlyoffice.persistentVolumeName.data" . }}
+  labels:
+    {{- include "nextcloud.onlyoffice.labels" . | nindent 4 }}
+  {{- with .Values.onlyoffice.persistentVolume.data.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.onlyoffice.persistentVolume.data.storageClass }}
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.global.dataDir }}/nextcloud/onlyoffice/data
+{{- end -}}
+{{- if .Values.onlyoffice.persistentVolume.logs.create }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "nextcloud.onlyoffice.persistentVolumeName.logs" . }}
+  labels:
+    {{- include "nextcloud.onlyoffice.labels" . | nindent 4 }}
+  {{- with .Values.onlyoffice.persistentVolume.logs.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.onlyoffice.persistentVolume.logs.storageClass }}
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.global.dataDir }}/nextcloud/onlyoffice/logs
+{{- end -}}

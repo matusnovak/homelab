@@ -32,7 +32,15 @@ data:
         --kubernetes-image "{{ .Values.runner.defaultImage }}" \
         --tag-list "{{ .Values.runner.tags }}" \
         --kubernetes-node-selector {{ .Values.runner.jobNodeSelector }} \
-        --config "/etc/gitlab-runner/config.toml"
+        --config "/etc/gitlab-runner/config.toml" \
+        --cache-type "s3" \
+        --cache-path "cache" \
+        --cache-shared \
+        --cache-s3-server-address "{{ include "gitlab.cache.fullname" .}}.{{ .Release.Namespace }}.svc.cluster.local" \
+        --cache-s3-access-key "{{ .Values.cache.accessKey }}" \
+        --cache-s3-secret-key "{{ .Values.cache.secretKey }}" \
+        --cache-s3-bucket-name "gitlab-runner-cache" \
+        --cache-s3-insecure
 
     # Start the runner
     /entrypoint run --user=gitlab-runner \

@@ -1,3 +1,4 @@
+{{ $configMapHash := include (print $.Template.BasePath "/configmap.yml") . | sha256sum }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,8 +16,9 @@ spec:
       {{- include "authelia.server.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.server.podAnnotations }}
       annotations:
+        checksum/config: {{ $configMapHash }}
+      {{- with .Values.server.podAnnotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:

@@ -1,0 +1,12 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ printf "%s-forward-auth" (include "authelia.fullname" .) }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  forwardAuth:
+    address: {{ printf "http://%s.%s.svc.cluster.local:9091/api/verify?rd=https://auth.%s/" (include "authelia.server.fullname" .) .Release.Namespace .Values.global.domainName }}
+    trustForwardHeader: true
+    authResponseHeaders:
+      - 'Remote-User'
+      - 'Remote-Groups'

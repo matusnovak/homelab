@@ -1,0 +1,164 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "nextcloud.server.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nextcloud.server.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.server.replicaCount }}
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      {{- include "nextcloud.server.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.server.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "nextcloud.server.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.server.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "nextcloud.server.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.server.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: {{ printf "%s-init" .Chart.Name }}
+          image: "{{ .Values.global.busybox.repository }}:{{ .Values.global.busybox.tag }}"
+          command:
+            - 'sh'
+            - '-c'
+            - 'chmod 770 /var/www/html && chown 33:0 /var/www/html && chmod 770 /var/www/html/config && chown 33:0 /var/www/html/config && chmod 770 /var/www/html/custom_apps && chown 33:0 /var/www/html/custom_apps && chmod 770 /var/www/html/themes/custom && chown 33:0 /var/www/html/themes/custom && chmod 770 /var/www/html/data && chown 33:33 /var/www/html/data'
+          volumeMounts:
+            - name: html-volume
+              mountPath: /var/www/html
+            - name: config-volume
+              mountPath: /var/www/html/config
+            - name: apps-volume
+              mountPath: /var/www/html/custom_apps
+            - name: theme-volume
+              mountPath: /var/www/html/themes/custom
+            - name: data-volume
+              mountPath: /var/www/html/data
+        - name: {{ printf "%s-ldap" .Chart.Name }}
+          image: "{{ .Values.global.openldapCheck.repository }}:{{ .Values.global.openldapCheck.tag }}"
+          imagePullPolicy: {{ .Values.global.openldapCheck.pullPolicy }}
+          command:
+            - 'sh'
+            - '-c'
+            - 'until ldapsearch -x -H "ldap://$LDAP_HOST:389" -D "$LDAP_USER" -w "$LDAP_PASSWORD" -b "$LDAP_BASE"; do echo "waiting for openldap"; sleep 2; done;'
+          env:
+            - name: LDAP_HOST
+              value: '{{ include "openldap.fullname" .}}.{{ .Release.Namespace }}.svc.cluster.local'
+            - name: LDAP_USER
+              value: '{{ printf "cn=readonly,%s" .Values.global.domainComponent }}'
+            - name: LDAP_PASSWORD
+              value: '{{ .Values.server.openldap.readonlyPassword }}'
+            - name: LDAP_BASE
+              value: '{{ printf "ou=%s,%s" .Values.server.openldap.users .Values.global.domainComponent }}'
+        - name: {{ printf "%s-psql" .Chart.Name }}
+          image: "{{ .Values.global.postgresCheck.repository }}:{{ .Values.global.postgresCheck.tag }}"
+          imagePullPolicy: {{ .Values.global.postgresCheck.pullPolicy }}
+          command:
+            - 'sh'
+            - '-c'
+            - 'until psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_ROLE -d $POSTGRES_DB -c "select 1"; do echo "waiting for database"; sleep 2; done;'
+          env:
+            - name: POSTGRES_HOST
+              value: '{{ include "postgres.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local'
+            - name: POSTGRES_DB
+              value: '{{ .Values.server.postgres.database }}'
+            - name: POSTGRES_ROLE
+              value: '{{ .Values.server.postgres.role }}'
+            - name: POSTGRES_PORT
+              value: '5432'
+            - name: PGPASSWORD
+              value: '{{ .Values.server.postgres.password }}'
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.server.securityContext | nindent 12 }}
+          image: "{{ .Values.server.image.repository }}:{{ .Values.server.image.tag }}"
+          imagePullPolicy: {{ .Values.server.image.pullPolicy }}
+          env:
+            - name: POSTGRES_DB
+              value: "{{ .Values.server.postgres.database }}"
+            - name: POSTGRES_USER
+              value: "{{ .Values.server.postgres.role }}"
+            - name: POSTGRES_PASSWORD
+              value: "{{ .Values.server.postgres.password }}"
+            - name: POSTGRES_HOST
+              value: "{{ include "postgres.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local"
+            - name: NEXTCLOUD_ADMIN_USER
+              value: "admin"
+            - name: NEXTCLOUD_ADMIN_PASSWORD
+              value: "{{ .Values.server.admin.password }}"
+            - name: REDIS_HOST
+              value: "{{ include "nextcloud.redis.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local"
+            - name: REDIS_HOST_PORT
+              value: "6379"
+            - name: REDIS_HOST_PASSWORD
+              value: "{{ .Values.redis.password }}"
+            - name: NEXTCLOUD_HOSTNAME
+              value: "{{ .Values.server.subdomain }}.{{ .Values.global.domainName }}"
+            - name: NEXTCLOUD_TRUSTED_DOMAINS
+              value: "{{ .Values.server.subdomain }}.{{ .Values.global.domainName }} {{ include "nextcloud.server.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local localhost"
+            - name: OVERWRITEPROTOCOL
+              value: "https"
+            - name: OVERWRITEHOST
+              value: "{{ .Values.server.subdomain }}.{{ .Values.global.domainName }}"
+          {{- with .Values.server.env }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: web
+              containerPort: 80
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.server.resources | nindent 12 }}
+          volumeMounts:
+            - name: html-volume
+              mountPath: /var/www/html
+            - name: config-volume
+              mountPath: /var/www/html/config
+            - name: apps-volume
+              mountPath: /var/www/html/custom_apps
+            - name: theme-volume
+              mountPath: /var/www/html/themes/custom
+            - name: data-volume
+              mountPath: /var/www/html/data
+      {{- with .Values.server.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.server.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.server.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: html-volume
+          persistentVolumeClaim:
+            claimName: {{ include "nextcloud.server.persistentVolumeClaimName.html" . }}
+        - name: config-volume
+          persistentVolumeClaim:
+            claimName: {{ include "nextcloud.server.persistentVolumeClaimName.config" . }}
+        - name: apps-volume
+          persistentVolumeClaim:
+            claimName: {{ include "nextcloud.server.persistentVolumeClaimName.apps" . }}
+        - name: theme-volume
+          persistentVolumeClaim:
+            claimName: {{ include "nextcloud.server.persistentVolumeClaimName.theme" . }}
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: {{ include "nextcloud.server.persistentVolumeClaimName.data" . }}

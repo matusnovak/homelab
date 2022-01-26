@@ -1,0 +1,6 @@
+apiVersion: v2
+name: nextcloud
+description: Nextcloud is a suite of client-server software for creating and using file hosting services. It is enterprise-ready with comprehensive support options.
+type: application
+version: 0.1.0
+appVersion: "apache"

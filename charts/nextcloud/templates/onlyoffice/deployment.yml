@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "nextcloud.onlyoffice.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nextcloud.onlyoffice.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.onlyoffice.replicaCount }}
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      {{- include "nextcloud.onlyoffice.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.onlyoffice.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "nextcloud.onlyoffice.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.onlyoffice.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "nextcloud.onlyoffice.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.onlyoffice.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: {{ printf "%s-init" .Chart.Name }}
+          image: "{{ .Values.global.busybox.repository }}:{{ .Values.global.busybox.tag }}"
+          command:
+            - 'sh'
+            - '-c'
+            - 'chmod 775 /var/www/onlyoffice/Data && chown 0:0 /var/www/onlyoffice/Data && chmod 755 /var/log/onlyoffice && chown 0:0 /var/log/onlyoffice'
+          volumeMounts:
+            - name: data-volume
+              mountPath: /var/www/onlyoffice/Data
+            - name: logs-volume
+              mountPath: /var/log/onlyoffice
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.onlyoffice.securityContext | nindent 12 }}
+          image: "{{ .Values.onlyoffice.image.repository }}:{{ .Values.onlyoffice.image.tag }}"
+          imagePullPolicy: {{ .Values.onlyoffice.image.pullPolicy }}
+          env:
+            - name: JWT_ENABLED
+              value: "true"
+            - name: JWT_SECRET
+              value: "{{ .Values.onlyoffice.secret }}"
+          {{- with .Values.onlyoffice.env }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: web
+              containerPort: 80
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.onlyoffice.resources | nindent 12 }}
+          volumeMounts:
+            - name: data-volume
+              mountPath: /var/www/onlyoffice/Data
+            - name: logs-volume
+              mountPath: /var/log/onlyoffice
+      {{- with .Values.onlyoffice.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.onlyoffice.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.onlyoffice.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: {{ include "nextcloud.onlyoffice.persistentVolumeClaimName.data" . }}
+        - name: logs-volume
+          persistentVolumeClaim:
+            claimName: {{ include "nextcloud.onlyoffice.persistentVolumeClaimName.logs" . }}

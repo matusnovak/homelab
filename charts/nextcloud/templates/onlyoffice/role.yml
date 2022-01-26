@@ -1,0 +1,22 @@
+{{- if .Values.onlyoffice.role.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "nextcloud.onlyoffice.roleName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nextcloud.onlyoffice.labels" . | nindent 4 }}
+  {{- with .Values.onlyoffice.role.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+rules:
+  - apiGroups:
+      - 'extensions'
+    resources:
+      - 'podsecuritypolicies'
+    verbs:
+      - 'use'
+    resourceNames:
+      - {{ include "nextcloud.onlyoffice.fullname" . }}
+{{- end }}

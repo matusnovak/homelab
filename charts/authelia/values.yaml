@@ -30,6 +30,7 @@ server:
     groups: groups
 
   jwtSecret: 'Password1!'
+  encryptionKey: 'Password1!'
 
   env: []
 

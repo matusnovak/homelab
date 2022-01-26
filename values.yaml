@@ -2,11 +2,7 @@ global:
   domainName: 'homelab.lan'
   domainComponent: 'dc=homelab,dc=lan'
   dataDir: '/homelab'
-  ingress:
-    acme: false
-    entryPoints:
-      - web
-      - websecure
+  certResolver: 'letsencrypt'
 
   busybox:
     repository: docker.io/library/busybox
@@ -28,13 +24,17 @@ global:
     pullPolicy: IfNotPresent
     tag: latest
 
+  python:
+    repository: docker.io/library/python
+    pullPolicy: IfNotPresent
+    tag: '3.9'
+
   fullname:
     authelia: authelia
     openldap: openldap
     openldapController: openldap-controller
     postgres: postgres
     postgresController: postgres-controller
-    traefik: traefik
     loki: loki
     nodeexporter: nodeexporter
     prometheus: prometheus
@@ -45,9 +45,9 @@ global:
     zfsprom: zfsprom
     smartprom: smartprom
     gitlab: gitlab
+    nextcloud: nextcloud
 
 deploy:
-  traefik: false
   openldap: false
   openldapController: false
   postgres: false
@@ -63,3 +63,5 @@ deploy:
   zfsprom: false
   smartprom: false
   gitlab: false
+  nextcloud: false
+  grafana: false

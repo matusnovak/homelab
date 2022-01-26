@@ -6,15 +6,13 @@ metadata:
   labels:
     {{- include "gitlab.kroki.labels" . | nindent 4 }}
 spec:
-  entryPoints:
-    {{ .Values.global.ingress.entryPoints | toYaml | nindent 4 }}
   routes: 
     - kind: Rule
       match: {{ printf "Host(`%s.%s`)" .Values.kroki.subdomain .Values.global.domainName }}
       services:
         - name: {{ printf "%s-kroki" (include "gitlab.kroki.fullname" .) }}
           port: 8000
-  {{- if .Values.global.ingress.acme }}
+  {{- if .Values.global.certResolver }}
   tls:
-    certResolver: letsencrypt
+    certResolver: {{ .Values.global.certResolver }}
   {{- end }}

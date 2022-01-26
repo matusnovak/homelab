@@ -35,12 +35,12 @@ spec:
           command:
             - 'sh'
             - '-c'
-            - 'chmod 700 /var/lib/openldap && chown 911:911 /var/lib/openldap && chmod 700 /etc/openldap/slapd.d && chown 911:911 /etc/openldap/slapd.d'
+            - 'chmod 700 /var/lib/ldap && chown 911:911 /var/lib/ldap && chmod 700 /etc/ldap/slapd.d && chown 911:911 /etc/ldap/slapd.d'
           volumeMounts:
             - name: data-volume
-              mountPath: /var/lib/openldap
+              mountPath: /var/lib/ldap
             - name: config-volume
-              mountPath: /etc/openldap/slapd.d
+              mountPath: /etc/ldap/slapd.d
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -85,9 +85,9 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             - name: data-volume
-              mountPath: /var/lib/openldap
+              mountPath: /var/lib/ldap
             - name: config-volume
-              mountPath: /etc/openldap/slapd.d
+              mountPath: /etc/ldap/slapd.d
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

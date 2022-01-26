@@ -7,12 +7,14 @@ metadata:
     {{- include "authelia.server.labels" . | nindent 4 }}
 data:
   configuration.yml: |
-    host: 0.0.0.0
-    port: 9091
+    server:
+      host: 0.0.0.0
+      port: 9091
 
     jwt_secret: "{{ .Values.server.jwtSecret }}"
 
-    log_level: debug
+    log:
+      level: debug
 
     session:
       name: authelia_session
@@ -27,6 +29,7 @@ data:
         password: "{{ .Values.redis.password }}"
 
     storage:
+      encryption_key: "{{ .Values.server.encryptionKey }}"
       postgres:
         host: "{{ include "postgres.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local"
         port: 5432

@@ -139,6 +139,68 @@ minio:
 
   affinity: {}
 
+cache:
+  image:
+    repository: docker.io/minio/minio
+    pullPolicy: IfNotPresent
+    tag: latest
+
+  imagePullSecrets: []
+  nameOverride: ""
+
+  accessKey: 'somerandomstring'
+  secretKey: 'somerandomstring'
+
+  env: []
+
+  service:
+    type: ClusterIP
+
+  role:
+    create: true
+    annotations: {}
+    # The name of the cluster role to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  serviceAccount:
+    create: true
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
 server:
   image:
     repository: docker.io/gitlab/gitlab-ce

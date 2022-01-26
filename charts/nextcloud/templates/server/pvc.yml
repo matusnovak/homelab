@@ -1,0 +1,109 @@
+{{- if .Values.server.persistentVolumeClaim.html.create -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "nextcloud.server.persistentVolumeClaimName.html" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nextcloud.server.labels" . | nindent 4 }}
+  {{- with .Values.server.persistentVolumeClaim.html.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.server.persistentVolumeClaim.html.storageClass }}
+  resources:
+    requests:
+      storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  volumeName: {{ include "nextcloud.server.persistentVolumeName.html" . }}
+{{- end -}}
+{{- if .Values.server.persistentVolumeClaim.config.create }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "nextcloud.server.persistentVolumeClaimName.config" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nextcloud.server.labels" . | nindent 4 }}
+  {{- with .Values.server.persistentVolumeClaim.config.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.server.persistentVolumeClaim.config.storageClass }}
+  resources:
+    requests:
+      storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  volumeName: {{ include "nextcloud.server.persistentVolumeName.config" . }}
+{{- end -}}
+{{- if .Values.server.persistentVolumeClaim.apps.create }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "nextcloud.server.persistentVolumeClaimName.apps" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nextcloud.server.labels" . | nindent 4 }}
+  {{- with .Values.server.persistentVolumeClaim.apps.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.server.persistentVolumeClaim.apps.storageClass }}
+  resources:
+    requests:
+      storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  volumeName: {{ include "nextcloud.server.persistentVolumeName.apps" . }}
+{{- end -}}
+{{- if .Values.server.persistentVolumeClaim.theme.create }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "nextcloud.server.persistentVolumeClaimName.theme" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nextcloud.server.labels" . | nindent 4 }}
+  {{- with .Values.server.persistentVolumeClaim.theme.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.server.persistentVolumeClaim.theme.storageClass }}
+  resources:
+    requests:
+      storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  volumeName: {{ include "nextcloud.server.persistentVolumeName.theme" . }}
+{{- end -}}
+{{- if .Values.server.persistentVolumeClaim.data.create }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "nextcloud.server.persistentVolumeClaimName.data" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nextcloud.server.labels" . | nindent 4 }}
+  {{- with .Values.server.persistentVolumeClaim.data.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.server.persistentVolumeClaim.data.storageClass }}
+  resources:
+    requests:
+      storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  volumeName: {{ include "nextcloud.server.persistentVolumeName.data" . }}
+{{- end -}}

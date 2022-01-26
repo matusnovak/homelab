@@ -4,10 +4,6 @@ description: Your own private cloud
 type: application
 version: 0.1.0
 dependencies:
-  - name: traefik
-    repository: file://charts/traefik
-    version: 0.1.0
-    condition: deploy.traefik
   - name: openldap
     repository: file://charts/openldap
     version: 0.1.0
@@ -36,6 +32,10 @@ dependencies:
     repository: file://charts/prometheus
     version: 0.1.0
     condition: deploy.prometheus
+  - name: loki
+    repository: file://charts/loki
+    version: 0.1.0
+    condition: deploy.loki
   - name: phpldapadmin
     repository: file://charts/phpldapadmin
     version: 0.1.0
@@ -60,3 +60,11 @@ dependencies:
     repository: file://charts/gitlab
     version: 0.1.0
     condition: deploy.gitlab
+  - name: nextcloud
+    repository: file://charts/nextcloud
+    version: 0.1.0
+    condition: deploy.nextcloud
+  - name: grafana
+    repository: file://charts/grafana
+    version: 0.1.0
+    condition: deploy.grafana

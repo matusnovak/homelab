@@ -1,0 +1,18 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ printf "%s-web-ingress" (include "nextcloud.server.fullname" .) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nextcloud.server.labels" . | nindent 4 }}
+spec:
+  routes: 
+    - kind: Rule
+      match: {{ printf "Host(`%s.%s`)" .Values.server.subdomain .Values.global.domainName }}
+      services:
+        - name: {{ include "nextcloud.server.fullname" .}}
+          port: 80
+  {{- if .Values.global.certResolver }}
+  tls:
+    certResolver: {{ .Values.global.certResolver }}
+  {{- end }}

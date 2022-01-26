@@ -1,0 +1,43 @@
+{{- if .Values.onlyoffice.persistentVolumeClaim.data.create -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "nextcloud.onlyoffice.persistentVolumeClaimName.data" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nextcloud.onlyoffice.labels" . | nindent 4 }}
+  {{- with .Values.onlyoffice.persistentVolumeClaim.data.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.onlyoffice.persistentVolumeClaim.data.storageClass }}
+  resources:
+    requests:
+      storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  volumeName: {{ include "nextcloud.onlyoffice.persistentVolumeName.data" . }}
+{{- end -}}
+{{- if .Values.onlyoffice.persistentVolumeClaim.logs.create }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "nextcloud.onlyoffice.persistentVolumeClaimName.logs" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nextcloud.onlyoffice.labels" . | nindent 4 }}
+  {{- with .Values.onlyoffice.persistentVolumeClaim.logs.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  storageClassName: {{ .Values.onlyoffice.persistentVolumeClaim.logs.storageClass }}
+  resources:
+    requests:
+      storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  volumeName: {{ include "nextcloud.onlyoffice.persistentVolumeName.logs" . }}
+{{- end -}}

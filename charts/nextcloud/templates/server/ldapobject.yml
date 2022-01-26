@@ -1,0 +1,15 @@
+apiVersion: homelab.local/v1alpha1
+kind: LdapObject
+metadata:
+  name: {{ printf "%s-group-%s" (include "openldap.fullname" .) .Values.server.openldap.group }}
+  labels:
+    {{- (include "nextcloud.server.labels" .) | nindent 4 }}
+spec:
+  dn: {{ printf "cn=%s,ou=%s,%s" .Values.server.openldap.group .Values.server.openldap.groups .Values.global.domainComponent }}
+  attributes:
+    - name: 'objectClass'
+      value: 'groupOfUniqueNames'
+    - name: 'objectClass'
+      value: 'top'
+    - name: 'uniqueMember'
+      value: '{{ printf "cn=admin,%s" .Values.global.domainComponent }}'
